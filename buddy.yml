@@ -1,0 +1,86 @@
+- pipeline: "E2E Test on Testing"
+  trigger_mode: "ON_EVERY_PUSH"
+  ref_name: "refs/heads/*"
+  ref_type: "WILDCARD"
+  actions:
+  - action: "NODE_ENV=testing | test_api"
+    type: "BUILD"
+    working_directory: "/buddy/leflair-auto-test"
+    docker_image_name: "library/node"
+    docker_image_tag: "latest"
+    execute_commands:
+    - "# yarn install"
+    - "npm install"
+    - "NODE_ENV=testing npm run test_api -- --ci --reporters=default --reporters=jest-junit"
+    setup_commands:
+    - "npm install -g gulp grunt-cli"
+    mount_filesystem_path: "/buddy/leflair-auto-test"
+    shell: "BASH"
+    trigger_condition: "ALWAYS"
+  - action: "NODE_ENV=testing | test_ui_chrome"
+    type: "BUILD"
+    working_directory: "/buddy/leflair-auto-test"
+    docker_image_name: "library/node"
+    docker_image_tag: "latest"
+    execute_commands:
+    - "# yarn install"
+    - "npm install"
+    - "NODE_ENV=testing SELENIUM_REMOTE_URL=http://selenium-ch:4444/wd/hub npm run test_ui_chrome -- --ci --reporters=default --reporters=jest-junit"
+    setup_commands:
+    - "npm install -g gulp grunt-cli"
+    services:
+    - type: "SELENIUM_CHROME"
+      version: "latest"
+      persistent: false
+      connection:
+        host: "selenium-ch"
+        port: 4444
+      plugins: []
+      accounts: []
+    mount_filesystem_path: "/buddy/leflair-auto-test"
+    shell: "BASH"
+    trigger_condition: "ALWAYS"
+  - action: "NODE_ENV=testing | test_ui_firefox"
+    type: "BUILD"
+    working_directory: "/buddy/leflair-auto-test"
+    docker_image_name: "library/node"
+    docker_image_tag: "latest"
+    execute_commands:
+    - "# yarn install"
+    - "npm install"
+    - "NODE_ENV=testing SELENIUM_REMOTE_URL=http://selenium-ff:4444/wd/hub npm run test_ui_firefox -- --ci --reporters=default --reporters=jest-junit"
+    setup_commands:
+    - "npm install -g gulp grunt-cli"
+    services:
+    - type: "SELENIUM_FIREFOX"
+      version: "latest"
+      persistent: false
+      connection:
+        host: "selenium-ff"
+        port: 4444
+      plugins: []
+      accounts: []
+    mount_filesystem_path: "/buddy/leflair-auto-test"
+    shell: "BASH"
+    trigger_condition: "ALWAYS"
+  - action: "NODE_ENV=testing | test_ui_mobile"
+    type: "BUILD"
+    working_directory: "/buddy/leflair-auto-test"
+    docker_image_name: "library/node"
+    docker_image_tag: "latest"
+    execute_commands:
+    - "# yarn install"
+    - "npm install"
+    - "NODE_ENV=testing SELENIUM_REMOTE_URL=http://selenium-ch:4444/wd/hub SELENIUM_BROWSER=chrome npm run test_ui_mobile -- --ci --reporters=default --reporters=jest-junit"
+    setup_commands:
+    - "npm install -g gulp grunt-cli"
+    services:
+    - type: "SELENIUM_CHROME"
+      version: "latest"
+      persistent: false
+      connection:
+        host: "selenium-ch"
+        port: 4444
+    mount_filesystem_path: "/buddy/leflair-auto-test"
+    shell: "BASH"
+    trigger_condition: "ALWAYS"
