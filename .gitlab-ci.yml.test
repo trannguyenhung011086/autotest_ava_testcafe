@@ -1,0 +1,117 @@
+image: docker:edge-git
+
+services:
+- docker:dind
+
+before_script:
+  - apk add --no-cache py2-pip && pip install docker-compose
+  - docker info
+  - docker-compose --version
+
+stages:
+  - start
+  - test
+  - test_prod
+  - cleanup
+
+start:
+  stage: start
+  script:
+    - docker-compose build --pull
+    - docker-compose up
+
+test_api:
+  stage: test
+  script:
+    - docker-compose run -e NODE_ENV=testing testapp npm run test_api_ci
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_api.xml
+  except:
+    - schedules
+
+test_ui_chrome:  
+  stage: test
+  script:
+    - docker-compose run -e NODE_ENV=testing testapp npm run test_ui_chrome_ci
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_ui_chrome.xml
+  except:
+    - schedules
+
+test_ui_firefox:  
+  stage: test
+  script:
+    - docker-compose run -e NODE_ENV=testing testapp npm run test_ui_firefox_ci
+  artifacts:
+    paths:
+    - report/junit_ui_firefox.xml
+    expire_in: 1 week
+    reports:
+      junit: report/junit_ui_firefox.xml
+  except:
+    - schedules
+
+test_ui_mobile:  
+  stage: test
+  script:
+    - docker-compose run -e NODE_ENV=testing testapp npm run test_ui_mobile_ci
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_ui_mobile.xml
+  except:
+    - schedules
+
+test_api_prod:on-schedule:
+  stage: test_prod
+  script:
+    - docker-compose run -e NODE_ENV=production testapp npm run test_api_ci
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_api.xml
+  only:
+    - schedules
+
+test_ui_chrome_prod:on-schedule:
+  stage: test_prod
+  script:
+    - docker-compose run -e NODE_ENV=production testapp npm run test_ui_chrome_ci
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_ui_chrome.xml
+  only:
+    - schedules
+
+test_ui_firefox_prod:on-schedule:
+  stage: test_prod
+  script:
+    - docker-compose run -e NODE_ENV=production testapp npm run test_ui_firefox_ci
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_ui_firefox.xml
+  only:
+    - schedules
+
+test_ui_mobile_prod:on-schedule: 
+  stage: test_prod
+  script:
+    - docker-compose run -e NODE_ENV=production testapp npm run test_ui_mobile_ci
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_ui_mobile.xml
+  only:
+    - schedules
+
+cleanup:
+  stage: cleanup
+  script:
+  - ddocker-compose down
+  when: always

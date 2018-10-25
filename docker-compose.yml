@@ -1,0 +1,39 @@
+version: '3'
+services:
+  selenoid:
+    network_mode: bridge
+    image: aerokube/selenoid
+    volumes:
+      - "./config:/etc/selenoid/" # assumed current dir contains browsers.json
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    command: ["-conf", "/etc/selenoid/browsers.json"]
+    ports:
+      - "4444:4444"
+  selenoid-ui:
+    image: aerokube/selenoid-ui
+    network_mode: bridge
+    links:
+      - selenoid
+    ports:
+      - "8080:8080"
+    command: ["--selenoid-uri", "http://selenoid:4444"]
+  chrome:
+    image: selenoid/chrome
+  firefox:
+    image: selenoid/firefox
+  testapp:
+    image: testapp
+    network_mode: bridge
+    links:
+      - selenoid
+    depends_on:
+      - chrome
+      - firefox
+      - selenoid
+      - selenoid-ui
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - SELENIUM_REMOTE_URL=http://selenoid:4444/wd/hub
+      - NODE_ENV=testing
