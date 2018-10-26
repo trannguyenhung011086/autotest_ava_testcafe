@@ -1,0 +1,50 @@
+{
+  "name": "e2e-testing-with-jest",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "setupTestFrameworkScriptFile": "./jest.setup.js",
+    "reporters": [
+      "default",
+      "jest-junit"
+    ]
+  },
+  "version": "1.0.0",
+  "description": "use selenium with jest",
+  "main": "index.js",
+  "scripts": {
+    "start_selenium": "selenium-standalone install && selenium-standalone start",
+    "test_api": "JEST_SUITE_NAME=\"End 2 End API Testing\" JEST_JUNIT_OUTPUT=\"report/junit_api.xml\" node_modules/.bin/jest tests/e2e_api --verbose --detectOpenHandles",
+    "test_ui_chrome": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_chrome.xml\" SELENIUM_BROWSER=chrome node_modules/.bin/jest tests/e2e_ui/desktop --verbose --detectOpenHandles",
+    "test_ui_firefox": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_firefox.xml\" SELENIUM_BROWSER=firefox node_modules/.bin/jest tests/e2e_ui/desktop --verbose --detectOpenHandles",
+    "test_ui_mobile": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_mobile.xml\" node_modules/.bin/jest tests/e2e_ui/mobile --verbose --detectOpenHandles",
+    "test_api_ci": "NODE_ENV=$NODE_ENV npm run test_api -- --ci --reporters=default --reporters=jest-junit",
+    "test_ui_chrome_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_chrome -- --ci --reporters=default --reporters=jest-junit",
+    "test_ui_firefox_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_firefox -- --ci --reporters=default --reporters=jest-junit",
+    "test_ui_mobile_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_mobile -- --ci --reporters=default --reporters=jest-junit"
+  },
+  "author": "Hung Tran",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jest": "^23.3.5",
+    "@types/node": "^10.12.0",
+    "@types/selenium-webdriver": "^3.0.12",
+    "axios": "^0.18.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^23.6.0",
+    "@babel/preset-typescript": "7.1.0",
+    "@babel/core": "^7.0.0-0",
+    "babel-preset-env": "^1.7.0",
+    "faker": "^4.1.0",
+    "jest": "^23.6.0",
+    "selenium-webdriver": "^4.0.0-alpha.1",
+    "ts-jest": "^23.10.4",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.3",
+    "chromedriver": "^2.43.0",
+    "geckodriver": "^1.12.2",
+    "selenium-standalone": "^6.15.3",
+    "jest-junit": "^5.2.0"
+  },
+  "devDependencies": {}
+}
