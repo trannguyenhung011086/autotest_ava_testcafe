@@ -39,6 +39,7 @@ Refer to .gitlab-ci.yml to config run flow
 - stop docker
 
 Tests will be triggered automatically for every commit to this repo.
-TODO:
+
+## TODO:
 - schedule trigger testing for multiple environments on a daily basis
 - configure trigger testing when the application repo (www-next) has successful build
