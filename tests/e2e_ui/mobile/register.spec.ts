@@ -7,7 +7,7 @@ import * as faker from 'faker'
 
 describe('Register account', () => {
     beforeAll(async () => {
-        browser = new Browser(config.browser)
+        browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl + config.register)
         // add cookie

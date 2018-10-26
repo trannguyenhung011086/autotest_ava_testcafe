@@ -5,7 +5,7 @@ let browser: Browser
 let pages: AllPages
 import * as faker from 'faker'
 
-describe('Log in failed', () => {
+describe('Log in account', () => {
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
@@ -22,27 +22,22 @@ describe('Log in failed', () => {
         expect(error).toEqual('Vui lòng nhập password.')
     })
 
-    test.each([[faker.internet.email(), faker.internet.password()],
-    [config.testAccount.email, faker.internet.password()],
-    [config.testAccount.facebook, faker.internet.password()]])
-        ('Use invalid credentials: %s %s', async (email: string, password: string) => {
-            await pages.login.submitWithEmail(email, password)
-            var error = await pages.login.getErrorText()
-            expect(error).toEqual('Email hoặc mật khẩu không đúng. Vui lòng thử lại')
-        })
-
-    afterAll(async () => {
-        await browser.close()
+    test('Use non-existing email', async () => {
+        await pages.login.submitWithEmail(faker.internet.email(), faker.internet.password())
+        var error = await pages.login.getErrorText()
+        expect(error).toEqual('Email hoặc mật khẩu không đúng. Vui lòng thử lại')
     })
-})
 
-describe('Log in successfully', () => {
-    beforeAll(async () => {
-        browser = new Browser(config.browser)
-        pages = new AllPages(browser)
-        await browser.navigate(config.baseUrl + config.signin)
-        // add cookie
-        await browser.setCokie(config.cookieEma)
+    test('Use incorrect password', async () => {
+        await pages.login.submitWithEmail(config.testAccount.email, faker.internet.password())
+        var error = await pages.login.getErrorText()
+        expect(error).toEqual('Email hoặc mật khẩu không đúng. Vui lòng thử lại')
+    })
+
+    test('Use Facebook email', async () => {
+        await pages.login.submitWithEmail(config.testAccount.facebook, faker.internet.password())
+        var error = await pages.login.getErrorText()
+        expect(error).toEqual('Email hoặc mật khẩu không đúng. Vui lòng thử lại')
     })
 
     test('Log in with existing email', async () => {

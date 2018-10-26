@@ -22,7 +22,7 @@ export default class ProductList extends Page {
     async getNumLazyLoadItems(numItems: number) {
         await this.browser.scrollTo('#footer')
         await this.browser.findElement(`div:nth-child(${numItems + 30}) > a > ${this.productCard}`)
-        await this.browser.findElements(this.productCard)
+        await this.browser.scrollTo(this.filterNum)
         return await this.getFilterNum()
     }
 

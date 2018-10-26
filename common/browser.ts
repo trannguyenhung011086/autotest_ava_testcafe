@@ -1,4 +1,4 @@
-import { Builder, ThenableWebDriver, By, until, WebElement, IWebDriverCookie } from 'selenium-webdriver'
+import { Builder, ThenableWebDriver, By, until, Key, WebElement, IWebDriverCookie } from 'selenium-webdriver'
 import config from '../config/config'
 import { Options as ChromeOptions } from 'selenium-webdriver/chrome'
 import { Options as FirefoxOptions } from 'selenium-webdriver/firefox'
@@ -84,6 +84,7 @@ export class Browser {
     public async scrollTo(selector: string) {
         var el = await this.findElement(selector)
         await this.driver.executeScript("arguments[0].scrollIntoView(true);", el)
+        el = await this.findElement(selector)
         await this.driver.wait(until.elementIsVisible(el), 1000)
     }
 
@@ -103,9 +104,8 @@ export class Browser {
     public async type(selector: string, content: string) {
         var el = await this.findElement(selector)
         await el.clear()
-            .catch(e => {
-                throw { msg: 'cannot clear ' + selector, error: e }
-            })
+        await el.sendKeys(Key.chord(Key.CONTROL, 'a'))
+        await el.sendKeys(Key.DELETE)
         await el.sendKeys(content)
             .catch(e => {
                 throw { msg: 'cannot type at ' + selector, error: e }
