@@ -9,7 +9,6 @@ describe('Switch language', () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl)
-        await browser.setCokie(config.cookieEma)
     })
 
     test('Switch to English', async() => {

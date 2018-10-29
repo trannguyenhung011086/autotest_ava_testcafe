@@ -21,19 +21,19 @@ export default class Login extends Page {
         await this.browser.click(this.submitBtn)
     }
 
-    async getErrorText() {
+    public async getErrorText() {
         return this.browser.getText(this.errorMsg)
     }
 
-    async getSuccessText() {
+    public async getSuccessText() {
         return this.browser.getText(this.successNotify)
     }
 
-    async getEmailError() {
+    public async getEmailError() {
         return this.browser.getText(this.emailError)
     }
     
-    async getPasswordError() {
+    public async getPasswordError() {
         return this.browser.getText(this.passwordError)
     }
 }

@@ -4,7 +4,7 @@ let cookieEma: string[]
 if (process.env.NODE_ENV == 'testing') {
     baseUrl = 'https://www.testing.leflair.io'
     cookieEma = [
-        '_v1EmaticSolutions=%5B%224b959189-cade-11e8-b5ef-0242ac160003%22%2C1540348956353%2C%5B%22INPUT%22%2C%2256b02af3701a801000ddfbcf%22%2C0%5D%5D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-23T10:50:45.000Z',
+        '_v1EmaticSolutions=%5B%227b54c3c7-d8ce-11e8-9fef-0242ac160003%22%2C1540541603423%2C%5B%22A%22%2C%22Th%E1%BB%9Di%20Trang%20N%E1%BB%AF%22%2C2%2C%22thoi-trang-nu-5b56d3448f0dd7c0480acd1c%22%5D%5D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-23T10:50:45.000Z',
         '_v1EmaticSolutionsBye=%7B%2215586%22%3A%7B%22-1%22%3A%7B%22dont_show_till%22%3A%222018-10-16%22%2C%22loop%22%3A0%7D%7D%2C%2215589%22%3A%7B%22-1%22%3A%7B%22dont_show_till%22%3A%222018-10-15%22%2C%22loop%22%3A0%7D%7D%2C%2215590%22%3A%7B%22-1%22%3A%7B%22dont_show_till%22%3A%222018-10-16%22%2C%22loop%22%3A0%7D%7D%7D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-15T03:10:32.000Z',
         '_v1EmaticSolutionsEI=%7B%22c_15586_1%22%3A%5B1%2C1539073934509%2C0%5D%2C%22c_15589_2%22%3A%5B1%2C1538991676673%2C0%5D%2C%22c_15590_3%22%3A%5B1%2C1539051620006%2C0%5D%7D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-15T03:10:32.000Z'
     ]
@@ -40,10 +40,11 @@ const config = {
     testAccount: {
         email: 'test1234@test.com',
         password: '123456789',
-        facebook: 'trannguyenhung011086@protonmail.com'
+        facebook: 'trannguyenhung011086@protonmail.com',
+        passwordFacebook: '0944226282'
     },
     cookieEma: cookieEma || [
-        '_v1EmaticSolutions=%5B%22368ce097-d288-11e8-b5ef-0242ac160003%22%2C1539834310803%5D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-23T10:50:45.000Z',
+        '_v1EmaticSolutions=%5B%227b54c3c7-d8ce-11e8-9fef-0242ac160003%22%2C1540541603423%2C%5B%22A%22%2C%22Th%E1%BB%9Di%20Trang%20N%E1%BB%AF%22%2C2%2C%22thoi-trang-nu-5b56d3448f0dd7c0480acd1c%22%5D%5D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-23T10:50:45.000Z',
         '_v1EmaticSolutionsBye=%7B%2215586%22%3A%7B%22-1%22%3A%7B%22dont_show_till%22%3A%222018-10-16%22%2C%22loop%22%3A0%7D%7D%2C%2215589%22%3A%7B%22-1%22%3A%7B%22dont_show_till%22%3A%222018-10-15%22%2C%22loop%22%3A0%7D%7D%2C%2215590%22%3A%7B%22-1%22%3A%7B%22dont_show_till%22%3A%222018-10-16%22%2C%22loop%22%3A0%7D%7D%7D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-15T03:10:32.000Z',
         '_v1EmaticSolutionsEI=%7B%22c_15586_1%22%3A%5B1%2C1539073934509%2C0%5D%2C%22c_15589_2%22%3A%5B1%2C1538991676673%2C0%5D%2C%22c_15590_3%22%3A%5B1%2C1539051620006%2C0%5D%7D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-15T03:10:32.000Z'
     ],

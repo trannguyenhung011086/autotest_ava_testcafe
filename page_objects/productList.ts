@@ -14,19 +14,19 @@ export default class ProductList extends Page {
         return parseInt(text.split(' ')[0])
     }
 
-    async getNumItems() {
+    public async getNumItems() {
         var els = await this.browser.findElements(this.productCard)
         return els.length
     }
 
-    async getNumLazyLoadItems(numItems: number) {
+    public async getNumLazyLoadItems(numItems: number) {
         await this.browser.scrollTo('#footer')
         await this.browser.findElement(`div:nth-child(${numItems + 30}) > a > ${this.productCard}`)
         await this.browser.scrollTo(this.filterNum)
         return await this.getFilterNum()
     }
 
-    async getProductInfo(index=1) {
+    public async getProductInfo(index=1) {
         await this.browser.findElement(this.productCard)
         const url = await this.browser.getAttribute(`${this.productList} > .sale-product-list:nth-child(${index}) > a`, 'href')
         const brand = await this.browser.getText(`div:nth-child(${index}) > a > ${this.productCard} > .info > .brand`)

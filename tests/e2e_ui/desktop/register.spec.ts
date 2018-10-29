@@ -5,13 +5,14 @@ let browser: Browser
 let pages: AllPages
 import * as faker from 'faker'
 
-describe('Register account', () => {
+describe('Register via email', () => {
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl + config.register)
         // add cookie
-        await browser.setCokie(config.cookieEma)
+        // await browser.addCookie(config.cookieEma)
+        await pages.popup.closePopup()
     })
 
     test('Register with empty email and password', async () => {

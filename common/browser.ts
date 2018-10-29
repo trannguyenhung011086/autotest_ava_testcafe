@@ -40,29 +40,36 @@ export class Browser {
         await this.driver.sleep(time)
     }
 
+    public async waitForVisible(selector: string) {
+        var els = await this.findElements(selector)
+        await this.driver.wait(until.elementIsVisible(els[0]), 5000)
+    }
+
     public async findElement(selector: string) {
-        var el: WebElement = await this.driver.wait(until.elementLocated(By.css(selector)), 10000)
+        await this.driver.wait(until.elementLocated(By.css(selector)), 10000)
             .catch(e => {
-                throw { msg: 'cannot find ' + selector, error: e }
+                throw { msg: 'cannot locate element: ' + selector, error: e }
             })
-        return el
+        return await this.driver.findElement(By.css(selector))
+            .catch(e => {
+                throw { msg: 'cannot find element: ' + selector, error: e }
+            })
     }
 
     public async findElements(selector: string) {
-        var els: WebElement[] = await this.driver.wait(until.elementsLocated(By.css(selector)), 10000)
+        await this.driver.wait(until.elementsLocated(By.css(selector)), 10000)
             .catch(e => {
-                throw { msg: 'cannot find ' + selector, error: e }
+                throw { msg: 'cannot locate elements: ' + selector, error: e }
             })
-        return els
+        return await this.driver.findElements(By.css(selector))
+            .catch(e => {
+                throw { msg: 'cannot find elements: ' + selector, error: e }
+            })
     }
 
     public async isVisible(selector: string) {
-        try {
-            await this.findElement(selector)
-            return true
-        } catch (e) {
-            return false
-        }
+        var el = await this.findElement(selector)
+        return el.isDisplayed()
     }
 
     public async getText(selector: string) {
@@ -77,7 +84,10 @@ export class Browser {
         var el = await this.findElement(selector)
         return await el.getAttribute(attribute)
             .catch(e => {
-                throw { msg: 'cannot get attribute value from ' + selector, error: e }
+                throw {
+                    msg: 'cannot get value from attribute ' + attribute + ' of element ' + selector,
+                    error: e
+                }
             })
     }
 
@@ -90,10 +100,15 @@ export class Browser {
 
     public async click(selector: string) {
         var el = await this.findElement(selector)
-        await el.click()
-            .catch(e => {
-                throw { msg: 'cannot click ' + selector, error: e }
-            })
+        try {
+            await el.click()
+        } catch (clickError) {
+            try {
+                await this.driver.executeScript('arguments[0].click();', el)
+            } catch (jsError) {
+                throw { msg: 'cannot click ' + selector, error: clickError }
+            }
+        }
     }
 
     public async scrollClick(selector: string) {
@@ -120,20 +135,30 @@ export class Browser {
         return result
     }
 
-    public async setCokie(cookies: string[]) {
+    public async addCookie(cookies: Array<any>) {
         cookies.forEach(async (cookie) => {
-            var cookieToSet = await this.convertCookie(cookie)
-            var data: IWebDriverCookie = {
-                name: Object.keys(cookieToSet)[0],
-                value: cookieToSet[Object.keys(cookieToSet)[0]],
-                domain: cookieToSet['Domain'],
-                path: cookieToSet['Path'],
-                expiry: new Date(cookieToSet['Expires']).getTime(),
-                httpOnly: true,
-                secure: true
+            var cookieToSet: Object
+            var data: IWebDriverCookie
+            if (typeof cookie == 'string') {
+                cookieToSet = await this.convertCookie(cookie)
+                data = {
+                    name: Object.keys(cookieToSet)[0],
+                    value: cookieToSet[Object.keys(cookieToSet)[0]],
+                    domain: cookieToSet['Domain'],
+                    path: cookieToSet['Path'],
+                    expiry: new Date(cookieToSet['Expires']).getTime(),
+                    httpOnly: true,
+                    secure: true
+                }
+            } else if (typeof cookie == 'object') {
+                data = cookie
             }
             await this.driver.manage().addCookie(data)
         })
         await this.driver.navigate().refresh()
+    }
+
+    public async getCookie(cookie: string) {
+        return await this.driver.manage().getCookie(cookie)
     }
 }

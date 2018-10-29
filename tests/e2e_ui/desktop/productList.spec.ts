@@ -10,7 +10,8 @@ describe('View product list', () => {
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl + '/vn/subcategories/thoi-trang-nu-5b56d3448f0dd7c0480acd1c')
         // add cookie
-        await browser.setCokie(config.cookieEma)
+        // await browser.addCookie(config.cookieEma)
+        await pages.popup.closePopup()
     })
 
     test('Lazy load new items', async () => {
@@ -25,7 +26,7 @@ describe('View product list', () => {
 
     test('Get product card info', async () => {
         const info = await pages.productList.getProductInfo()
-        const product_info = await new Utils().makeGet(config.api.product + info.id)
+        const product_info = await new Utils().get(config.api.product + info.id)
         expect(info.brand).toEqual(product_info.data.brand.name)
         expect(info.title).toEqual(product_info.data.title)
         expect(info.retailPrice).toEqual(product_info.data.products[0].retailPrice)
