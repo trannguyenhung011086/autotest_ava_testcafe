@@ -40,9 +40,9 @@ export class Browser {
         await this.driver.sleep(time)
     }
 
-    public async waitForVisible(selector: string) {
+    public async waitForVisible(selector: string, timeout: number = 5000) {
         var els = await this.findElements(selector)
-        await this.driver.wait(until.elementIsVisible(els[0]), 5000)
+        await this.driver.wait(until.elementIsVisible(els[0]), timeout)
     }
 
     public async findElement(selector: string) {
