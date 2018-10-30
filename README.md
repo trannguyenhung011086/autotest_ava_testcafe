@@ -32,14 +32,23 @@ Use jest-junit reporter to export test result with Junit format to report folder
 
 *Note:* to use with CI, run `jest --ci --reporters=default --reporters=jest-junit`
 
-## Run with CI
-Refer to .gitlab-ci.yml to config run flow
-- start docker with Selenoid
-- run parallel test cases on: Chrome, Firefox, mobile, API (currently point to testing environment)
-- stop docker
+## Run with Gitlab CI
+- Refer to .gitlab-ci.yml to config run flow
+    - start docker with Selenoid
+    - run parallel test cases on: Chrome, Firefox, mobile, API (currently point to testing environment)
+    - stop docker
+- Tests will be triggered automatically for every commit to this repo.
+- Due to Selenium tests are not stable with shared Gitlab runner, we should use local Gitlab runner to test as alternative.
+    - install Gitlab runner on local: https://docs.gitlab.com/runner/install/
+    - register Gitlab runner: https://docs.gitlab.com/runner/register/index.html
+        - use url: https://gitlab.leflair.io/
+        - use token: jAHUz_91yJUkRJm8m_gG
+    - start Gitlab runner on local
 
-Tests will be triggered automatically for every commit to this repo.
+## Run with BuddyWorks CI:
+- Due to limited share gitlab runner for multiple projects, we can trigger pipelines with BuddyWorks CI via buddy.yml
+- BuddyWorks is Docker-based environment so we can make use of prepared images on their platform.
+- Tests will be triggered automatically for every commit to Gitlab repo thanks to webhook with BuddyWorks.
 
-## TODO:
-- schedule trigger testing for multiple environments on a daily basis
-- configure trigger testing when the application repo (www-next) has successful build
+## TO-DO
+Integrate test result with reportportal dashboard http://reportportal.io/
