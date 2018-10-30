@@ -1,15 +1,16 @@
 - pipeline: "E2E API Test on Testing"
   trigger_mode: "ON_EVERY_PUSH"
   ref_name: "refs/heads/*"
+  folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
   actions:
   - action: "Check https://www.testing.leflair.io status"
     type: "WEB"
     headers:
-    - name: "Content-Type"
-      value: "application/json"
     - name: "User-Agent"
       value: "Buddy"
+    - name: "Content-Type"
+      value: "application/json"
     text: "leflair"
     text_existence: true
     destination: "https://www.testing.leflair.io"
@@ -28,19 +29,19 @@
     mount_filesystem_path: "/buddy/leflair-auto-test"
     shell: "BASH"
     trigger_condition: "ALWAYS"
-
 - pipeline: "E2E Chrome Test on Testing"
   trigger_mode: "ON_EVERY_PUSH"
   ref_name: "refs/heads/*"
+  folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
   actions:
   - action: "Check https://www.testing.leflair.io status"
     type: "WEB"
     headers:
-    - name: "Content-Type"
-      value: "application/json"
     - name: "User-Agent"
       value: "Buddy"
+    - name: "Content-Type"
+      value: "application/json"
     text: "leflair"
     text_existence: true
     destination: "https://www.testing.leflair.io"
@@ -68,19 +69,19 @@
     mount_filesystem_path: "/buddy/leflair-auto-test"
     shell: "BASH"
     trigger_condition: "ALWAYS"
-
 - pipeline: "E2E Firefox Test on Testing"
   trigger_mode: "ON_EVERY_PUSH"
   ref_name: "refs/heads/*"
+  folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
   actions:
   - action: "Check https://www.testing.leflair.io status"
     type: "WEB"
     headers:
-    - name: "Content-Type"
-      value: "application/json"
     - name: "User-Agent"
       value: "Buddy"
+    - name: "Content-Type"
+      value: "application/json"
     text: "leflair"
     text_existence: true
     destination: "https://www.testing.leflair.io"
@@ -108,10 +109,10 @@
     mount_filesystem_path: "/buddy/leflair-auto-test"
     shell: "BASH"
     trigger_condition: "ALWAYS"
-
 - pipeline: "E2E Mobile Test on Testing"
   trigger_mode: "ON_EVERY_PUSH"
   ref_name: "refs/heads/*"
+  folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
   actions:
   - action: "Check https://www.testing.leflair.io status"
@@ -146,10 +147,10 @@
     mount_filesystem_path: "/buddy/leflair-auto-test"
     shell: "BASH"
     trigger_condition: "ALWAYS"
-
 - pipeline: "E2E API Test on Production (Daily)"
   trigger_mode: "SCHEDULED"
   ref_name: "master"
+  folder: "E2E Test on Production (Daily)"
   ref_type: "BRANCH"
   target_site_url: "https://www.leflair.vn"
   start_date: "2018-10-26T02:24:00.000Z"
@@ -180,10 +181,10 @@
     mount_filesystem_path: "/buddy/leflair-auto-test"
     shell: "BASH"
     trigger_condition: "ALWAYS"
-
 - pipeline: "E2E Chrome Test on Production (Daily)"
   trigger_mode: "SCHEDULED"
   ref_name: "master"
+  folder: "E2E Test on Production (Daily)"
   ref_type: "BRANCH"
   target_site_url: "https://www.leflair.vn"
   start_date: "2018-10-26T02:24:00.000Z"
@@ -192,10 +193,10 @@
   - action: "Check https://www.leflair.vn status"
     type: "WEB"
     headers:
-    - name: "Content-Type"
-      value: "application/json"
     - name: "User-Agent"
       value: "Buddy"
+    - name: "Content-Type"
+      value: "application/json"
     text: "leflair"
     text_existence: true
     destination: "https://www.leflair.vn"
@@ -223,10 +224,10 @@
     mount_filesystem_path: "/buddy/leflair-auto-test"
     shell: "BASH"
     trigger_condition: "ALWAYS"
-
 - pipeline: "E2E Firefox Test on Production (Daily)"
   trigger_mode: "SCHEDULED"
   ref_name: "master"
+  folder: "E2E Test on Production (Daily)"
   ref_type: "BRANCH"
   target_site_url: "https://www.leflair.vn"
   start_date: "2018-10-26T02:24:00.000Z"
@@ -266,10 +267,10 @@
     mount_filesystem_path: "/buddy/leflair-auto-test"
     shell: "BASH"
     trigger_condition: "ALWAYS"
-
 - pipeline: "E2E Mobile Test on Production (Daily)"
   trigger_mode: "SCHEDULED"
   ref_name: "master"
+  folder: "E2E Test on Production (Daily)"
   ref_type: "BRANCH"
   target_site_url: "https://www.leflair.vn"
   start_date: "2018-10-26T02:24:00.000Z"

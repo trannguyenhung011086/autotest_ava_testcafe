@@ -44,7 +44,7 @@ describe('Log in via email', () => {
     test('Log in with existing email', async () => {
         await pages.login.submitWithEmail(config.testAccount.email, config.testAccount.password)
         var success = await pages.login.getSuccessText()
-        expect(success).toMatch(/Chào mừng .+ quay trở lại!/)
+        expect(success).toMatch(/^Chào mừng.+quay trở lại!$/)
     })
 
     test('Log out successfully', async () => {
