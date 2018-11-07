@@ -10,8 +10,6 @@ describe('Log in via email', () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl + config.signin)
-        // add cookie
-        // await browser.addCookie(config.cookieEma)
         await pages.popup.closePopup()
     })
 
@@ -45,11 +43,6 @@ describe('Log in via email', () => {
         await pages.login.submitWithEmail(config.testAccount.email, config.testAccount.password)
         var success = await pages.login.getSuccessText()
         expect(success).toMatch(/^Chào mừng.+quay trở lại!$/)
-    })
-
-    test('Log out successfully', async () => {
-        await pages.header.logOut()
-        expect(await browser.isVisible(pages.header.registerBtn)).toBe(true)
     })
 
     afterAll(async () => {

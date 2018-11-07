@@ -9,8 +9,6 @@ describe('View product list', () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl + '/vn/subcategories/thoi-trang-nu-5b56d3448f0dd7c0480acd1c')
-        // add cookie
-        // await browser.addCookie(config.cookieEma)
         await pages.popup.closePopup()
     })
 

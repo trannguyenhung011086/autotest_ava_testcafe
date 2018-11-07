@@ -103,10 +103,11 @@ export class Browser {
         try {
             await el.click()
         } catch (clickError) {
+            // throw { msg: 'cannot click ' + selector, error: clickError }
             try {
                 await this.driver.executeScript('arguments[0].click();', el)
             } catch (jsError) {
-                throw { msg: 'cannot click ' + selector, error: clickError }
+                throw { msg: 'cannot click ' + selector, error: jsError }
             }
         }
     }

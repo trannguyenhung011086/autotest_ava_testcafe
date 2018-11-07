@@ -10,8 +10,6 @@ describe('Register via email', () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl + config.register)
-        // add cookie
-        // await browser.addCookie(config.cookieEma)
         await pages.popup.closePopup()
     })
 

@@ -11,22 +11,22 @@ export default class Popup extends Page {
     public popupWhiteCloseMobile = '.ematic_closeExitIntentOverlay_3'
     public popupRedCloseMobile = '.ematic_closeExitIntentOverlay_4'
 
+    // need to close Ematic popup which always display for new session on desktop
     public async closePopup() {
-        var el: WebElement
         try {
             await this.browser.waitForVisible(this.popupWhiteClose)
             await this.browser.click(this.popupWhiteClose)
-        } catch (e) {
+        } catch (error) {
             await this.browser.click(this.popupRedClose)
         }
     }
 
+    // need to close Ematic popup which always display for new session on mobile
     public async closePopupMobile() {
-        var el: WebElement
         try {
             await this.browser.waitForVisible(this.popupWhiteCloseMobile)
             await this.browser.click(this.popupWhiteCloseMobile)
-        } catch (e) {
+        } catch (error) {
             await this.browser.click(this.popupRedCloseMobile)
         }
     }

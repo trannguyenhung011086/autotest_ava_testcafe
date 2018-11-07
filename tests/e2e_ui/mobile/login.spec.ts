@@ -44,11 +44,6 @@ describe('Log in via email', () => {
         expect(success).toMatch(/^Chào mừng.+quay trở lại!$/)
     })
 
-    test('Log out successfully', async () => {
-        await pages.header.logOutMobile()
-        expect(await browser.isVisible(pages.header.registerBtnMobile)).toBe(true)
-    })
-
     afterAll(async () => {
         await browser.close()
     })

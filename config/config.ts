@@ -35,7 +35,8 @@ const config = {
         forgot: '/api/v2/account/forgot',
         password: '/api/v2/account/password',
         account: '/api/v2/account',
-        product: '/api/v2/product/'
+        product: '/api/v2/product/',
+        sales: '/api/v2/sales/'
     },
     testAccount: {
         email: 'test1234@test.com',
