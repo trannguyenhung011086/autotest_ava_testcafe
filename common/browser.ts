@@ -45,7 +45,7 @@ export class Browser {
         await this.driver.wait(until.elementIsVisible(els[0]), timeout)
     }
 
-    public async findElement(selector: string, timeout: number = 10000) {
+    public async findElement(selector: string, timeout: number = 15000) {
         await this.driver.wait(until.elementLocated(By.css(selector)), timeout)
             .catch(e => {
                 throw { msg: 'cannot locate element: ' + selector, error: e }
@@ -56,7 +56,7 @@ export class Browser {
             })
     }
 
-    public async findElements(selector: string, timeout: number = 10000) {
+    public async findElements(selector: string, timeout: number = 15000) {
         await this.driver.wait(until.elementsLocated(By.css(selector)), timeout)
             .catch(e => {
                 throw { msg: 'cannot locate elements: ' + selector, error: e }

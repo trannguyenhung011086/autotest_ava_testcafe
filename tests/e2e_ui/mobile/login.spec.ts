@@ -14,8 +14,10 @@ describe('Log in via email', () => {
 
     test('Use empty email and password', async () => {
         await pages.login.submitWithEmail('', '')
+        
         var error = await pages.login.getEmailError()
         expect(error).toEqual('Vui lòng nhập email.')
+
         error = await pages.login.getPasswordError()
         expect(error).toEqual('Vui lòng nhập password.')
     })

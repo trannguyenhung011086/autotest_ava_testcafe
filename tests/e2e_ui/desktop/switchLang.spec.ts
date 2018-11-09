@@ -13,12 +13,14 @@ describe('Switch language', () => {
 
     test('Switch to English', async() => {
         await pages.header.switchToEn()
+
         var active = await pages.header.getLangActive()
         expect(active).toEqual('En')
     })
 
     test('Switch to Vietnamese', async() => {
         await pages.header.switchToVn()
+        
         var active = await pages.header.getLangActive()
         expect(active).toEqual('Vn')
     })

@@ -13,6 +13,7 @@ describe('Switch language', () => {
 
     test('Switch to English', async() => {
         await pages.header.switchToEnMobile()
+
         var active = await pages.header.getLangActiveMobile()
         expect(active).toEqual('En')
     })
@@ -20,6 +21,7 @@ describe('Switch language', () => {
     test('Switch to Vietnamese', async() => {
         await browser.navigate(config.baseUrl)
         await pages.header.switchToVnMobile()
+        
         var active = await pages.header.getLangActiveMobile()
         expect(active).toEqual('Vn')
     })

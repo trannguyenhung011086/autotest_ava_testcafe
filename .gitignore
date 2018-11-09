@@ -1,5 +1,7 @@
 /node_modules
 /report
+/allure-report
+/allure-results
 junit.xml
 /selenoid_logs
 /logs

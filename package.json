@@ -6,7 +6,8 @@
     "setupTestFrameworkScriptFile": "./jest.setup.js",
     "reporters": [
       "default",
-      "jest-junit"
+      "jest-junit",
+      "jest-allure"
     ]
   },
   "version": "1.0.0",
@@ -14,14 +15,16 @@
   "main": "index.js",
   "scripts": {
     "start_selenium": "selenium-standalone install && selenium-standalone start",
-    "test_api": "JEST_SUITE_NAME=\"End 2 End API Testing\" JEST_JUNIT_OUTPUT=\"report/junit_api.xml\" node_modules/.bin/jest tests/e2e_api --verbose --detectOpenHandles",
-    "test_ui_chrome": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_chrome.xml\" SELENIUM_BROWSER=chrome node_modules/.bin/jest tests/e2e_ui/desktop --verbose --detectOpenHandles --runInBand",
-    "test_ui_firefox": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_firefox.xml\" SELENIUM_BROWSER=firefox node_modules/.bin/jest tests/e2e_ui/desktop --verbose --detectOpenHandles --runInBand",
-    "test_ui_mobile": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_mobile.xml\" node_modules/.bin/jest tests/e2e_ui/mobile --verbose --detectOpenHandles --runInBand",
-    "test_api_ci": "NODE_ENV=$NODE_ENV npm run test_api -- --ci --reporters=default --reporters=jest-junit",
-    "test_ui_chrome_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_chrome -- --ci --reporters=default --reporters=jest-junit",
-    "test_ui_firefox_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_firefox -- --ci --reporters=default --reporters=jest-junit",
-    "test_ui_mobile_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_mobile -- --ci --reporters=default --reporters=jest-junit"
+    "allure_generate": "allure generate -c && cp -r allure-report/history allure-results/",
+    "allure_open": "allure open allure-report/",
+    "test_api": "JEST_SUITE_NAME=\"End 2 End API Testing\" JEST_JUNIT_OUTPUT=\"report/junit_api.xml\" node_modules/.bin/jest tests/e2e_api --verbose --detectOpenHandles ; npm run allure_generate",
+    "test_ui_chrome": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_chrome.xml\" SELENIUM_BROWSER=chrome node_modules/.bin/jest tests/e2e_ui/desktop --verbose --detectOpenHandles --runInBand ; npm run allure_generate",
+    "test_ui_firefox": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_firefox.xml\" SELENIUM_BROWSER=firefox node_modules/.bin/jest tests/e2e_ui/desktop --verbose --detectOpenHandles --runInBand ; npm run allure_generate",
+    "test_ui_mobile": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_mobile.xml\" node_modules/.bin/jest tests/e2e_ui/mobile --verbose --detectOpenHandles --runInBand ; npm run allure_generate",
+    "test_api_ci": "NODE_ENV=$NODE_ENV npm run test_api -- --ci --reporters=default --reporters=jest-junit ; npm run allure_generate",
+    "test_ui_chrome_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_chrome -- --ci --reporters=default --reporters=jest-junit ; npm run allure_generate",
+    "test_ui_firefox_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_firefox -- --ci --reporters=default --reporters=jest-junit ; npm run allure_generate",
+    "test_ui_mobile_ci": "NODE_ENV=$NODE_ENV SELENIUM_REMOTE_URL=$SELENIUM_REMOTE_URL npm run test_ui_mobile -- --ci --reporters=default --reporters=jest-junit ; npm run allure_generate"
   },
   "author": "Hung Tran",
   "license": "ISC",
@@ -46,5 +49,8 @@
     "selenium-standalone": "^6.15.3",
     "jest-junit": "^5.2.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "allure-commandline": "^2.7.0",
+    "jest-allure": "^0.1.1"
+  }
 }

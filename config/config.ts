@@ -36,7 +36,18 @@ const config = {
         password: '/api/v2/account/password',
         account: '/api/v2/account',
         product: '/api/v2/product/',
-        sales: '/api/v2/sales/'
+        sales: '/api/v2/sales/',
+        upcomingSales: '/api/v2/home/upcoming',
+        todaySales: '/api/v2/home/today',
+        internationalSales: '/api/v2/home/international',
+        featuredSales: '/api/v2/home/featured',
+        potdSales: '/api/v2/home/potd',
+        bestSellers: '/api/v2/best-sellers/',
+        trendingApparel: '/api/menus/items/5b56d3448f0dd7c0480acd1b/sales/current?today=false&limit=5',
+        trendingBagsShoes: '/api/menus/items/5b56d3448f0dd7c0480acd1f/sales/current?today=false&limit=5',
+        trendingAccessories: '/api/menus/items/5b56d3448f0dd7c0480acd28/sales/current?today=false&limit=5',
+        trendingHealthBeauty: '/api/menus/items/5b56d3448f0dd7c0480acd32/sales/current?today=false&limit=5',
+        trendingHomeLifestyle: '/api/menus/items/5b62d1008f0dd7c0480acd5b/sales/current?today=false&limit=5'
     },
     testAccount: {
         email: 'test1234@test.com',

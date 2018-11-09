@@ -1,5 +1,4 @@
 import { Browser, Page } from '../common'
-import { WebElement } from 'selenium-webdriver';
 
 export default class Popup extends Page {
     constructor(browser: Browser) {
@@ -12,9 +11,9 @@ export default class Popup extends Page {
     public popupRedCloseMobile = '.ematic_closeExitIntentOverlay_4'
 
     // need to close Ematic popup which always display for new session on desktop
-    public async closePopup() {
+    public async closePopup(timeout = 5000) {
         try {
-            await this.browser.waitForVisible(this.popupWhiteClose)
+            await this.browser.waitForVisible(this.popupWhiteClose, timeout)
             await this.browser.click(this.popupWhiteClose)
         } catch (error) {
             await this.browser.click(this.popupRedClose)
@@ -22,9 +21,9 @@ export default class Popup extends Page {
     }
 
     // need to close Ematic popup which always display for new session on mobile
-    public async closePopupMobile() {
+    public async closePopupMobile(timeout = 5000) {
         try {
-            await this.browser.waitForVisible(this.popupWhiteCloseMobile)
+            await this.browser.waitForVisible(this.popupWhiteCloseMobile, timeout)
             await this.browser.click(this.popupWhiteCloseMobile)
         } catch (error) {
             await this.browser.click(this.popupRedCloseMobile)

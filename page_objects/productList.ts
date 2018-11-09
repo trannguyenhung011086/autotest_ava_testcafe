@@ -36,7 +36,7 @@ export default class ProductList extends Page {
         const salePrice = await this.browser.getText(`div:nth-child(${index}) > a > ${this.productCard} > .info > .price > .sale`)
         const parsedSalePrice = parseInt(salePrice.replace(/\.|₫/g, ''))
         const img = await this.browser.getAttribute(`div:nth-child(${index}) > a > ${this.productCard} > .image > div > div > div > img`, 'src')
-        const id = url.match(/(?:-)([\w|\d]{24})\??/)[1]
+        const productId = url.match(/(?:-)([\w|\d]{24})\??/)[1]
         const info = {
             url: url,
             brand: brand,
@@ -44,7 +44,7 @@ export default class ProductList extends Page {
             retailPrice: parsedRetailPrice,
             salePrice: parsedSalePrice,
             img: img,
-            id: id
+            id: productId
         }
         return info
     }

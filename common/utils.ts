@@ -47,4 +47,55 @@ export class Utils {
         const settings = this.settings
         return await axios.get(api, settings)
     }
+
+    public async getSales(saleType: string) {
+        const r = await this.get(saleType)
+        return r.data
+    }
+
+    public async getSaleInfo(saleId: string) {
+        const r = await this.get(config.api.sales + saleId)
+        if (r.status != 200) {
+            throw r.data
+        }
+        return r.data
+    }
+
+    public async getProductInfo(productId: string) {
+        const r = await this.get(config.api.product + productId)
+        return r.data
+    }
+
+    public async getProducts(saleType: string, productType?: string) {
+        const sales = await this.getSales(saleType)
+        let domestic = []
+        let international = []
+
+        sales.forEach(sale => {
+            if (sale['international'] == false) {
+                domestic.push(sale)
+            } else if (sale['international'] == true) {
+                international.push(sale)
+            }
+        })
+
+        if (productType == 'international' || saleType == config.api.internationalSales) {
+            const saleInfo = await this.getSaleInfo(international[0]['id'])
+            return saleInfo['products']
+        } else {
+            const saleInfo = await this.getSaleInfo(domestic[1]['id'])
+            return saleInfo['products']
+        }
+    }
+
+    public async getSaleWithManyProducts(saleType: string, amount: number = 90) {
+        const sales = await this.getSales(saleType)
+        for (let sale of sales) {
+            var saleInfo = await this.getSaleInfo(sale['id'])
+            var products: any[] = saleInfo['products']
+            if (products.length > amount) {
+                return sale
+            }
+        }
+    }
 }

@@ -30,10 +30,14 @@ e.g. use `SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub npm run test_ui_chrom
     - Start server: `docker run -d --name selenoid -p 4444:4444 -v /var/run/docker.sock:/var/run/docker.sock -v $PWD/config/:/etc/selenoid/:ro aerokube/selenoid:latest-release`
 - Point Selenium test run to `http://localhost:4444/wd/hub` as we run with normal Selenium server
 
-## Reporter
+## Reporter Junit
 Use jest-junit reporter to export test result with Junit format to report folder
-
 *Notes* to use with CI, run `jest --ci --reporters=default --reporters=jest-junit`
+
+## Reporter Allure
+Use Allure Reporter to generate HTML report
+- generate `npm run allure_generate`
+- open report on browser `npm run allure_open`
 
 ## Run with Gitlab CI
 - Refer to .gitlab-ci.yml to config run flow
@@ -55,3 +59,16 @@ Use jest-junit reporter to export test result with Junit format to report folder
 
 ## TO-DO
 Integrate test result with reportportal dashboard http://reportportal.io/
+e.g. `$ ls foo.xml` 
+foo.xml
+`$ zip foo.zip foo.xml`
+  adding: foo.xml (deflated 47%)
+`$ curl -X POST --header 'Content-Type: multipart/form-data' --header 'Accept: application/json' --header 'Authorization: bearer aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' -F file=@foo.zip 'http://192.168.1.224:8080/api/v1/foo/launch/import'`
+{"msg":"Launch with id = 5be4de6842eba40001b30534 is successfully imported."}
+
+Need to configure UAT (authorization), API, JIRA, RALLY in docker-compose.yml for reportportal
+- rp.mongo.host=XXX
+ - rp.mongo.port=27017
+ - rp.mongo.dbName=reportportal
+ - rp.mongo.user=XXX
+ - rp.mongo.password=XXX
