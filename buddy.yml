@@ -5,8 +5,15 @@
   ref_type: "WILDCARD"
   target_site_url: "https://www.staging.leflair.io"
   actions:
-  - action: "Ping https://www.staging.leflair.io/api/v2/home"
-    type: "PING"
+  - action: "Check https://www.staging.leflair.io/api/v2/home status"
+    type: "WEB"
+    headers:
+    - name: "Content-Type"
+      value: "application/json"
+    - name: "User-Agent"
+      value: "Buddy"
+    text: "featured"
+    text_existence: true
     destination: "https://www.staging.leflair.io/api/v2/home"
     trigger_condition: "ALWAYS"
   - action: "NODE_ENV=staging | test_api"
@@ -181,9 +188,16 @@
   ref_type: "BRANCH"
   target_site_url: "https://www.leflair.vn"
   actions:
-  - action: "Ping https://www.leflair.vn/api/v2/home"
-    type: "PING"
-    destination: "https://www.leflair.vn/api/v2/home"
+  - action: "Check https://www.staging.leflair.io/api/v2/home status"
+    type: "WEB"
+    headers:
+    - name: "User-Agent"
+      value: "Buddy"
+    - name: "Content-Type"
+      value: "application/json"
+    text: "featured"
+    text_existence: true
+    destination: "https://www.staging.leflair.io/api/v2/home"
     trigger_condition: "ALWAYS"
   - action: "NODE_ENV=production | test_api"
     type: "BUILD"
