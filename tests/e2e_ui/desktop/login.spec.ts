@@ -5,7 +5,7 @@ let browser: Browser
 let pages: AllPages
 import * as faker from 'faker'
 
-describe('Log in via email', () => {
+describe('Log in via email on ' + config.browser + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)

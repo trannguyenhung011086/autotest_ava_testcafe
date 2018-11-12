@@ -3,7 +3,7 @@ import { Utils } from '../../common'
 let request = new Utils()
 import * as faker from 'faker'
 
-describe('Forgot password API', () => {
+describe('Forgot password API ' + config.baseUrl, () => {
     test('POST / empty email', async () => {
         let response = await request.post(config.api.forgot, { "email": "" })
         expect(response.status).toEqual(400)

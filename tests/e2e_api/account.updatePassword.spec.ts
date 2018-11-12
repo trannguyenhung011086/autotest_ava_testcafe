@@ -3,7 +3,7 @@ import { Utils } from '../../common'
 let request = new Utils()
 import * as faker from 'faker'
 
-describe('Update password API', () => {
+describe('Update password API '  + config.baseUrl, () => {
     var cookie: string
     beforeAll(async () => {
         cookie = await request.getLogInCookie()

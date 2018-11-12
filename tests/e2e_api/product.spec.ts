@@ -2,7 +2,7 @@ import config from '../../config/config'
 import { Utils } from '../../common'
 let request = new Utils()
 
-describe('Product API', () => {
+describe('Product API '  + config.baseUrl, () => {
     test('GET / product info - wrong product ID', async () => {
         let response = await request.get(config.api.product + '5b0fd3bf1e73c50001f6fcee')
         expect(response.status).toEqual(500)

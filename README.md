@@ -1,5 +1,7 @@
 *Precondition*
+- Install latest node v10
 - Run `npm install` to install all dependencies specified in package.json
+- *optional* Set up debug node js for jest with Visual Studio Code https://github.com/Microsoft/vscode-recipes/tree/master/debugging-jest-tests
 
 ## E2E API testing
 Use axios http request libray and jest framework to test APIs
@@ -35,9 +37,9 @@ Use jest-junit reporter to export test result with Junit format to report folder
 *Notes* to use with CI, run `jest --ci --reporters=default --reporters=jest-junit`
 
 ## Reporter Allure
-Use Allure Reporter to generate HTML report
-- generate `npm run allure_generate`
-- open report on browser `npm run allure_open`
+Use Allure Reporter to generate HTML report with jest-allure (https://github.com/zaqqaz/jest-allure)
+- Allure result XML will be generated after running test with jest
+- run `allure serve` to see report on browser
 
 ## Run with Gitlab CI
 - Refer to .gitlab-ci.yml to config run flow

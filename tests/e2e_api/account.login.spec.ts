@@ -3,7 +3,7 @@ import { Utils } from '../../common'
 let request = new Utils()
 import * as faker from 'faker'
 
-describe('Login API', () => {
+describe('Login API '  + config.baseUrl, () => {
     test('POST / wrong email', async () => {
         let response = await request.post(config.api.login,
             {

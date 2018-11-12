@@ -1,9 +1,3 @@
-
-# cache:
-#   key: ${CI_COMMIT_REF_SLUG}
-#   paths:
-#   - node_modules/
-
 stages:
   - start
   - test
@@ -22,12 +16,8 @@ start:
 
 test_api:
   stage: test
-  # before_script:
-  #   - echo `pwd`
-  #   - npm install
   script:
-    # - npm run test_api -- --ci --reporters=default --reporters=jest-junit
-    - docker run -e NODE_ENV=testing -v `pwd`/:/app/report/ testapp npm run test_api_ci
+    - docker run -e NODE_ENV=staging -v `pwd`/:/app/report/ testapp npm run test_api_ci
 
   artifacts:
     expire_in: 1 week
@@ -38,12 +28,8 @@ test_api:
 
 test_ui_chrome:  
   stage: test
-  # before_script:
-  #   - echo `pwd`
-  #   - npm install
   script:
-    # - SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub npm run test_ui_chrome -- --ci --reporters=default --reporters=jest-junit
-    - docker run --link selenoid -e NODE_ENV=testing -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
+    - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
   artifacts:
     expire_in: 1 week
     reports:
@@ -53,12 +39,8 @@ test_ui_chrome:
 
 test_ui_firefox:  
   stage: test
-  # before_script:
-  #   - echo `pwd`
-  #   - npm install
   script:
-    # - SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub npm run test_ui_firefox -- --ci --reporters=default --reporters=jest-junit
-    - docker run --link selenoid -e NODE_ENV=testing -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
+    - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
   artifacts:
     expire_in: 1 week
     reports:
@@ -68,12 +50,8 @@ test_ui_firefox:
 
 test_ui_mobile:  
   stage: test
-  # before_script:
-  #   - echo `pwd`
-  #   - npm install
   script:
-    # - SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub npm run test_ui_mobile -- --ci --reporters=default --reporters=jest-junit
-    - docker run --link selenoid -e NODE_ENV=testing -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
+    - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
   artifacts:
     expire_in: 1 week
     reports:
@@ -83,11 +61,7 @@ test_ui_mobile:
 
 test_api_prod:on-schedule:
   stage: test_prod
-  # before_script:
-  #   - echo `pwd`
-  #   - npm install
   script:
-    # - NODE_ENV=production npm run test_api -- --ci --reporters=default --reporters=jest-junit
     - docker run -e NODE_ENV=production -v `pwd`/:/app/report/ testapp npm run test_api_ci
   artifacts:
     expire_in: 1 week
@@ -98,11 +72,7 @@ test_api_prod:on-schedule:
 
 test_ui_chrome_prod:on-schedule:
   stage: test_prod
-  # before_script:
-  #   - echo `pwd`
-  #   - npm install
   script:
-    # - NODE_ENV=production SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub npm run test_ui_chrome -- --ci --reporters=default --reporters=jest-junit
     - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
   artifacts:
     expire_in: 1 week
@@ -113,11 +83,7 @@ test_ui_chrome_prod:on-schedule:
 
 test_ui_firefox_prod:on-schedule:
   stage: test_prod
-  # before_script:
-  #   - echo `pwd`
-  #   - npm install
   script:
-  # - NODE_ENV=production SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub npm run test_ui_firefox -- --ci --reporters=default --reporters=jest-junit
     - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
   artifacts:
     expire_in: 1 week
@@ -128,11 +94,7 @@ test_ui_firefox_prod:on-schedule:
 
 test_ui_mobile_prod:on-schedule: 
   stage: test_prod
-  # before_script:
-  #   - echo `pwd`
-  #   - npm install
   script:
-    # - NODE_ENV=production SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub npm run test_ui_mobile -- --ci --reporters=default --reporters=jest-junit
       - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
   artifacts:
     expire_in: 1 week

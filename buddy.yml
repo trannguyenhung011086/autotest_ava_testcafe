@@ -1,21 +1,15 @@
-- pipeline: "E2E API Test on Testing"
+- pipeline: "E2E API Test on Staging"
   trigger_mode: "ON_EVERY_PUSH"
   ref_name: "refs/heads/*"
   folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
+  target_site_url: "https://www.staging.leflair.io"
   actions:
-  - action: "Check https://www.testing.leflair.io status"
-    type: "WEB"
-    headers:
-    - name: "User-Agent"
-      value: "Buddy"
-    - name: "Content-Type"
-      value: "application/json"
-    text: "leflair"
-    text_existence: true
-    destination: "https://www.testing.leflair.io"
+  - action: "Ping https://www.staging.leflair.io/api/v2/home"
+    type: "PING"
+    destination: "https://www.staging.leflair.io/api/v2/home"
     trigger_condition: "ALWAYS"
-  - action: "NODE_ENV=testing | test_api"
+  - action: "NODE_ENV=staging | test_api"
     type: "BUILD"
     working_directory: "/buddy/leflair-auto-test"
     docker_image_name: "library/node"
@@ -23,7 +17,7 @@
     execute_commands:
     - "# yarn install"
     - "npm install"
-    - "NODE_ENV=testing npm run test_api -- --ci --reporters=default --reporters=jest-junit"
+    - "NODE_ENV=staging npm run test_api -- --ci --reporters=default --reporters=jest-junit"
     setup_commands:
     - "npm install -g gulp grunt-cli"
     mount_filesystem_path: "/buddy/leflair-auto-test"
@@ -36,24 +30,25 @@
     parse_mode: "MARKDOWN"
     trigger_condition: "ALWAYS"
     integration_id: 40663
-- pipeline: "E2E Chrome Test on Testing"
+- pipeline: "E2E Chrome Test on Staging"
   trigger_mode: "ON_EVERY_PUSH"
   ref_name: "refs/heads/*"
   folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
+  target_site_url: "https://www.staging.leflair.io"
   actions:
-  - action: "Check https://www.testing.leflair.io status"
+  - action: "Check https://www.staging.leflair.io status"
     type: "WEB"
     headers:
-    - name: "User-Agent"
-      value: "Buddy"
     - name: "Content-Type"
       value: "application/json"
+    - name: "User-Agent"
+      value: "Buddy"
     text: "leflair"
     text_existence: true
-    destination: "https://www.testing.leflair.io"
+    destination: "https://www.staging.leflair.io"
     trigger_condition: "ALWAYS"
-  - action: "NODE_ENV=testing | test_ui_chrome"
+  - action: "NODE_ENV=staging | test_ui_chrome"
     type: "BUILD"
     working_directory: "/buddy/leflair-auto-test"
     docker_image_name: "library/node"
@@ -61,7 +56,7 @@
     execute_commands:
     - "# yarn install"
     - "npm install"
-    - "NODE_ENV=testing SELENIUM_REMOTE_URL=http://selenium-ch:4444/wd/hub npm run test_ui_chrome -- --ci --reporters=default --reporters=jest-junit"
+    - "NODE_ENV=staging SELENIUM_REMOTE_URL=http://selenium-ch:4444/wd/hub npm run test_ui_chrome -- --ci --reporters=default --reporters=jest-junit"
     setup_commands:
     - "npm install -g gulp grunt-cli"
     services:
@@ -83,13 +78,14 @@
     parse_mode: "MARKDOWN"
     trigger_condition: "ALWAYS"
     integration_id: 40663
-- pipeline: "E2E Firefox Test on Testing"
+- pipeline: "E2E Firefox Test on Staging"
   trigger_mode: "ON_EVERY_PUSH"
   ref_name: "refs/heads/*"
   folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
+  target_site_url: "https://www.staging.leflair.io"
   actions:
-  - action: "Check https://www.testing.leflair.io status"
+  - action: "Check https://www.staging.leflair.io status"
     type: "WEB"
     headers:
     - name: "Content-Type"
@@ -98,9 +94,9 @@
       value: "Buddy"
     text: "leflair"
     text_existence: true
-    destination: "https://www.testing.leflair.io"
+    destination: "https://www.staging.leflair.io"
     trigger_condition: "ALWAYS"
-  - action: "NODE_ENV=testing | test_ui_firefox"
+  - action: "NODE_ENV=staging | test_ui_firefox"
     type: "BUILD"
     working_directory: "/buddy/leflair-auto-test"
     docker_image_name: "library/node"
@@ -108,7 +104,7 @@
     execute_commands:
     - "# yarn install"
     - "npm install"
-    - "NODE_ENV=testing SELENIUM_REMOTE_URL=http://selenium-ff:4444/wd/hub npm run test_ui_firefox -- --ci --reporters=default --reporters=jest-junit"
+    - "NODE_ENV=staging SELENIUM_REMOTE_URL=http://selenium-ff:4444/wd/hub npm run test_ui_firefox -- --ci --reporters=default --reporters=jest-junit"
     setup_commands:
     - "npm install -g gulp grunt-cli"
     services:
@@ -130,13 +126,14 @@
     parse_mode: "MARKDOWN"
     trigger_condition: "ALWAYS"
     integration_id: 40663
-- pipeline: "E2E Mobile Test on Testing"
+- pipeline: "E2E Mobile Test on Staging"
   trigger_mode: "ON_EVERY_PUSH"
   ref_name: "refs/heads/*"
   folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
+  target_site_url: "https://www.staging.leflair.io"
   actions:
-  - action: "Check https://www.testing.leflair.io status"
+  - action: "Check https://www.staging.leflair.io status"
     type: "WEB"
     headers:
     - name: "Content-Type"
@@ -145,9 +142,9 @@
       value: "Buddy"
     text: "leflair"
     text_existence: true
-    destination: "https://www.testing.leflair.io"
+    destination: "https://www.staging.leflair.io"
     trigger_condition: "ALWAYS"
-  - action: "NODE_ENV=testing | test_ui_mobile"
+  - action: "NODE_ENV=staging | test_ui_mobile"
     type: "BUILD"
     working_directory: "/buddy/leflair-auto-test"
     docker_image_name: "library/node"
@@ -155,7 +152,7 @@
     execute_commands:
     - "# yarn install"
     - "npm install"
-    - "NODE_ENV=testing SELENIUM_REMOTE_URL=http://selenium-ch:4444/wd/hub SELENIUM_BROWSER=chrome npm run test_ui_mobile -- --ci --reporters=default --reporters=jest-junit"
+    - "NODE_ENV=staging SELENIUM_REMOTE_URL=http://selenium-ch:4444/wd/hub SELENIUM_BROWSER=chrome npm run test_ui_mobile -- --ci --reporters=default --reporters=jest-junit"
     setup_commands:
     - "npm install -g gulp grunt-cli"
     services:
@@ -165,6 +162,8 @@
       connection:
         host: "selenium-ch"
         port: 4444
+      plugins: []
+      accounts: []
     mount_filesystem_path: "/buddy/leflair-auto-test"
     shell: "BASH"
     trigger_condition: "ALWAYS"
@@ -182,16 +181,9 @@
   ref_type: "BRANCH"
   target_site_url: "https://www.leflair.vn"
   actions:
-  - action: "Check https://www.leflair.vn status"
-    type: "WEB"
-    headers:
-    - name: "User-Agent"
-      value: "Buddy"
-    - name: "Content-Type"
-      value: "application/json"
-    text: "leflair"
-    text_existence: true
-    destination: "https://www.leflair.vn"
+  - action: "Ping https://www.leflair.vn/api/v2/home"
+    type: "PING"
+    destination: "https://www.leflair.vn/api/v2/home"
     trigger_condition: "ALWAYS"
   - action: "NODE_ENV=production | test_api"
     type: "BUILD"
@@ -224,10 +216,10 @@
   - action: "Check https://www.leflair.vn status"
     type: "WEB"
     headers:
-    - name: "User-Agent"
-      value: "Buddy"
     - name: "Content-Type"
       value: "application/json"
+    - name: "User-Agent"
+      value: "Buddy"
     text: "leflair"
     text_existence: true
     destination: "https://www.leflair.vn"
@@ -272,10 +264,10 @@
   - action: "Check https://www.leflair.vn status"
     type: "WEB"
     headers:
-    - name: "User-Agent"
-      value: "Buddy"
     - name: "Content-Type"
       value: "application/json"
+    - name: "User-Agent"
+      value: "Buddy"
     text: "leflair"
     text_existence: true
     destination: "https://www.leflair.vn"

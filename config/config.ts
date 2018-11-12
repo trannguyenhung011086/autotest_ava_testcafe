@@ -25,7 +25,7 @@ if (process.env.NODE_ENV == 'testing') {
 }
 
 const config = {
-    baseUrl: baseUrl || 'https://www.testing.leflair.io',
+    baseUrl: baseUrl || 'https://www.staging.leflair.io',
     signin: '/auth/signin',
     register: '/auth/register',
     api: {
@@ -35,6 +35,7 @@ const config = {
         forgot: '/api/v2/account/forgot',
         password: '/api/v2/account/password',
         account: '/api/v2/account',
+        home: '/api/v2/home',
         product: '/api/v2/product/',
         sales: '/api/v2/sales/',
         upcomingSales: '/api/v2/home/upcoming',

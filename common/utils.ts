@@ -83,7 +83,7 @@ export class Utils {
             const saleInfo = await this.getSaleInfo(international[0]['id'])
             return saleInfo['products']
         } else {
-            const saleInfo = await this.getSaleInfo(domestic[1]['id'])
+            const saleInfo = await this.getSaleInfo(domestic[0]['id'])
             return saleInfo['products']
         }
     }

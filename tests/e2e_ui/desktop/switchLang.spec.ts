@@ -4,7 +4,7 @@ import { AllPages } from '../../../page_objects'
 let browser: Browser
 let pages: AllPages
 
-describe('Switch language', () => {
+describe('Switch language on ' + config.browser + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)

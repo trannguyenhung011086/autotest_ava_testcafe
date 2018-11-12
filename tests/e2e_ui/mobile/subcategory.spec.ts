@@ -4,7 +4,7 @@ import { AllPages } from '../../../page_objects'
 let browser: Browser
 let pages: AllPages
 
-describe('View subcategory page', () => {
+describe('View subcategory page on ' + config.device + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)

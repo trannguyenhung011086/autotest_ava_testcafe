@@ -6,7 +6,7 @@ let pages: AllPages
 let api: Utils
 let products: any[]
 
-describe('View product details', () => {
+describe('View product details on ' + config.device + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
