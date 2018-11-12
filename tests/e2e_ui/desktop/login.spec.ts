@@ -51,6 +51,10 @@ describe('Log in via email on ' + config.browser + ' - ' + config.baseUrl, () =>
         expect(success).toMatch(/^Chào mừng.+quay trở lại!$/)
     })
 
+    test('Log out sucessfully', async () => {
+        // TO DO
+    })
+
     afterAll(async () => {
         await browser.close()
     })
