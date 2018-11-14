@@ -10,7 +10,7 @@ describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
         api = new Utils()
-        const sales = await api.getSaleWithManyProducts(config.api.trendingApparel)
+        const sales = await api.getSaleWithManyProducts(config.api.currentSales)
         await browser.navigate(config.baseUrl + '/vn/sales/' + sales.slug)
         await pages.popup.closePopup()
     })
@@ -29,6 +29,7 @@ describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
         const numOfItems = await pages.productList.getNumItems()
         const filterNum = await pages.productList.getFilterNum()
         expect(numOfItems).toEqual(filterNum)
+        expect(numOfItems).toBeGreaterThan(60)
     })
 
     afterAll(async () => {

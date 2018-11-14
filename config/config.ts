@@ -40,6 +40,7 @@ const config = {
         sales: '/api/v2/sales/',
         upcomingSales: '/api/v2/home/upcoming',
         todaySales: '/api/v2/home/today',
+        currentSales: '/api/v2/home/current',
         internationalSales: '/api/v2/home/international',
         featuredSales: '/api/v2/home/featured',
         potdSales: '/api/v2/home/potd',

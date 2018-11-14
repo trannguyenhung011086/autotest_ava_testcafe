@@ -2,7 +2,7 @@ import config from '../../config/config'
 import { Utils } from '../../common'
 let request = new Utils()
 
-describe('Sales API '  + config.baseUrl, () => {
+describe('Sales API '  + config.baseUrl + config.api.sales + '/<saleID>', () => {
     test('GET / sales info - wrong sale ID', async () => {
         let response = await request.get(config.api.sales + 'invalid-5bd6c3137cf0476b22488d2')
         expect(response.status).toEqual(404)

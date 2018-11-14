@@ -103,12 +103,18 @@ export class Utils {
 
     public async getSaleWithManyProducts(saleType: string, amount: number = 90) {
         const sales = await this.getSales(saleType)
+        var matched: Model.SalesModel
         for (let sale of sales) {
             var saleInfo = await this.getSaleInfo(sale['id'])
             var products = saleInfo.products
             if (products.length > amount) {
-                return sale
+                matched = sale
+                break
             }
         }
+        if (matched == undefined) {
+            throw `There is no sale with ${amount} products!`
+        }
+        return matched
     }
 }

@@ -29,6 +29,7 @@ describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
         const numOfItems = await pages.productList.getNumItems()
         const filterNum = await pages.productList.getFilterNum()
         expect(numOfItems).toEqual(filterNum)
+        expect(numOfItems).toBeGreaterThan(60)
     })
 
     afterAll(async () => {
