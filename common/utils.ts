@@ -1,4 +1,5 @@
 import config from '../config/config'
+import * as Model from './interface'
 import axios, { AxiosRequestConfig } from 'axios'
 
 export class Utils {
@@ -48,12 +49,15 @@ export class Utils {
         return await axios.get(api, settings)
     }
 
-    public async getSales(saleType: string) {
+    public async getSales(saleType: string): Promise<Model.SalesModel[]> {
         const r = await this.get(saleType)
+        if (r.status != 200) {
+            throw r.data
+        }
         return r.data
     }
 
-    public async getSaleInfo(saleId: string) {
+    public async getSaleInfo(saleId: string): Promise<Model.SaleInfoModel> {
         const r = await this.get(config.api.sales + saleId)
         if (r.status != 200) {
             throw r.data
@@ -61,30 +65,39 @@ export class Utils {
         return r.data
     }
 
-    public async getProductInfo(productId: string) {
+    public async getProductInfo(productId: string): Promise<Model.ProductInfoModel> {
         const r = await this.get(config.api.product + productId)
+        if (r.status != 200) {
+            throw r.data
+        }
         return r.data
     }
 
-    public async getProducts(saleType: string, productType?: string) {
+    public async getProducts(saleType: string, productType?: string): Promise<Model.Products[]> {
         const sales = await this.getSales(saleType)
         let domestic = []
         let international = []
 
         sales.forEach(sale => {
-            if (sale['international'] == false) {
+            if (sale.international == false) {
                 domestic.push(sale)
-            } else if (sale['international'] == true) {
+            } else if (sale.international == true) {
                 international.push(sale)
             }
         })
 
         if (productType == 'international' || saleType == config.api.internationalSales) {
+            if (international.length == 0) {
+                throw 'There is no international sale!'
+            }
             const saleInfo = await this.getSaleInfo(international[0]['id'])
-            return saleInfo['products']
+            return saleInfo.products
         } else {
+            if (domestic.length == 0) {
+                throw 'There is no domestic sale!'
+            }
             const saleInfo = await this.getSaleInfo(domestic[0]['id'])
-            return saleInfo['products']
+            return saleInfo.products
         }
     }
 
@@ -92,7 +105,7 @@ export class Utils {
         const sales = await this.getSales(saleType)
         for (let sale of sales) {
             var saleInfo = await this.getSaleInfo(sale['id'])
-            var products: any[] = saleInfo['products']
+            var products = saleInfo.products
             if (products.length > amount) {
                 return sale
             }

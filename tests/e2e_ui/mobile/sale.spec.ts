@@ -7,7 +7,7 @@ let api: Utils
 
 describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
-        browser = new Browser(config.browser)
+        browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
         api = new Utils()
         const sales = await api.getSaleWithManyProducts(config.api.trendingApparel)

@@ -4,7 +4,6 @@ import { AllPages } from '../../../page_objects'
 let browser: Browser
 let pages: AllPages
 let api: Utils
-let products: any[]
 
 describe('View product details on ' + config.browser + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
@@ -16,23 +15,28 @@ describe('View product details on ' + config.browser + ' - ' + config.baseUrl, (
     })
 
     test('View domestic product', async () => {
-        products = await api.getProducts(config.api.todaySales)
-        await browser.navigate(config.baseUrl + '/vn/products/' + products[0]['slug'])
+        const products = await api.getProducts(config.api.todaySales)
+        await browser.navigate(config.baseUrl + '/vn/products/' + products[0].slug)
     })
 
     test('View international product', async () => {
-        products = await api.getProducts(config.api.internationalSales)
-        await browser.navigate(config.baseUrl + '/vn/products/' + products[0]['slug'])
+        const products = await api.getProducts(config.api.internationalSales)
+        await browser.navigate(config.baseUrl + '/vn/products/' + products[0].slug)
     })
 
     test('View featured domestic product', async () => {
-        products = await api.getProducts(config.api.featuredSales)
-        await browser.navigate(config.baseUrl + '/vn/products/' + products[0]['slug'])
+        const products = await api.getProducts(config.api.featuredSales)
+        await browser.navigate(config.baseUrl + '/vn/products/' + products[0].slug)
+    })
+
+    test('View featured international product', async () => {
+        const products = await api.getProducts(config.api.featuredSales, 'international')
+        await browser.navigate(config.baseUrl + '/vn/products/' + products[0].slug)
     })
 
     test('View POTD product', async () => {
-        products = await api.getProducts(config.api.potdSales)
-        await browser.navigate(config.baseUrl + '/vn/products/' + products[0]['slug'])
+        const products = await api.getProducts(config.api.potdSales)
+        await browser.navigate(config.baseUrl + '/vn/products/' + products[0].slug)
     })
 
     afterAll(async () => {
