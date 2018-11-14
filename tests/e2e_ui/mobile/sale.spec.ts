@@ -10,9 +10,8 @@ describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
         api = new Utils()
-        const sales = await api.getSaleWithManyProducts(config.api.trendingApparel)
+        const sales = await api.getSaleWithManyProducts(config.api.currentSales)
         await browser.navigate(config.baseUrl + '/vn/sales/' + sales.slug)
-        await pages.popup.closePopup()
     })
 
     test('Get product card info', async () => {
