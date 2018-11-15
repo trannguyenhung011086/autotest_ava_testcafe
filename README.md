@@ -1,6 +1,7 @@
 *Precondition*
 - Install latest node v10
 - Run `npm install` to install all dependencies specified in package.json
+- Import `jest-extended` to test case to extend Jest matcher
 - *optional* Set up debug node js for jest with Visual Studio Code https://github.com/Microsoft/vscode-recipes/tree/master/debugging-jest-tests
 
 ## E2E API testing

@@ -1,6 +1,7 @@
 import { Browser, Utils } from '../../../common'
 import config from '../../../config/config'
 import { AllPages } from '../../../page_objects'
+import 'jest-extended'
 let browser: Browser
 let pages: AllPages
 let api: Utils

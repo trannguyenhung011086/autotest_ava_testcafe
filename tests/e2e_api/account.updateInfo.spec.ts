@@ -1,7 +1,7 @@
 import config from '../../config/config'
 import { Utils } from '../../common'
+import 'jest-extended'
 let request = new Utils()
-import * as faker from 'faker'
 
 describe('Update info API '  + config.baseUrl + config.api.account, () => {
     var cookie: string

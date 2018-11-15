@@ -57,6 +57,14 @@ export class Utils {
         return r.data
     }
 
+    public async getUpcomingSales(): Promise<Model.UpcomingSalesModel[]> {
+        const r = await this.get(config.api.upcomingSales)
+        if (r.status != 200) {
+            throw r.data
+        }
+        return r.data
+    }
+
     public async getSaleInfo(saleId: string): Promise<Model.SaleInfoModel> {
         const r = await this.get(config.api.sales + saleId)
         if (r.status != 200) {
@@ -116,5 +124,33 @@ export class Utils {
             throw `There is no sale with ${amount} products!`
         }
         return matched
+    }
+
+    public async getBestSellers(): Promise<Model.BestSellers[]> {
+        const r = await this.get(config.api.bestSellers)
+        if (r.status != 200) {
+            throw r.data
+        }
+        return r.data
+    }
+
+    public async getProductWithSizes(saleType: string): Promise<Model.ProductInfoModel> {
+        let products = await this.getProducts(saleType)
+        for (let product of products) {
+            let response = await this.getProductInfo(product.id)
+            if (response.sizes.length >= 1) {
+                return response
+            }
+        }
+    }
+
+    public async getProductWithColors(saleType: string): Promise<Model.ProductInfoModel> {
+        let products = await this.getProducts(saleType)
+        for (let product of products) {
+            let response = await this.getProductInfo(product.id)
+            if (response.colors.length >= 2) {
+                return response
+            }
+        }
     }
 }

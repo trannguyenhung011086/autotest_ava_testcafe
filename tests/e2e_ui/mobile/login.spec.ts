@@ -4,6 +4,7 @@ import { AllPages } from '../../../page_objects'
 let browser: Browser
 let pages: AllPages
 import * as faker from 'faker'
+import 'jest-extended'
 
 describe('Log in via email on ' + config.device + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {

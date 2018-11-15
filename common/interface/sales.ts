@@ -43,7 +43,7 @@ export type Brand = {
     description: string
 }
 
-export type Sale = {
+export type OngoingSale = {
     id: string,
     title: string,
     slug: string,
@@ -53,9 +53,33 @@ export type Sale = {
     categories: string[]
 }
 
+export type UpcomingSale = {
+    id: string,
+    title: string,
+    image: string,
+    slug: string,
+    potd: boolean,
+    categories: string[],
+    international: boolean
+}
+
 export type Filter = {
     value: string
     display: string
+}
+
+export type Size = {
+    availableColors: string[],
+    name: string,
+    quantity: number,
+    soldOut: boolean
+}
+
+export type Color = {
+    name: string,
+    hex?: string,
+    soldOut: boolean,
+    availableSizes: string[]
 }
 
 export interface FilterModel {
@@ -72,12 +96,26 @@ export interface SalesModel {
     title: string
     endTime: string
     image: string
-    image2: string
-    image4: string
+    image2?: string
+    image4?: string
     slug: string
     categories: string[]
-    potd: boolean,
+    potd: boolean
     international: boolean
+    product?: {
+        id: string,
+        brand: string,
+        title: string,
+        salePrice: number,
+        retailPrice: number,
+        images: string[]
+    }
+}
+
+export interface UpcomingSalesModel {
+    date: string
+    year: string
+    sales: UpcomingSale[]
 }
 
 export interface SaleInfoModel {
@@ -95,7 +133,7 @@ export interface SaleInfoModel {
 
 export interface ProductInfoModel {
     id: string
-    sale: Sale
+    sale: OngoingSale
     brand: Brand
     title: string
     returnable: boolean
@@ -103,7 +141,22 @@ export interface ProductInfoModel {
     description: ProductDescription
     images: { All: string[] }
     sizeChart?: Array<{ name: string, values: string[] }>
-    colors?: Array<{ name: string, hex?: string, hex2?: string, soldOut: boolean, availableSizes: string[] }>
-    sizes?: Array<{ name: string, soldOut: boolean, availableColors: string[] }>
+    colors?: Color[]
+    sizes?: Size[]
     products: Product[]
+}
+
+export interface BestSellers {
+    id: string
+    title: string
+    brand: string
+    salePrice: number
+    retailPrice: number
+    category: string
+    image: string
+    image2: string
+    cr: number
+    slug: string
+    international: boolean
+    score: string
 }
