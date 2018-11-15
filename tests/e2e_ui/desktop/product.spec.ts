@@ -25,13 +25,8 @@ describe('View product details on ' + config.browser + ' - ' + config.baseUrl, (
         await browser.navigate(config.baseUrl + '/vn/products/' + products[0].slug)
     })
 
-    test('View featured domestic product', async () => {
+    test('View featured product', async () => {
         const products = await api.getProducts(config.api.featuredSales)
-        await browser.navigate(config.baseUrl + '/vn/products/' + products[0].slug)
-    })
-
-    test('View featured international product', async () => {
-        const products = await api.getProducts(config.api.featuredSales, 'international')
         await browser.navigate(config.baseUrl + '/vn/products/' + products[0].slug)
     })
 
