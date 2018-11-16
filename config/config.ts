@@ -49,7 +49,8 @@ const config = {
         trendingBagsShoes: '/api/menus/items/5b56d3448f0dd7c0480acd1f/sales/current?today=false&limit=5',
         trendingAccessories: '/api/menus/items/5b56d3448f0dd7c0480acd28/sales/current?today=false&limit=5',
         trendingHealthBeauty: '/api/menus/items/5b56d3448f0dd7c0480acd32/sales/current?today=false&limit=5',
-        trendingHomeLifestyle: '/api/menus/items/5b62d1008f0dd7c0480acd5b/sales/current?today=false&limit=5'
+        trendingHomeLifestyle: '/api/menus/items/5b62d1008f0dd7c0480acd5b/sales/current?today=false&limit=5',
+        cart: '/api/v2/cart-items/'
     },
     testAccount: {
         email: 'test1234@test.com',

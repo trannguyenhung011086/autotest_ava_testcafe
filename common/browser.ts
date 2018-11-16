@@ -74,6 +74,7 @@ export class Browser {
 
     public async getText(selector: string) {
         var el = await this.findElement(selector)
+        await this.driver.wait(until.elementTextMatches(el, /\w+/))
         return await el.getText()
             .catch(e => {
                 throw { msg: 'cannot get text from ' + selector, error: e }

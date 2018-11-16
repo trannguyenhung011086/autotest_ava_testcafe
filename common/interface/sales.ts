@@ -122,7 +122,7 @@ export interface SaleInfoModel {
     id: string
     title: string
     startTime: Date
-    endTime: Date
+    endTime: string
     products: Products[]
     filter: FilterModel
     sort: string[]

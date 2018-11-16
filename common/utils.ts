@@ -20,33 +20,51 @@ export class Utils {
             email: config.testAccount.email,
             password: config.testAccount.password
         }
-        var cookie: string = await axios.post(config.api.login, data, settings)
+        var cookie: string = await axios.post(encodeURI(config.api.login), data, settings)
             .then(response => response.headers['set-cookie'][0])
         return cookie
     }
 
-    public async post(api: string, data: Object, cookie: string = null) {
+    public async post(api: string, data: Object, cookie?: string) {
         if (cookie) {
             this.settings.headers['Cookie'] = cookie
         }
         const settings = this.settings
-        return await axios.post(api, data, settings)
+        return await axios.post(encodeURI(api), data, settings)
     }
 
-    public async put(api: string, data: Object, cookie: string = null) {
+    public async put(api: string, data: Object, cookie?: string) {
         if (cookie) {
             this.settings.headers['Cookie'] = cookie
         }
         const settings = this.settings
-        return await axios.put(api, data, settings)
+        return await axios.put(encodeURI(api), data, settings)
     }
 
-    public async get(api: string, cookie: string = null) {
+    public async delete(api: string, cookie?: string) {
         if (cookie) {
             this.settings.headers['Cookie'] = cookie
         }
         const settings = this.settings
-        return await axios.get(api, settings)
+        return await axios.delete(encodeURI(api), settings)
+    }
+
+    public async get(api: string, cookie?: string) {
+        if (cookie) {
+            this.settings.headers['Cookie'] = cookie
+        }
+        const settings = this.settings
+        return await axios.get(encodeURI(api), settings)
+    }
+
+    public async emptyCart(cookie: string) {
+        let response = await this.get(config.api.account, cookie)
+        let account: Model.Account = response.data
+        if (account.cart.length >= 1) {
+            for (let item of account.cart) {
+                await this.delete(config.api.cart + item.id)
+            }
+        }
     }
 
     public async getSales(saleType: string): Promise<Model.SalesModel[]> {
@@ -150,6 +168,34 @@ export class Utils {
             let response = await this.getProductInfo(product.id)
             if (response.colors.length >= 2) {
                 return response
+            }
+        }
+    }
+
+    public async getInStockProduct(saleType: string, quantity: number) {
+        let products = await this.getProducts(saleType)
+        let matched: Model.Products
+
+        for (let product of products) {
+            if (product.soldOut == false) {
+                matched = product
+                break
+            }
+        }
+
+        let info = await this.getProductInfo(matched.id)
+        for (let product of info.products) {
+            if (product.quantity >= quantity) {
+                return product
+            }
+        }
+    }
+
+    public async getSoldOutProduct(saleType: string) {
+        let products = await this.getProducts(saleType)
+        for (let product of products) {
+            if (product.soldOut == true) {
+                return product
             }
         }
     }

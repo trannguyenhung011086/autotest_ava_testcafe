@@ -3,7 +3,7 @@ import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
 
-describe('Product API ' + config.baseUrl + config.api.product + '/<productID>', () => {
+describe('Product API ' + config.baseUrl + config.api.product + '<productID>', () => {
     test('GET / product info - wrong product ID', async () => {
         let response = await request.get(config.api.product + '5b0fd3bf1e73c50001f6fcee')
         expect(response.status).toEqual(500)
@@ -24,11 +24,11 @@ describe('Product API ' + config.baseUrl + config.api.product + '/<productID>', 
             expect(response.id).toEqual(product.id)
 
             expect(response.sale.slug).not.toBeEmpty()
-            expect(new Date(response.sale.startTime).getTime()).toBeLessThanOrEqual(new Date(response.sale.endTime).getTime())
+            expect(new Date(response.sale.startTime)).toBeBefore(new Date(response.sale.endTime))
             expect(response.sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(response.sale.potd).toBeBoolean()
 
-            expect(response.brand.logo).toMatch(/https:\/\/leflair-assets.storage.googleapis.com\/.+.jpg/)
+            expect(response.brand.logo).toMatch(/https:\/\/leflair-assets.storage.googleapis.com\/.+\.jpg/)
             expect(response.brand.name).not.toBeEmpty()
             expect(response.brand.description).not.toBeEmpty()
 
@@ -60,7 +60,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '/<productID>', 
     })
 
     test('GET / product with sizes', async () => {
-        let product = await request.getProductWithSizes(config.api.currentSales)
+        let product = await request.getProductWithSizes(config.api.todaySales)
         expect(product.sizes.length).toBeGreaterThanOrEqual(1)
         for (let size of product.sizes) {
             expect(size.availableColors).toBeArray()
@@ -71,7 +71,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '/<productID>', 
     })
 
     test('GET / product with colors', async () => {
-        let product = await request.getProductWithColors(config.api.currentSales)
+        let product = await request.getProductWithColors(config.api.todaySales)
         expect(product.colors.length).toBeGreaterThanOrEqual(2)
         for (let color of product.colors) {
             expect(color.availableSizes).toBeArray()
