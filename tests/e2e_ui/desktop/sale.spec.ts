@@ -22,8 +22,13 @@ describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
 
         expect(info.brand).toEqual(apiInfo.brand.name)
         expect(info.title).toEqual(apiInfo.title)
-        expect(info.retailPrice).toEqual(apiInfo.products[0].retailPrice)
-        expect(info.salePrice).toEqual(apiInfo.products[0].salePrice)
+
+        for (let product of apiInfo.products) {
+            if (product.inStock == true) {
+                expect(info.retailPrice).toEqual(product.retailPrice)
+                expect(info.salePrice).toEqual(product.salePrice)
+            }
+        }
     })
 
     test('Display all items without lazyloading', async () => {
