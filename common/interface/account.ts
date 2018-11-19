@@ -1,6 +1,6 @@
 import * as cart from './cart'
 
-export interface Account {
+export interface SignIn {
     id: string
     firstName: string
     lastName: string
@@ -10,8 +10,11 @@ export interface Account {
     provider: string
     state: string
     preview: boolean
-    stripe: object
     nsId: string
     gender: string
     cart: cart.Cart[]
+}
+
+export interface Account extends SignIn {
+    stripe: object
 }

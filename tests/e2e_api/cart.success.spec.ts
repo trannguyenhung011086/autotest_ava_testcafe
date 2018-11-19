@@ -10,9 +10,12 @@ let cookie: string
 
 describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        response = await request.post(config.api.cart, { "productId": item.id })
+        response = await request.get(config.api.account)
         cookie = response.headers['set-cookie'][0]
+    })
+
+    afterEach(async () => {
+        await request.emptyCart(cookie)
     })
 
     test('POST / add product to cart as guest', async () => {
@@ -44,21 +47,6 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
         expect(cart.saleEnded).toBeFalse()
     })
 
-    test('POST / update cart after log in', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
-
-        let login = await request.post(config.api.login,
-            {
-                "email": config.testAccount.email, "password": config.testAccount.password
-            }, cookie)
-
-        expect(login.data.cart).toContainEqual(cart)
-
-        await request.emptyCart(cookie)
-    })
-
     test('POST / add same product to cart', async () => {
         await request.emptyCart(cookie)
 
@@ -74,7 +62,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
     })
 
     test('PUT / update quantity in cart', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 4)
+        item = await request.getInStockProduct(config.api.currentSales, 3)
         response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
@@ -91,5 +79,18 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
         response = await request.delete(config.api.cart + cart.id, cookie)
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('ITEM_REMOVED_FROM_CART')
+    })
+
+    test('POST / update cart after log in', async () => {
+        item = await request.getInStockProduct(config.api.currentSales, 1)
+        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        cart = response.data
+
+        let login = await request.post(config.api.login,
+            {
+                "email": config.testAccount.email, "password": config.testAccount.password
+            }, cookie)
+
+        expect(login.data.cart).toContainEqual(cart)
     })
 })

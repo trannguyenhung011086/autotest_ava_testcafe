@@ -28,7 +28,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
             expect(response.sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(response.sale.potd).toBeBoolean()
 
-            expect(response.brand.logo).toMatch(/https:\/\/leflair-assets.storage.googleapis.com\/.+\.jpg/)
+            expect(response.brand.logo).toMatch(/https:\/\/leflair-assets.storage.googleapis.com\/.+\.jpg|\.png/)
             expect(response.brand.name).not.toBeEmpty()
             expect(response.brand.description).not.toBeEmpty()
 
@@ -38,7 +38,6 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
             expect(response.description.heading).not.toBeEmpty()
             expect(response.description.secondary).toBeArray()
-            expect(response.description.materialCare).toBeArray()
 
             expect(response.images.All).toBeArray()
 
@@ -60,7 +59,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
     })
 
     test('GET / product with sizes', async () => {
-        let product = await request.getProductWithSizes(config.api.todaySales)
+        let product = await request.getProductWithSizes(config.api.currentSales)
         expect(product.sizes.length).toBeGreaterThanOrEqual(1)
         for (let size of product.sizes) {
             expect(size.availableColors).toBeArray()
@@ -71,7 +70,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
     })
 
     test('GET / product with colors', async () => {
-        let product = await request.getProductWithColors(config.api.todaySales)
+        let product = await request.getProductWithColors(config.api.currentSales)
         expect(product.colors.length).toBeGreaterThanOrEqual(2)
         for (let color of product.colors) {
             expect(color.availableSizes).toBeArray()

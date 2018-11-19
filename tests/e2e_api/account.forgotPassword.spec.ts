@@ -24,7 +24,7 @@ describe('Forgot password API ' + config.baseUrl + config.api.forgot, () => {
     })
 
     test('POST / Facebook email', async () => {
-        let response = await request.post(config.api.forgot, { "email": config.testAccount.facebook })
+        let response = await request.post(config.api.forgot, { "email": "trannguyenhung011086@gmail.com" })
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('COULD_NOT_RESET_OF_FACEBOOK_ACCOUNT')
     })

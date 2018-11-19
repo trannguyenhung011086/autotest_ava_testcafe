@@ -8,10 +8,9 @@ let cart: Model.Cart
 let response: any
 let cookie: string
 
-describe('Cart API - Error' + config.baseUrl + config.api.cart, () => {
+describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 3)
-        response = await request.post(config.api.cart, { "productId": item.id })
+        response = await request.get(config.api.account)
         cookie = response.headers['set-cookie'][0]
     })
 
@@ -37,16 +36,6 @@ describe('Cart API - Error' + config.baseUrl + config.api.cart, () => {
         expect(response.data.message).toEqual('COULD_NOT_UPDATE_ITEM_QUANTITY')
     })
 
-    test('PUT / cannot update more than max quantity in cart', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 3)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
-
-        response = await request.put(config.api.cart + cart.id, { "quantity": 6 }, cookie)
-        expect(response.status).toEqual(403)
-        expect(response.data.message).toEqual('ALREADY_REACHED_MAX_QUANTITY')
-    })
-
     test('PUT / cannot update invalid quantity in cart', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 3)
         response = await request.post(config.api.cart, { "productId": item.id }, cookie)
@@ -55,6 +44,16 @@ describe('Cart API - Error' + config.baseUrl + config.api.cart, () => {
         response = await request.put(config.api.cart + cart.id, { "quantity": -1 }, cookie)
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_UPDATE_ITEM_QUANTITY')
+    })
+
+    test('PUT / cannot update more than max quantity in cart', async () => {
+        item = await request.getInStockProduct(config.api.currentSales, 3)
+        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        cart = response.data
+
+        response = await request.put(config.api.cart + cart.id, { "quantity": 6 }, cookie)
+        expect(response.status).toEqual(403)
+        expect(response.data.message).toEqual('ALREADY_REACHED_MAX_QUANTITY')
     })
 
     test('DELETE / cannot remove product from cart with wrong cart item', async () => {

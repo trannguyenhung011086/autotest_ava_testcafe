@@ -3,9 +3,35 @@ import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
 import * as faker from 'faker'
+import * as model from '../../common/interface'
+let signIn: model.SignIn
+let cookie: string
+
+describe('Update info API '  + config.baseUrl + config.api.account, () => {
+    beforeAll(async () => {
+        cookie = await request.getLogInCookie()
+    })
+
+    test('PUT / can change name', async () => {
+        let response = await request.put(config.api.account,
+            { "firstName": "first", "lastName": "last" },
+            cookie)
+        signIn = response.data
+        expect(response.status).toEqual(200)
+        expect(signIn.firstName).toEqual('first')
+        expect(signIn.lastName).toEqual('last')
+    })
+
+    test('PUT / cannot update name with wrong cookie access', async () => {
+        let response = await request.put(config.api.account,
+            { "firstName": "first", "lastName": "last" },
+            cookie='assdfds')
+        expect(response.status).toEqual(401)
+        expect(response.data.message).toEqual('Access denied.')
+    })
+})
 
 describe('Update password API '  + config.baseUrl + config.api.password, () => {
-    var cookie: string
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
     })
@@ -54,7 +80,7 @@ describe('Update password API '  + config.baseUrl + config.api.password, () => {
         expect(response.data).toMatch('ValidationError: User validation failed: password: Password should be longer')
     })
 
-    test('PUT / wrong cookie access denied', async () => {
+    test('PUT / cannot update password with wrong cookie access', async () => {
         let response = await request.put(config.api.password,
             {
                 "currentPassword": config.testAccount.password,

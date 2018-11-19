@@ -3,6 +3,8 @@ import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
 import * as faker from 'faker'
+import * as model from '../../common/interface'
+let signIn: model.SignIn
 
 describe('Login API '  + config.baseUrl + config.api.login, () => {
     test('POST / wrong email', async () => {
@@ -64,10 +66,20 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
             {
                 "email": config.testAccount.email, "password": config.testAccount.password
             })
+        signIn = response.data
         expect(response.status).toEqual(200)
-        expect(response.data.email).toEqual(config.testAccount.email)
-        expect(response.data.provider).toEqual('local')
-        expect(response.data.state).toEqual('confirmed')
+        expect(signIn.id).not.toBeEmpty()
+        expect(signIn.firstName).toBeString()
+        expect(signIn.lastName).toBeString()
+        expect(signIn.email).toEqual(config.testAccount.email)
+        expect(signIn.language).toEqual('vn')
+        expect(signIn.accountCredit).toBeNumber()
+        expect(signIn.provider).toEqual('local')
+        expect(signIn.state).toEqual('confirmed')
+        expect(signIn.preview).toBeFalse()
+        expect(signIn.nsId).toBeString()
+        expect(signIn.gender).toBeString()
+        expect(signIn.cart).toBeArray()
     })
 
     test('GET / log out', async () => {
@@ -75,5 +87,15 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         let response = await request.get(config.api.logout, cookie)
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('SIGNED_OUT_SUCCESSFUL')
+    })
+
+    test('POST / internal Leflair email', async () => {
+        let response = await request.post(config.api.login,
+            {
+                "email": "hungtn@leflair.vn", "password": "0944226282"
+            })
+        signIn = response.data
+        expect(response.status).toEqual(200)
+        expect(signIn.preview).toBeTrue()
     })
 })

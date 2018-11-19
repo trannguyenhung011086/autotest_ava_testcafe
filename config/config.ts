@@ -53,7 +53,7 @@ const config = {
         cart: '/api/v2/cart-items/'
     },
     testAccount: {
-        email: 'test1234@test.com',
+        email: 'test1234@mail.com',
         password: '123456789',
         facebook: 'trannguyenhung011086@protonmail.com',
         passwordFacebook: '0944226282'

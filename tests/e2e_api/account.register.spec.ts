@@ -3,8 +3,10 @@ import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
 import * as faker from 'faker'
+import * as model from '../../common/interface'
+let signUp: model.SignIn
 
-describe('Register API '  + config.baseUrl + config.api.register, () => {
+describe('Register API ' + config.baseUrl + config.api.register, () => {
     test('POST / empty email and password', async () => {
         let response = await request.post(config.api.register,
             {
@@ -70,12 +72,18 @@ describe('Register API '  + config.baseUrl + config.api.register, () => {
                 "email": email, "password": faker.internet.password(),
                 "language": "vn", "gender": "M"
             })
+        signUp = response.data
         expect(response.status).toEqual(200)
-        expect(response.data.email).toEqual(email)
-        expect(response.data.accountCredit).toEqual(0)
-        expect(response.data.language).toEqual('vn')
-        expect(response.data.provider).toEqual('local')
-        expect(response.data.state).toEqual('confirmed')
-        expect(response.data.id).not.toHaveLength(0)
+        expect(signUp.id).not.toBeEmpty()
+        expect(signUp.firstName).toBeEmpty()
+        expect(signUp.lastName).toBeEmpty()
+        expect(signUp.email).toEqual(email)
+        expect(signUp.language).toEqual('vn')
+        expect(signUp.accountCredit).toEqual(0)
+        expect(signUp.provider).toEqual('local')
+        expect(signUp.state).toEqual('confirmed')
+        expect(signUp.preview).toBeFalse()
+        expect(signUp.gender).toEqual('M')
+        expect(signUp.cart).toBeArrayOfSize(0)
     })
 })
