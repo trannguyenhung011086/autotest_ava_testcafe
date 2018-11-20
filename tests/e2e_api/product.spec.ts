@@ -2,6 +2,8 @@ import config from '../../config/config'
 import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
+import * as model from '../../common/interface'
+let product: model.ProductInfoModel
 
 describe('Product API ' + config.baseUrl + config.api.product + '<productID>', () => {
     test('GET / product info - wrong product ID', async () => {
@@ -28,7 +30,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
             expect(response.sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(response.sale.potd).toBeBoolean()
 
-            expect(response.brand.logo).toMatch(/https:\/\/leflair-assets.storage.googleapis.com\/.+\.jpg|\.png/)
+            expect(response.brand.logo).toMatch(/https:\/\/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
             expect(response.brand.name).not.toBeEmpty()
             expect(response.brand.description).not.toBeEmpty()
 
@@ -39,7 +41,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
             expect(response.description.heading).not.toBeEmpty()
             expect(response.description.secondary).toBeArray()
 
-            expect(response.images.All).toBeArray()
+            expect(response.images).toBeObject()
 
             expect(response.products).toBeArray()
             for (let product of response.products) {
@@ -48,7 +50,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
                 expect(product.retailPrice).toBeGreaterThan(product.salePrice)
                 expect(product.inStock).toBeBoolean()
                 expect(product.quantity).toBeGreaterThanOrEqual(0)
-                expect(product.imageKey).toEqual('All')
+                expect(Object.keys(response.images)).toContainEqual(product.imageKey)
                 expect(product.isVirtual).toBeBoolean()
                 expect(product.isBulky).toBeBoolean()
             }
@@ -59,7 +61,10 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
     })
 
     test('GET / product with sizes', async () => {
-        let product = await request.getProductWithSizes(config.api.currentSales)
+        product = await request.getProductWithSizes(config.api.currentSales)
+        if (!product) {
+            product = await request.getProductWithSizes(config.api.todaySales)
+        }
         expect(product.sizes.length).toBeGreaterThanOrEqual(1)
         for (let size of product.sizes) {
             expect(size.availableColors).toBeArray()
@@ -70,15 +75,19 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
     })
 
     test('GET / product with colors', async () => {
-        let product = await request.getProductWithColors(config.api.currentSales)
+        product = await request.getProductWithColors(config.api.currentSales)
+        if (!product) {
+            product = await request.getProductWithColors(config.api.trendingApparel)
+        }
         expect(product.colors.length).toBeGreaterThanOrEqual(2)
         for (let color of product.colors) {
             expect(color.availableSizes).toBeArray()
-            expect(color.hex).not.toBeEmpty()
+            expect(color.hex).toBeString()
             expect(color.name).not.toBeEmpty()
             expect(color.soldOut).toBeBoolean()
 
-            let response = await request.get(config.api.product + 'view-product/' + product.id + '/' + color.name)
+            let response = await request.get(config.api.product + 'view-product/' +
+                product.id + '/' + color.name)
             expect(response.status).toEqual(200)
         }
     })

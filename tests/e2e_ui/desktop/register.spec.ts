@@ -3,7 +3,7 @@ import config from '../../../config/config'
 import { AllPages } from '../../../page_objects'
 let browser: Browser
 let pages: AllPages
-import * as faker from 'faker'
+import * as faker from "faker/locale/vi"
 import 'jest-extended'
 
 describe('Register via email on ' + config.browser + ' - ' + config.baseUrl, () => {

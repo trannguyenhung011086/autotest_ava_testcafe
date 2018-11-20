@@ -10,8 +10,7 @@ let cookie: string
 
 describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
-        response = await request.get(config.api.account)
-        cookie = response.headers['set-cookie'][0]
+        cookie = await request.getGuestCookie()
     })
 
     test('POST / cannot add invalid product to cart', async () => {

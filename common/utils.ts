@@ -1,6 +1,7 @@
 import config from '../config/config'
 import * as Model from './interface'
 import axios, { AxiosRequestConfig } from 'axios'
+import * as faker from "faker/locale/vi"
 
 export class Utils {
     public settings: AxiosRequestConfig = {
@@ -12,17 +13,6 @@ export class Utils {
         validateStatus: (status) => {
             return true
         }
-    }
-
-    public async getLogInCookie() {
-        const settings = this.settings
-        const data: Object = {
-            email: config.testAccount.email,
-            password: config.testAccount.password
-        }
-        var cookie: string = await axios.post(encodeURI(config.api.login), data, settings)
-            .then(response => response.headers['set-cookie'][0])
-        return cookie
     }
 
     public async post(api: string, data: Object, cookie?: string) {
@@ -57,7 +47,21 @@ export class Utils {
         return await axios.get(encodeURI(api), settings)
     }
 
-    public async emptyCart(cookie: string) {
+    public async getLogInCookie(): Promise<string> {
+        const data: Object = {
+            email: config.testAccount.email,
+            password: config.testAccount.password
+        }
+        return await this.post(config.api.login, data)
+            .then(response => response.headers['set-cookie'][0])
+    }
+
+    public async getGuestCookie(): Promise<string> {
+        return await this.get(config.api.account)
+            .then(response => response.headers['set-cookie'][0])
+    }
+
+    public async emptyCart(cookie: string): Promise<void> {
         let response = await this.get(config.api.account, cookie)
         let account: Model.Account = response.data
         if (account.cart.length >= 1) {
@@ -198,5 +202,90 @@ export class Utils {
                 return product
             }
         }
+    }
+
+    public async getAddresses(cookie: string): Promise<Model.Addresses> {
+        try {
+            let response = await this.get(config.api.addresses, cookie)
+            return response.data
+        } catch (e) {
+            throw 'Current account cannot access address list!'
+        }
+    }
+
+    public async getCities(): Promise<Model.City[]> {
+        let response = await this.get(config.api.addresses + '/cities')
+        return response.data
+    }
+
+    public async getDistricts(cityId: string): Promise<Model.District[]> {
+        let response = await this.get(config.api.addresses + '/cities/' + cityId + '/districts')
+        return response.data
+    }
+
+    public getCity(cities: Model.City[]): Model.City {
+        return this.getArrayRandomElement(cities)
+    }
+
+    public getDistrict(districts: Model.District[]): Model.District {
+        return this.getArrayRandomElement(districts)
+    }
+
+    public getArrayRandomElement(arr: any[]) {
+        if (arr && arr.length) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+    }
+
+    public async deleteAddresses(cookie: string): Promise<void> {
+        let addresses = await this.getAddresses(cookie)
+        try {
+            if (addresses.billing.length > 0) {
+                for (let billing of addresses.billing) {
+                    await this.delete(config.api.addresses + '/' + billing.id, cookie)
+                }
+            }
+            if (addresses.shipping.length > 0) {
+                for (let shipping of addresses.shipping) {
+                    await this.delete(config.api.addresses + '/' + shipping.id, cookie)
+                }
+            }
+        } catch (e) {
+            throw e
+        }
+    }
+
+    public async addAddresses(cookie: string) {
+        let cities = await this.getCities()
+        let shipping = await this.generateAddress('shipping', cities)
+        shipping.duplicateBilling = true
+        let response = await this.post(config.api.addresses, shipping, cookie)
+        if (response.status != 200) {
+            throw 'Cannot add address!'
+        }
+    }
+
+    public async generateAddress(addressType: string, cities: Model.City[]) {
+        let city = await this.getCity(cities)
+        let districts = await this.getDistricts(city.id)
+        let district = await this.getDistrict(districts)
+        let address: Model.Shipping = {
+            address: faker.address.streetAddress(),
+            city: city,
+            default: true,
+            district: district,
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            phone: faker.phone.phoneNumber().replace(/ /g, '')
+        }
+        if (addressType == 'shipping') {
+            address.type = 'shipping'
+        }
+        if (addressType == 'billing') {
+            address.type = 'billing'
+            address.companyName = faker.company.companyName()
+            address.taxCode = '1234567890'
+        }
+        return address
     }
 }

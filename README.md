@@ -3,6 +3,7 @@
 - Run `npm install` to install all dependencies specified in package.json
 - Import `jest-extended` to test case to extend Jest matcher
 - *optional* Set up debug node js for jest with Visual Studio Code https://github.com/Microsoft/vscode-recipes/tree/master/debugging-jest-tests
+- *optional* Install `wait-for-expect` to extend Jest wait for expectation to be true
 
 ## E2E API testing
 Use axios http request libray and jest framework to test APIs

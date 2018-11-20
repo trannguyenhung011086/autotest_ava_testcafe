@@ -6,6 +6,8 @@ let request = new Utils()
 describe('Best sellers info API ' + config.baseUrl + config.api.bestSellers, () => {
     test('GET / best sellers list', async () => {
         let response = await request.getBestSellers()
+        // expect(response.length).toEqual(16) // wait for WWW-238
+        
         for (let item of response) {
             expect(item.id).not.toBeEmpty()
             expect(item.title).not.toBeEmpty()

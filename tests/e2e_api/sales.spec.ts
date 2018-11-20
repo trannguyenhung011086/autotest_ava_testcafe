@@ -102,7 +102,6 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         for (let date of dates) {
             expect(date.date).not.toBeEmpty()
             expect(date.year).not.toBeEmpty()
-
             expect(date.sales).toBeArray()
             for (let sale of date.sales) {
                 expect(sale.id).not.toBeEmpty()

@@ -2,36 +2,46 @@ import config from '../../config/config'
 import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
-import * as faker from 'faker'
+import * as faker from "faker/locale/vi"
 import * as model from '../../common/interface'
 let signIn: model.SignIn
 let cookie: string
 
-describe('Update info API '  + config.baseUrl + config.api.account, () => {
+describe('Update info API ' + config.baseUrl + config.api.account, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
     })
 
     test('PUT / can change name', async () => {
+        let firstName = faker.name.firstName()
+        let lastName = faker.name.lastName()
         let response = await request.put(config.api.account,
-            { "firstName": "first", "lastName": "last" },
+            { "firstName": firstName, "lastName": lastName },
             cookie)
         signIn = response.data
         expect(response.status).toEqual(200)
-        expect(signIn.firstName).toEqual('first')
-        expect(signIn.lastName).toEqual('last')
+        expect(signIn.id).not.toBeEmpty()
+        expect(signIn.firstName).toEqual(firstName)
+        expect(signIn.lastName).toEqual(lastName)
+        expect(signIn.email).toEqual(config.testAccount.email)
+        expect(signIn.language).toEqual('vn')
+        expect(signIn.accountCredit).toBeNumber()
+        expect(signIn.provider).toEqual('local')
+        expect(signIn.state).toEqual('confirmed')
+        expect(signIn.nsId).toBeString()
+        expect(signIn.gender).toBeString()
     })
 
     test('PUT / cannot update name with wrong cookie access', async () => {
         let response = await request.put(config.api.account,
             { "firstName": "first", "lastName": "last" },
-            cookie='assdfds')
+            cookie = 'assdfds')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
 })
 
-describe('Update password API '  + config.baseUrl + config.api.password, () => {
+describe('Update password API ' + config.baseUrl + config.api.password, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
     })

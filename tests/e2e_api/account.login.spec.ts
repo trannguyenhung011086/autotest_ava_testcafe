@@ -2,7 +2,7 @@ import config from '../../config/config'
 import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
-import * as faker from 'faker'
+import * as faker from "faker/locale/vi"
 import * as model from '../../common/interface'
 let signIn: model.SignIn
 
@@ -28,7 +28,8 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
     test('POST / use Facebook email', async () => {
         let response = await request.post(config.api.login,
             {
-                "email": config.testAccount.facebook, "password": config.testAccount.passwordFacebook
+                "email": config.testAccount.facebook, 
+                "password": config.testAccount.passwordFacebook
             })
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
@@ -64,7 +65,8 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
     test('POST / correct email and password', async () => {
         let response = await request.post(config.api.login,
             {
-                "email": config.testAccount.email, "password": config.testAccount.password
+                "email": config.testAccount.email, 
+                "password": config.testAccount.password
             })
         signIn = response.data
         expect(response.status).toEqual(200)

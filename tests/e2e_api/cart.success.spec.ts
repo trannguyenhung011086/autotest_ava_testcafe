@@ -10,8 +10,7 @@ let cookie: string
 
 describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
-        response = await request.get(config.api.account)
-        cookie = response.headers['set-cookie'][0]
+        cookie = await request.getGuestCookie()
     })
 
     afterEach(async () => {
@@ -88,7 +87,8 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
         let login = await request.post(config.api.login,
             {
-                "email": config.testAccount.email, "password": config.testAccount.password
+                "email": config.testAccount.email, 
+                "password": config.testAccount.password
             }, cookie)
 
         expect(login.data.cart).toContainEqual(cart)

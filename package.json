@@ -30,6 +30,7 @@
   "dependencies": {
     "@babel/core": "^7.1.5",
     "@babel/preset-typescript": "7.1.0",
+    "@types/faker": "^4.1.4",
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.2",
     "@types/selenium-webdriver": "^3.0.12",
@@ -51,6 +52,7 @@
   "devDependencies": {
     "allure-commandline": "^2.7.0",
     "jest-allure": "^0.1.1",
-    "jest-extended": "^0.11.0"
+    "jest-extended": "^0.11.0",
+    "wait-for-expect": "^1.1.0"
   }
 }

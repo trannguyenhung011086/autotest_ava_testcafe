@@ -139,7 +139,7 @@ export interface ProductInfoModel {
     returnable: boolean
     returnDays: number
     description: ProductDescription
-    images: { All: string[] }
+    images: { [key: string]: string[] }
     sizeChart?: Array<{ name: string, values: string[] }>
     colors?: Color[]
     sizes?: Size[]
