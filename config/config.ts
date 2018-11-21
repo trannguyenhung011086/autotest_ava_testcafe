@@ -38,6 +38,7 @@ const config = {
         addresses: '/api/v2/addresses',
         home: '/api/v2/home',
         product: '/api/v2/product/',
+        brands: '/api/v2/brands/',
         sales: '/api/v2/sales/',
         upcomingSales: '/api/v2/home/upcoming',
         todaySales: '/api/v2/home/today',

@@ -288,4 +288,42 @@ export class Utils {
         }
         return address
     }
+
+    public async getBrandsList(): Promise<Model.BrandItem[]> {
+        let response = await this.get(config.api.brands)
+        let brands: Model.brands = response.data
+        let brandList = []
+        for (let item of Object.keys(brands)) {
+            let brand: Model.BrandItem
+            for (brand of brands[item]) {
+                brandList.push(brand)
+            }
+        }
+        return brandList
+    }
+
+    public async getBrandWithNoProduct() {
+        let brandList = await this.getBrandsList()
+        for (let brand of brandList) {
+            let response = await this.get(config.api.brands + brand.id)
+            let brandInfo: Model.BrandInfo
+            brandInfo = response.data
+            if (brandInfo.products.length == 0) {
+                return brandInfo
+            }
+        }
+    }
+
+    public async getBrandWithProducts() {
+        let products = await this.getProducts(config.api.featuredSales)
+        let brandList = await this.getBrandsList()
+        for (let item of brandList) {
+            if (item.name == products[0].brand) {
+                let response = await this.get(config.api.brands + item.id)
+                let brandInfo: Model.BrandInfo
+                brandInfo = response.data
+                return brandInfo
+            }
+        }
+    }
 }

@@ -12,6 +12,7 @@ describe('View product details on ' + config.browser + ' - ' + config.baseUrl, (
         pages = new AllPages(browser)
         api = new Utils()
         await browser.navigate(config.baseUrl)
+        await pages.popup.closeBoardingPopup()
     })
 
     test('View domestic product', async () => {

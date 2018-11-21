@@ -10,6 +10,7 @@ describe('View subcategory page on ' + config.device + ' - ' + config.baseUrl, (
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl + '/vn/subcategories/thoi-trang-nu-5b56d3448f0dd7c0480acd1c')
+        await pages.popup.closeBoardingPopup()
     })
 
     test('Get product card info', async () => {

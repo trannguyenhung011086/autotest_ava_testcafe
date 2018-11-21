@@ -15,7 +15,7 @@
   "main": "index.js",
   "scripts": {
     "start_selenium": "selenium-standalone install && selenium-standalone start",
-    "test_api": "JEST_SUITE_NAME=\"End 2 End API Testing\" JEST_JUNIT_OUTPUT=\"report/junit_api.xml\" node_modules/.bin/jest tests/e2e_api --verbose --detectOpenHandles",
+    "test_api": "JEST_SUITE_NAME=\"End 2 End API Testing\" JEST_JUNIT_OUTPUT=\"report/junit_api.xml\" node_modules/.bin/jest tests/e2e_api --verbose --detectOpenHandles --runInBand",
     "test_ui_chrome": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_chrome.xml\" SELENIUM_BROWSER=chrome node_modules/.bin/jest tests/e2e_ui/desktop --verbose --detectOpenHandles --runInBand",
     "test_ui_firefox": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_firefox.xml\" SELENIUM_BROWSER=firefox node_modules/.bin/jest tests/e2e_ui/desktop --verbose --detectOpenHandles --runInBand",
     "test_ui_mobile": "JEST_SUITE_NAME=\"End 2 End UI Testing\" JEST_JUNIT_OUTPUT=\"report/junit_ui_mobile.xml\" node_modules/.bin/jest tests/e2e_ui/mobile --verbose --detectOpenHandles --runInBand",

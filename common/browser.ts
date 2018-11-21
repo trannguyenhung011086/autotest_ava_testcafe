@@ -94,7 +94,7 @@ export class Browser {
 
     public async scrollTo(selector: string) {
         var el = await this.findElement(selector)
-        await this.driver.executeScript("arguments[0].scrollIntoView(true);", el)
+        await this.driver.executeScript("arguments[0].scrollIntoView(true)", el)
         el = await this.findElement(selector)
         await this.driver.wait(until.elementIsVisible(el), 1000)
     }
@@ -106,7 +106,7 @@ export class Browser {
         } catch (clickError) {
             // throw { msg: 'cannot click ' + selector, error: clickError }
             try {
-                await this.driver.executeScript('arguments[0].click();', el)
+                await this.driver.executeScript('arguments[0].click()', el)
             } catch (jsError) {
                 throw { msg: 'cannot click ' + selector, error: jsError }
             }

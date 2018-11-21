@@ -10,9 +10,11 @@ describe('Switch language on ' + config.device + ' - ' + config.baseUrl, () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
         await browser.navigate(config.baseUrl)
+        await pages.popup.closeBoardingPopup()
     })
 
     test('Switch to English', async() => {
+        await browser.navigate(config.baseUrl)
         await pages.header.switchToEnMobile()
 
         var active = await pages.header.getLangActiveMobile()

@@ -13,6 +13,7 @@ describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
         api = new Utils()
         const sales = await api.getSaleWithManyProducts(config.api.currentSales)
         await browser.navigate(config.baseUrl + '/vn/sales/' + sales.slug)
+        await pages.popup.closeBoardingPopup()
     })
 
     test('Get product card info', async () => {

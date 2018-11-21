@@ -28,7 +28,12 @@ export default class ProductList extends Page {
 
     public async getProductInfo(index=1) {
         await this.browser.findElement(this.productCard)
-        const url = await this.browser.getAttribute(`${this.productList} > .sale-product-list:nth-child(${index}) > a`, 'href')
+        var url
+        try {
+            url = await this.browser.getAttribute(`${this.productList} > .sale-product-list:nth-child(${index}) > a`, 'href')
+        } catch (e) {
+            url = await this.browser.getAttribute(`${this.productList} > .item:nth-child(${index}) > a`, 'href')
+        } 
         const brand = await this.browser.getText(`div:nth-child(${index}) > a > ${this.productCard} > .info > .brand`)
         const title = await this.browser.getText(`div:nth-child(${index}) > a > ${this.productCard} > .info > .title`)
         const retailPrice = await this.browser.getText(`div:nth-child(${index}) > a > ${this.productCard} > .info > .price > .retail`)
