@@ -176,7 +176,17 @@ export class Utils {
         }
     }
 
-    public async getInStockProduct(saleType: string, quantity: number) {
+    public async getProductWithNoSizeNoColor(saleType: string): Promise<Model.ProductInfoModel> {
+        let products = await this.getProducts(saleType)
+        for (let product of products) {
+            let response = await this.getProductInfo(product.id)
+            if (response.sizes.length == 0 && response.colors.length == 0) {
+                return response
+            }
+        }
+    }
+
+    public async getInStockProduct(saleType: string, quantity: number): Promise<Model.Product> {
         let products = await this.getProducts(saleType)
         let matched: Model.Products
 
@@ -195,11 +205,23 @@ export class Utils {
         }
     }
 
-    public async getSoldOutProduct(saleType: string) {
+    public async getSoldOutProduct(saleType: string): Promise<Model.ProductInfoModel> {
         let products = await this.getProducts(saleType)
+        let matched: Model.Products[] = []
+
         for (let product of products) {
             if (product.soldOut == true) {
-                return product
+                matched.push(product)
+            }
+        }
+
+        for (let item of matched) {
+            let info = await this.getProductInfo(item.id)
+            let soldOut = info.products.every((input) => {
+                return input.inStock == false
+            })
+            if (soldOut == true) {
+                return info
             }
         }
     }

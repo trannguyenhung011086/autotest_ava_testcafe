@@ -1,22 +1,47 @@
 import config from '../../config/config'
-import { Utils } from '../../common'
+import { Utils, FilterModel } from '../../common'
 import 'jest-extended'
 let request = new Utils()
+import * as model from '../../common/interface'
 
 describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () => {
-    test('GET / sale info - wrong sale ID', async () => {
-        let response = await request.get(config.api.sales + 'invalid-5bd6c3137cf0476b22488d2')
+    test('GET / invalid sale ID', async () => {
+        let response = await request.get(config.api.sales + 'INVALID-ID')
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('INVALID_SALE_ID')
     })
 
-    test('GET / sale info - no sale matching', async () => {
+    test('GET / no sale matching', async () => {
         let response = await request.get(config.api.sales + 'invalid-5bd6c3137cf0476b22488d21')
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('NO_SALE_MATCHING')
     })
 
-    test('GET / sale info - valid sale ID', async () => {
+    test('GET / sale has ended', async () => {
+        let response = await request.get(config.api.sales + '566979b534cbcd100061967a')
+        expect(response.status).toEqual(410)
+        expect(response.data.message).toEqual('SALE_HAS_ENDED')
+    })
+
+    // test('GET / invalid upcoming sale ID', async () => {
+    //     let response = await request.get(config.api.upcomingSale + 'INVALID-ID')
+    //     expect(response.status).toEqual(404)
+    //     expect(response.data.message).toEqual('INVALID_SALE_ID')
+    // }) // wait for WWW-338 to fix
+
+    test('GET / no upcoming sale matching', async () => {
+        let response = await request.get(config.api.upcomingSale + '566979b534cbcd100061967b')
+        expect(response.status).toEqual(404)
+        expect(response.data.message).toEqual('NO_UPCOMING_SALE_MATCHING')
+    })
+
+    test('GET / upcoming sale ended', async () => {
+        let response = await request.get(config.api.upcomingSale + '566979b534cbcd100061967a')
+        expect(response.status).toEqual(410)
+        expect(response.data.message).toEqual('SALE_HAS_ENDED')
+    })
+
+    test('GET / valid ongoing sale ID', async () => {
         let sales = await request.getSales(config.api.todaySales)
 
         for (let sale of sales) {
@@ -57,6 +82,23 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
             expect(response.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
             expect(response.campaign).toBeBoolean()
             expect(response.slug).toInclude(response.id)
+        }
+    })
+
+    test('GET / valid upcoming sale ID', async () => {
+        let dates = await request.getUpcomingSales()
+        for (let date of dates) {
+            for (let sale of date.sales) {
+                let response = await request.get(config.api.upcomingSale + sale.id)
+                let upcoming: model.UpcomingInfo
+                upcoming = response.data
+                expect(response.status).toEqual(200)
+                expect(upcoming.id).toEqual(sale.id)
+                expect(upcoming.description).not.toBeEmpty()
+                expect(upcoming.image).toMatch(/\.jpg|\.png|\.jpeg/)
+                expect(upcoming.title).not.toBeEmpty()
+                expect(new Date(upcoming.startTime)).toBeAfter(new Date())
+            }
         }
     })
 })

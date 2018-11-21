@@ -40,6 +40,7 @@ const config = {
         product: '/api/v2/product/',
         brands: '/api/v2/brands/',
         sales: '/api/v2/sales/',
+        upcomingSale: '/api/v2/upcoming-sale/',
         upcomingSales: '/api/v2/home/upcoming',
         todaySales: '/api/v2/home/today',
         currentSales: '/api/v2/home/current',
@@ -55,7 +56,7 @@ const config = {
         cart: '/api/v2/cart-items/'
     },
     testAccount: {
-        email: 'test1234@mail.com',
+        email: 'test1234@test.com',
         password: '123456789',
         facebook: 'trannguyenhung011086@protonmail.com',
         passwordFacebook: '0944226282'

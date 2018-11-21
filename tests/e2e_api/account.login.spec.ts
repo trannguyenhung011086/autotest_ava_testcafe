@@ -35,7 +35,7 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
-    test('POST / Missing email field', async () => {
+    test('POST / missing email field', async () => {
         let response = await request.post(config.api.login,
             {
                 "password": faker.internet.password()
@@ -44,7 +44,7 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
-    test('POST / Missing password field', async () => {
+    test('POST / missing password field', async () => {
         let response = await request.post(config.api.login,
             {
                 "email": faker.internet.email()

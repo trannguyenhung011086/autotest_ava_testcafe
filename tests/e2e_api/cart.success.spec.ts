@@ -60,6 +60,14 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
         expect(cart.quantity).toEqual(2)
     })
 
+    test('POST / add sold out product to cart', async () => {
+        const soldOut = await request.getSoldOutProduct(config.api.trendingHealthBeauty)
+        response = await request.post(config.api.cart, { "productId": soldOut.products[0].id })
+        cart = response.data
+        expect(cart.quantity).toEqual(1)
+        expect(cart.availableQuantity).toEqual(0)
+    })
+
     test('PUT / update quantity in cart', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 3)
         response = await request.post(config.api.cart, { "productId": item.id })

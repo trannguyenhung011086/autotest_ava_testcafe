@@ -6,19 +6,25 @@ import * as model from '../../common/interface'
 let product: model.ProductInfoModel
 
 describe('Product API ' + config.baseUrl + config.api.product + '<productID>', () => {
-    test('GET / product info - wrong product ID', async () => {
-        let response = await request.get(config.api.product + '5b0fd3bf1e73c50001f6fcee')
+    test('GET / invalid product ID', async () => {
+        let response = await request.get(config.api.product + 'INVALID-ID')
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_LOAD_PRODUCT')
     })
 
-    test('GET / product info - sale ended', async () => {
+    test('GET / product of sale not found', async () => {
         let response = await request.get(config.api.product + '5b0fd3bf1e73c50001f6fced')
+        expect(response.status).toEqual(404)
+        expect(response.data.message).toEqual('SALE_NOT_FOUND')
+    })
+
+    test('GET / product of sale ended', async () => {
+        let response = await request.get(config.api.product + '56697a9d34cbcd1000619683')
         expect(response.status).toEqual(410)
         expect(response.data.message).toEqual('SALE_HAS_ENDED')
     })
 
-    test('GET / product info - valid product ID', async () => {
+    test('GET / valid product ID', async () => {
         let products = await request.getProducts(config.api.featuredSales)
 
         for (let product of products) {
@@ -57,6 +63,24 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
             expect(response.sizes).toBeArray()
             expect(response.colors).toBeArray()
+        }
+    })
+
+    test('GET / sold out product', async () => {
+        let product = await request.getSoldOutProduct(config.api.trendingHealthBeauty)
+        for (let item of product.products) {
+            expect(item.inStock).toBeFalse()
+            expect(item.quantity).toEqual(0)
+        }
+        if (product.sizes.length > 0) {
+            for (let size of product.sizes) {
+                expect(size.soldOut).toBeTrue()
+            }
+        }
+        if (product.colors.length > 0) {
+            for (let color of product.colors) {
+                expect(color.soldOut).toBeTrue()
+            }
         }
     })
 

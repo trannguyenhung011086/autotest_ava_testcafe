@@ -63,6 +63,14 @@ export type UpcomingSale = {
     international: boolean
 }
 
+export type UpcomingInfo = {
+    id: string,
+    title: string,
+    description: string,
+    image: string,
+    startTime: Date
+}
+
 export type Filter = {
     value: string
     display: string
@@ -159,4 +167,18 @@ export interface BestSellers {
     slug: string
     international: boolean
     score: string
+}
+
+export type Banner = {
+    image: string,
+    url: string
+}
+
+export interface Home {
+    today: SalesModel[]
+    featured: SalesModel[]
+    current: SalesModel[]
+    potd: SalesModel[]
+    banners: Banner[]
+    upcoming: UpcomingSalesModel[]
 }

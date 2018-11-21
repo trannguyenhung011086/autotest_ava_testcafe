@@ -2,26 +2,35 @@ import config from '../../config/config'
 import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
+import * as model from '../../common/interface'
+let home: model.Home
 
 describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
-    test('GET / all home sales list', async () => {
+    test('GET / all home sales', async () => {
         let response = await request.get(config.api.home)
+        home = response.data
         expect(response.status).toEqual(200)
-        expect(response.data).toContainAllKeys(['featured',
+        expect(home).toContainAllKeys(['featured',
             'today',
             'current',
             'potd',
             'banners',
             'upcoming'])
-        expect(response.data.featured).toBeObject()
-        expect(response.data.today).toBeArray()
-        expect(response.data.current).toBeArray()
-        expect(response.data.potd).toBeArray()
-        expect(response.data.banners).toBeArray()
-        expect(response.data.upcoming).toBeArray()
+        expect(home.featured).toBeObject()
+        expect(home.today).toBeArray()
+        expect(home.current).toBeArray()
+        expect(home.potd).toBeArray()
+        expect(home.banners).toBeArray()
+        expect(home.upcoming).toBeArray()
+        if (home.banners.length > 0) {
+            for (let banner of home.banners) {
+                expect(banner.image).toMatch(/\.jpg|\.png|\.jpeg/)
+                expect(banner.url).toBeString()
+            }
+        }
     })
 
-    test('GET / today sales list', async () => {
+    test('GET / today sales', async () => {
         let sales = await request.getSales(config.api.todaySales)
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
@@ -35,7 +44,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         }
     })
 
-    test('GET / current sales list', async () => {
+    test('GET / current sales', async () => {
         let sales = await request.getSales(config.api.currentSales)
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
@@ -49,7 +58,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         }
     })
 
-    test('GET / featured sales list', async () => {
+    test('GET / featured sales', async () => {
         let sales = await request.getSales(config.api.featuredSales)
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
@@ -63,7 +72,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         }
     })
 
-    test('GET / international sales list', async () => {
+    test('GET / international sales', async () => {
         let sales = await request.getSales(config.api.internationalSales)
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
@@ -77,7 +86,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         }
     })
 
-    test('GET / POTD sales list', async () => {
+    test('GET / POTD sales', async () => {
         let sales = await request.getSales(config.api.potdSales)
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
@@ -97,7 +106,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         }
     })
 
-    test('GET / Upcoming sales list', async () => {
+    test('GET / Upcoming sales', async () => {
         let dates = await request.getUpcomingSales()
         for (let date of dates) {
             expect(date.date).not.toBeEmpty()
