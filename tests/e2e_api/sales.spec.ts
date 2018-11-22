@@ -24,7 +24,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         expect(home.upcoming).toBeArray()
         if (home.banners.length > 0) {
             for (let banner of home.banners) {
-                expect(banner.image).toMatch(/\.jpg|\.png|\.jpeg/)
+                expect(banner.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
                 expect(banner.url).toBeString()
             }
         }
@@ -36,7 +36,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
+            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
             expect(sale.slug).toInclude(sale.id)
             expect(sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(sale.potd).toBeBoolean()
@@ -50,7 +50,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
+            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
             expect(sale.slug).toInclude(sale.id)
             expect(sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(sale.potd).toBeBoolean()
@@ -64,7 +64,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
+            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
             expect(sale.slug).toInclude(sale.id)
             expect(sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(sale.potd).toBeBoolean()
@@ -78,7 +78,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
+            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
             expect(sale.slug).toInclude(sale.id)
             expect(sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(sale.potd).toBeBoolean()
@@ -92,7 +92,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
+            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
             expect(sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(sale.potd).toBeTrue()
             expect(sale.international).toBeBoolean()
@@ -115,7 +115,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             for (let sale of date.sales) {
                 expect(sale.id).not.toBeEmpty()
                 expect(sale.title).not.toBeEmpty()
-                expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
+                expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
                 expect(sale.slug).toInclude(sale.id)
                 expect(sale.categories.length).toBeGreaterThanOrEqual(1)
                 expect(sale.international).toBeBoolean()

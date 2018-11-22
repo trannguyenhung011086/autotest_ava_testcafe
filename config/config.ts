@@ -36,6 +36,7 @@ const config = {
         password: '/api/v2/account/password',
         account: '/api/v2/account',
         addresses: '/api/v2/addresses',
+        orders: '/api/v2/user-orders',
         home: '/api/v2/home',
         product: '/api/v2/product/',
         brands: '/api/v2/brands/',

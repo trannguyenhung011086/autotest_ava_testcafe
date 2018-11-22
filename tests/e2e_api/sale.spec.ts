@@ -23,11 +23,11 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
         expect(response.data.message).toEqual('SALE_HAS_ENDED')
     })
 
-    // test('GET / invalid upcoming sale ID', async () => {
-    //     let response = await request.get(config.api.upcomingSale + 'INVALID-ID')
-    //     expect(response.status).toEqual(404)
-    //     expect(response.data.message).toEqual('INVALID_SALE_ID')
-    // }) // wait for WWW-338 to fix
+    test.skip('GET / invalid upcoming sale ID', async () => {
+        let response = await request.get(config.api.upcomingSale + 'INVALID-ID')
+        expect(response.status).toEqual(404)
+        expect(response.data.message).toEqual('INVALID_SALE_ID')
+    }) // wait for WWW-338 to fix
 
     test('GET / no upcoming sale matching', async () => {
         let response = await request.get(config.api.upcomingSale + '566979b534cbcd100061967b')
@@ -42,9 +42,10 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
     })
 
     test('GET / valid ongoing sale ID', async () => {
-        let sales = await request.getSales(config.api.todaySales)
+        let sales = await request.getSales(config.api.currentSales)
 
         for (let sale of sales) {
+            console.log(sale)
             let response = await request.getSaleInfo(sale.id)
 
             expect(response.id).toEqual(sale.id)
@@ -56,8 +57,8 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
             for (let product of response.products) {
                 expect(product.id).not.toBeEmpty()
                 expect(product.title).not.toBeEmpty()
-                expect(product.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
-                expect(product.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
+                expect(product.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                expect(product.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
                 expect(product.retailPrice).toBeGreaterThan(product.salePrice)
                 expect(product.soldOut).toBeBoolean()
                 expect(product.category).not.toBeEmpty()
@@ -79,11 +80,11 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
                 'LOW_PRICE',
                 'HIGH_PRICE'])
 
-            expect(response.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg/)
+            expect(response.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
             expect(response.campaign).toBeBoolean()
             expect(response.slug).toInclude(response.id)
         }
-    })
+    }, 90000)
 
     test('GET / valid upcoming sale ID', async () => {
         let dates = await request.getUpcomingSales()
@@ -95,7 +96,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
                 expect(response.status).toEqual(200)
                 expect(upcoming.id).toEqual(sale.id)
                 expect(upcoming.description).not.toBeEmpty()
-                expect(upcoming.image).toMatch(/\.jpg|\.png|\.jpeg/)
+                expect(upcoming.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
                 expect(upcoming.title).not.toBeEmpty()
                 expect(new Date(upcoming.startTime)).toBeAfter(new Date())
             }

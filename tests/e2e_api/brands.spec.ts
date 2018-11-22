@@ -55,8 +55,8 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         for (let product of brand.products) {
             expect(product.id).not.toBeEmpty()
             expect(product.brand).toEqual(brand.name)
-            expect(product.image).toMatch(/.+\.jpg|\.jpeg|\.png/)
-            expect(product.image2).toMatch(/.+\.jpg|\.jpeg|\.png/)
+            expect(product.image.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
+            expect(product.image2.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
             expect(product.numberOfVariations).toBeNumber()
             expect(product.quantity).toBeNumber()
             expect(product.queryParams).toInclude('?')

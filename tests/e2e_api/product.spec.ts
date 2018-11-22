@@ -36,7 +36,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
             expect(response.sale.categories.length).toBeGreaterThanOrEqual(1)
             expect(response.sale.potd).toBeBoolean()
 
-            expect(response.brand.logo).toMatch(/https:\/\/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
+            expect(response.brand.logo.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
             expect(response.brand.name).not.toBeEmpty()
             expect(response.brand.description).not.toBeEmpty()
 
@@ -67,10 +67,10 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
     })
 
     test('GET / sold out product', async () => {
-        let product = await request.getSoldOutProduct(config.api.trendingHealthBeauty)
+        let product = await request.getSoldOutProduct(config.api.trendingApparel)
         for (let item of product.products) {
             expect(item.inStock).toBeFalse()
-            expect(item.quantity).toEqual(0)
+            expect(item.quantity).toBeLessThanOrEqual(0)
         }
         if (product.sizes.length > 0) {
             for (let size of product.sizes) {
@@ -87,7 +87,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
     test('GET / product with sizes', async () => {
         product = await request.getProductWithSizes(config.api.currentSales)
         if (!product) {
-            product = await request.getProductWithSizes(config.api.todaySales)
+            product = await request.getProductWithSizes(config.api.trendingApparel)
         }
         expect(product.sizes.length).toBeGreaterThanOrEqual(1)
         for (let size of product.sizes) {

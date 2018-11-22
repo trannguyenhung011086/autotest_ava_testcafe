@@ -61,6 +61,11 @@ export class Utils {
             .then(response => response.headers['set-cookie'][0])
     }
 
+    public async getAccountInfo(cookie: string): Promise<Model.Account> {
+        let response = await this.get(config.api.account, cookie)
+        return response.data
+    }
+
     public async emptyCart(cookie: string): Promise<void> {
         let response = await this.get(config.api.account, cookie)
         let account: Model.Account = response.data
@@ -324,7 +329,7 @@ export class Utils {
         return brandList
     }
 
-    public async getBrandWithNoProduct() {
+    public async getBrandWithNoProduct(): Promise<Model.BrandInfo> {
         let brandList = await this.getBrandsList()
         for (let brand of brandList) {
             let response = await this.get(config.api.brands + brand.id)
@@ -336,7 +341,7 @@ export class Utils {
         }
     }
 
-    public async getBrandWithProducts() {
+    public async getBrandWithProducts(): Promise<Model.BrandInfo> {
         let products = await this.getProducts(config.api.featuredSales)
         let brandList = await this.getBrandsList()
         for (let item of brandList) {
@@ -347,5 +352,10 @@ export class Utils {
                 return brandInfo
             }
         }
+    }
+
+    public async getOrders(cookie: string): Promise<Model.OrderSummary[]> {
+        let response = await this.get(config.api.orders, cookie)
+        return response.data
     }
 }
