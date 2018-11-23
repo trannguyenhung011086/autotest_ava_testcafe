@@ -1,5 +1,5 @@
 import config from '../../config/config'
-import { Utils, FilterModel } from '../../common'
+import { Utils } from '../../common'
 import 'jest-extended'
 let request = new Utils()
 import * as model from '../../common/interface'

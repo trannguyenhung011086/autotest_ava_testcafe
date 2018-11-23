@@ -25,6 +25,10 @@ if (process.env.NODE_ENV == 'testing') {
 }
 
 const config = {
+    stagingDb: {
+        uri: 'mongodb://104.199.151.20',
+        name: 'admin-leflair'
+    },
     baseUrl: baseUrl || 'https://www.staging.leflair.io',
     signin: '/auth/signin',
     register: '/auth/register',
@@ -37,6 +41,8 @@ const config = {
         account: '/api/v2/account',
         addresses: '/api/v2/addresses',
         orders: '/api/v2/user-orders',
+        giftcard: '/api/v2/giftcards/',
+        voucher: '/api/v2/vouchers/',
         home: '/api/v2/home',
         product: '/api/v2/product/',
         brands: '/api/v2/brands/',
@@ -57,10 +63,11 @@ const config = {
         cart: '/api/v2/cart-items/'
     },
     testAccount: {
-        email: 'test1234@test.com',
-        password: '123456789',
+        email: 'qa_tech@leflair.vn',
+        password: 'leflairqa',
         facebook: 'trannguyenhung011086@protonmail.com',
-        passwordFacebook: '0944226282'
+        passwordFacebook: '0944226282',
+        usedVoucher: 'VCB150'
     },
     cookieEma: cookieEma || [
         '_v1EmaticSolutions=%5B%227b54c3c7-d8ce-11e8-9fef-0242ac160003%22%2C1540541603423%2C%5B%22A%22%2C%22Th%E1%BB%9Di%20Trang%20N%E1%BB%AF%22%2C2%2C%22thoi-trang-nu-5b56d3448f0dd7c0480acd1c%22%5D%5D; Domain=.testing.leflair.io; Path=/; Expires=2020-09-23T10:50:45.000Z',
