@@ -41,6 +41,7 @@ const config = {
         account: '/api/v2/account',
         addresses: '/api/v2/addresses',
         orders: '/api/v2/user-orders',
+        creditcard: '/api/v2/credit-cards',
         giftcard: '/api/v2/giftcards/',
         voucher: '/api/v2/vouchers/',
         home: '/api/v2/home',
@@ -60,7 +61,8 @@ const config = {
         trendingAccessories: '/api/menus/items/5b56d3448f0dd7c0480acd28/sales/current?today=false&limit=5',
         trendingHealthBeauty: '/api/menus/items/5b56d3448f0dd7c0480acd32/sales/current?today=false&limit=5',
         trendingHomeLifestyle: '/api/menus/items/5b62d1008f0dd7c0480acd5b/sales/current?today=false&limit=5',
-        cart: '/api/v2/cart-items/'
+        cart: '/api/v2/cart-items/',
+        checkout: '/api/v2/checkout'
     },
     testAccount: {
         email: 'qa_tech@leflair.vn',

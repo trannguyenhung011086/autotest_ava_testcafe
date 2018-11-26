@@ -5,7 +5,6 @@ let request = new Utils()
 import * as Model from '../../common/interface'
 let item: Model.Product
 let cart: Model.Cart
-let response: any
 let cookie: string
 
 describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
@@ -19,7 +18,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
     test('POST / add product to cart as guest', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 1)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
         expect(response.status).toEqual(200)
@@ -50,7 +49,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
         await request.emptyCart(cookie)
 
         item = await request.getInStockProduct(config.api.currentSales, 3)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
 
         cart = response.data
         expect(cart.quantity).toEqual(1)
@@ -62,7 +61,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
     test('POST / add sold out product to cart', async () => {
         const soldOut = await request.getSoldOutProduct(config.api.trendingApparel)
-        response = await request.post(config.api.cart, { "productId": soldOut.products[0].id },
+        let response = await request.post(config.api.cart, { "productId": soldOut.products[0].id },
             cookie)
         cart = response.data
         expect(cart.quantity).toEqual(1)
@@ -71,7 +70,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
     test('PUT / update quantity in cart', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 3)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
         response = await request.put(config.api.cart + cart.id, { "quantity": 3 }, cookie)
@@ -81,7 +80,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
     test('DELETE / remove product from cart', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 1)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
         response = await request.delete(config.api.cart + cart.id, cookie)
@@ -91,7 +90,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
     test('PUT / remove multiple products from cart', async () => {
         let itemA = await request.getInStockProduct(config.api.featuredSales, 1)
-        response = await request.post(config.api.cart, { "productId": itemA.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": itemA.id }, cookie)
         let cartA = response.data
 
         let itemB = await request.getInStockProduct(config.api.potdSales, 1)
@@ -106,7 +105,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
     test('POST / update cart after log in', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 1)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
         let login = await request.post(config.api.login,

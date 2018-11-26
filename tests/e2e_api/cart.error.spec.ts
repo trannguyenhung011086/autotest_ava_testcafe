@@ -5,7 +5,6 @@ let request = new Utils()
 import * as Model from '../../common/interface'
 let item: Model.Product
 let cart: Model.Cart
-let response: any
 let cookie: string
 
 describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
@@ -14,20 +13,20 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
     })
 
     test('POST / cannot add invalid product to cart', async () => {
-        response = await request.post(config.api.cart, { "productId": "INVALID-ID" })
+        let response = await request.post(config.api.cart, { "productId": "INVALID-ID" })
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_ADD_ITEM_TO_CART')
     })
 
     test('POST / cannot add empty product to cart', async () => {
-        response = await request.post(config.api.cart, { "productId": "" })
+        let response = await request.post(config.api.cart, { "productId": "" })
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_ADD_ITEM_TO_CART')
     })
 
     test('PUT / cannot update quantity in cart to 0', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 3)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
         response = await request.put(config.api.cart + cart.id, { "quantity": 0 }, cookie)
@@ -37,7 +36,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
 
     test('PUT / cannot update invalid quantity in cart', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 3)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
         response = await request.put(config.api.cart + cart.id, { "quantity": -1 }, cookie)
@@ -47,7 +46,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
 
     test('PUT / cannot update more than max quantity in cart', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 3)
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
         response = await request.put(config.api.cart + cart.id, { "quantity": 6 }, cookie)
@@ -57,7 +56,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
 
     test('DELETE / cannot remove product from cart with wrong cart item', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 1)
-        response = await request.post(config.api.cart, { "productId": item.id })
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
         response = await request.delete(config.api.cart + 'INVALID-CART-ID')
@@ -67,7 +66,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
 
     test('DELETE / cannot remove product from cart without cart item', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 1)
-        response = await request.post(config.api.cart, { "productId": item.id })
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
         response = await request.delete(config.api.cart)

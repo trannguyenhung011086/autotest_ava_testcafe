@@ -49,6 +49,12 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('MISSING_TYPE_PARAM')
+
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.shipping[0].address).not.toEqual(clone.address)
+        expect(addresses.shipping[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.shipping[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
     })
 
     test('POST / cannot add address missing name', async () => {
@@ -58,6 +64,12 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('MISSING_REQUIRED_PARAMS')
+
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.shipping[0].address).not.toEqual(clone.address)
+        expect(addresses.shipping[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.shipping[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
     })
 
     test('POST / cannot add address missing phone', async () => {
@@ -66,6 +78,12 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('MISSING_REQUIRED_PARAMS')
+
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.shipping[0].address).not.toEqual(clone.address)
+        expect(addresses.shipping[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.shipping[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
     })
 
     test('POST / cannot add address missing address', async () => {
@@ -74,6 +92,12 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('MISSING_REQUIRED_PARAMS')
+
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.shipping[0].address).not.toEqual(clone.address)
+        expect(addresses.shipping[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.shipping[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
     })
 
     test('POST / cannot add address missing district', async () => {
@@ -82,6 +106,12 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('MISSING_REQUIRED_PARAMS')
+
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.shipping[0].address).not.toEqual(clone.address)
+        expect(addresses.shipping[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.shipping[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
     })
 
     test('POST / cannot add address missing city', async () => {
@@ -90,6 +120,12 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('MISSING_REQUIRED_PARAMS')
+
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.shipping[0].address).not.toEqual(clone.address)
+        expect(addresses.shipping[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.shipping[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
     })
 
     test('POST / cannot add address with length > 70', async () => {
@@ -98,24 +134,42 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('ADDRESS_TOO_LONG')
+
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.shipping[0].address).not.toEqual(clone.address)
+        expect(addresses.shipping[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.shipping[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
     })
 
-    test('POST / cannot add address with invalid phone', async () => {
+    test.skip('POST / cannot add address with invalid phone', async () => {
         let clone = Object.assign({}, address)
         clone.phone = faker.random.number().toString()
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('PHONE_INVALID_FORMAT')
-    })
 
-    test('POST / cannot add address with invalid tax code', async () => {
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.shipping[0].address).not.toEqual(clone.address)
+        expect(addresses.shipping[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.shipping[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
+    }) // wait for WWW-354
+
+    test.only('POST / cannot add address with invalid tax code', async () => {
         let clone = Object.assign({}, address)
         clone.taxCode = faker.random.number().toString()
         clone.type = 'billing'
         let response = await request.post(config.api.addresses, clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('TAX_CODE_INVALID_FORMAT')
-    })
+
+        addresses = await request.getAddresses(cookie)
+        expect(addresses.billing[0].address).not.toEqual(clone.address)
+        expect(addresses.billing[0].firstName).not.toEqual(clone.firstName)
+        expect(addresses.billing[0].lastName).not.toEqual(clone.lastName)
+        expect(addresses.billing[0].phone).not.toEqual(clone.phone)
+    }) // wait for WWW-354
 
     test('PUT / cannot update address missing name', async () => {
         let clone = Object.assign({}, address)
@@ -185,7 +239,7 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let clone = Object.assign({}, address)
         clone.taxCode = faker.random.number().toString()
         clone.type = 'billing'
-        let response = await request.put(config.api.addresses + '/' + addresses.shipping[0].id,
+        let response = await request.put(config.api.addresses + '/' + addresses.billing[0].id,
             clone, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('TAX_CODE_INVALID_FORMAT')
