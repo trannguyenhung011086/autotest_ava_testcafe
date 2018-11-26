@@ -11,7 +11,7 @@ describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
         api = new Utils()
-        const sales = await api.getSaleWithManyProducts(config.api.currentSales)
+        const sales = await api.getSaleWithManyProducts(config.api.featuredSales)
         await browser.navigate(config.baseUrl + '/vn/sales/' + sales.slug)
         await pages.popup.closePopup()
     })

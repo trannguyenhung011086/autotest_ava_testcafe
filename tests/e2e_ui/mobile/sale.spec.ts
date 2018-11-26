@@ -6,12 +6,12 @@ let browser: Browser
 let pages: AllPages
 let api: Utils
 
-describe('View sale page on ' + config.browser + ' - ' + config.baseUrl, () => {
+describe('View sale page on ' + config.device + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
         api = new Utils()
-        const sales = await api.getSaleWithManyProducts(config.api.currentSales)
+        const sales = await api.getSaleWithManyProducts(config.api.featuredSales)
         await browser.navigate(config.baseUrl + '/vn/sales/' + sales.slug)
         await pages.popup.closeBoardingPopup()
     })

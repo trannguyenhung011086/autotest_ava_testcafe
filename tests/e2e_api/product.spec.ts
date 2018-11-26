@@ -26,6 +26,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
     test('GET / valid product ID', async () => {
         let products = await request.getProducts(config.api.featuredSales)
+        expect(products.length).toBeGreaterThanOrEqual(1)
 
         for (let product of products) {
             let response = await request.getProductInfo(product.id)
@@ -50,6 +51,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
             expect(response.images).toBeObject()
 
             expect(response.products).toBeArray()
+
             for (let product of response.products) {
                 expect(product.id).not.toBeEmpty()
                 expect(product.saleId).not.toBeEmpty()
@@ -68,6 +70,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
     test('GET / sold out product', async () => {
         let product = await request.getSoldOutProduct(config.api.trendingApparel)
+
         for (let item of product.products) {
             expect(item.inStock).toBeFalse()
             expect(item.quantity).toBeLessThanOrEqual(0)
@@ -86,9 +89,11 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
     test('GET / product with sizes', async () => {
         product = await request.getProductWithSizes(config.api.currentSales)
+
         if (!product) {
             product = await request.getProductWithSizes(config.api.trendingApparel)
         }
+
         expect(product.sizes.length).toBeGreaterThanOrEqual(1)
         for (let size of product.sizes) {
             expect(size.availableColors).toBeArray()
@@ -100,9 +105,11 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
     test('GET / product with colors', async () => {
         product = await request.getProductWithColors(config.api.currentSales)
+
         if (!product) {
             product = await request.getProductWithColors(config.api.trendingApparel)
         }
+        
         expect(product.colors.length).toBeGreaterThanOrEqual(2)
         for (let color of product.colors) {
             expect(color.availableSizes).toBeArray()

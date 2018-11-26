@@ -8,7 +8,7 @@ let account: model.Account
 let orders: model.OrderSummary[]
 let orderItem: model.Order
 const orderStatus = ['placed', 'confirmed', 'cancelled', 'shipped', 'delivered']
-const paymentMethod = ['COD', 'STRIPE', 'CC']
+const paymentMethod = ['COD', 'STRIPE', 'CC', 'FREE']
 const card = ['VISA', 'Master']
 
 describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
@@ -29,7 +29,7 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
         expect(response.status).toEqual(200)
         for (let order of orders) {
             expect(order.id).not.toBeEmpty()
-            expect(order.code).not.toMatch(/^SG|HKVN-/)
+            expect(order.code).toMatch(/^SG|HK|VN/)
             expect(order.createdDate).toMatch(/^(\d\d\/){2}\d{4}$/)
             expect(orderStatus).toContain(order.status)
             if (order.shippedDate != null) {
@@ -91,9 +91,11 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
                 expect(card).toContain(orderItem.paymentSummary.card.type)
             }
 
-            expect(orderItem.paymentSummary.total).toEqual(orderItem.paymentSummary.subtotal +
-                orderItem.paymentSummary.shipping - orderItem.paymentSummary.accountCredit -
-                orderItem.paymentSummary.voucherAmount)
+            expect(orderItem.paymentSummary.shipping).toBeLessThanOrEqual(25000)
+            expect(orderItem.paymentSummary.subtotal).toBeGreaterThanOrEqual(0)
+            expect(orderItem.paymentSummary.total).toBeGreaterThanOrEqual(0)
+            expect(orderItem.paymentSummary.accountCredit).toBeLessThanOrEqual(0)
+            expect(orderItem.paymentSummary.voucherAmount).toBeGreaterThanOrEqual(0)
 
             for (let product of orderItem.products) {
                 expect(product.id).not.toBeEmpty()
@@ -101,7 +103,7 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
                 expect(product.title).not.toBeEmpty()
                 expect(product.slug).toInclude(product.productContentId)
                 expect(product.retailPrice).toBeGreaterThan(product.salePrice)
-                expect(product.salePrice).toEqual(product.totalSalePrice)
+                expect(product.salePrice).toBeLessThanOrEqual(product.totalSalePrice)
                 expect(product.quantity).toBeNumber()
                 expect(product.image.toLowerCase()).toMatch(/\.jpg|\.jpeg|\.png|\.jpe/)
                 expect(product.returnable).toBeBoolean()

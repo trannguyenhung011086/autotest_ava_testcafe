@@ -1,5 +1,4 @@
 import { Browser, Page } from '../common'
-import { doesNotReject } from 'assert';
 
 export default class Popup extends Page {
     constructor(browser: Browser) {

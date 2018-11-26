@@ -42,12 +42,11 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
     })
 
     test('GET / valid ongoing sale ID', async () => {
-        let sales = await request.getSales(config.api.currentSales)
+        let sales = await request.getSales(config.api.featuredSales)
+        expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
-            console.log(sale)
             let response = await request.getSaleInfo(sale.id)
-
             expect(response.id).toEqual(sale.id)
             expect(response.title).not.toBeEmpty()
             expect(response.endTime).toEqual(sale.endTime)
@@ -88,8 +87,11 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
 
     test('GET / valid upcoming sale ID', async () => {
         let dates = await request.getUpcomingSales()
+        expect(dates.length).toBeGreaterThan(1)
         for (let date of dates) {
             for (let sale of date.sales) {
+                expect(date.sales.length).toBeGreaterThan(1)
+                
                 let response = await request.get(config.api.upcomingSale + sale.id)
                 let upcoming: model.UpcomingInfo
                 upcoming = response.data

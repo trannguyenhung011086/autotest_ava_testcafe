@@ -24,7 +24,7 @@ describe('Update info API ' + config.baseUrl + config.api.account, () => {
         expect(signIn.firstName).toEqual(firstName)
         expect(signIn.lastName).toEqual(lastName)
         expect(signIn.email).toEqual(config.testAccount.email)
-        expect(signIn.language).toEqual('vn')
+        expect(signIn.language).toMatch(/en|vn/)
         expect(signIn.accountCredit).toBeNumber()
         expect(signIn.provider).toEqual('local')
         expect(signIn.state).toEqual('confirmed')
@@ -32,13 +32,13 @@ describe('Update info API ' + config.baseUrl + config.api.account, () => {
         expect(signIn.gender).toBeString()
     })
 
-    // test('PUT / cannot change email', async () => {
-    //     let response = await request.put(config.api.account,
-    //         { "email": 'new-' + config.testAccount.email },
-    //         cookie)
-    //     expect(response.status).toEqual(400)
-    //     expect(response.data.message).toEqual('USER_UPDATE_ERROR')
-    // }) // skip until WWW-335 is fixed
+    test.skip('PUT / cannot change email', async () => {
+        let response = await request.put(config.api.account,
+            { "email": 'new-' + config.testAccount.email },
+            cookie)
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('USER_UPDATE_ERROR')
+    }) // wait for WWW-335
 
     test('PUT / cannot update with wrong cookie', async () => {
         let response = await request.put(config.api.account,

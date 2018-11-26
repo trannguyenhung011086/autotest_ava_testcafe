@@ -4,7 +4,6 @@ import 'jest-extended'
 let request = new Utils()
 import * as faker from 'faker/locale/vi'
 import * as model from '../../common/interface'
-import { resolvePtr } from 'dns';
 let cookie: string
 let city: model.City
 let district: model.District

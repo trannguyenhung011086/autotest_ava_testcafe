@@ -64,16 +64,6 @@ describe('View empty brand page on ' + config.device + ' - ' + config.baseUrl, (
         await pages.popup.closeBoardingPopup()
     })
 
-    test('Check brand name and description', async () => {
-        const brandTitle = await pages.brand.getBrandTitle()
-        const brandFooterName = (await pages.brand.getBrandFooter())['name']
-        const brandFooterDescription = (await pages.brand.getBrandFooter())['description']
-
-        expect(brandTitle).toEqual(brandWithNoProduct.name)
-        expect(brandFooterName).toEqual(brandWithNoProduct.name)
-        expect(brandFooterDescription).toEqual(brandWithNoProduct.description)
-    })
-
     test('Check subcribe content', async () => {
         const brandTitle = await pages.brand.getBrandTitle()
         const subcribeSorry = (await pages.brand.getSubcribeContent())['text']
@@ -83,6 +73,16 @@ describe('View empty brand page on ' + config.device + ' - ' + config.baseUrl, (
         expect(subcribeSorry).not.toBeEmpty()
         expect(subcribeBrand).toInclude(brandTitle)
         expect(subcribeCheck).not.toBeEmpty()
+    })
+
+    test('Check brand name and description', async () => {
+        const brandTitle = await pages.brand.getBrandTitle()
+        const brandFooterName = (await pages.brand.getBrandFooter())['name']
+        const brandFooterDescription = (await pages.brand.getBrandFooter())['description']
+
+        expect(brandTitle).toEqual(brandWithNoProduct.name)
+        expect(brandFooterName).toEqual(brandWithNoProduct.name)
+        expect(brandFooterDescription).toEqual(brandWithNoProduct.description)
     })
 
     afterAll(async () => {

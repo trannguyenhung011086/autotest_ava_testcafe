@@ -10,6 +10,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         let response = await request.get(config.api.home)
         home = response.data
         expect(response.status).toEqual(200)
+        
         expect(home).toContainAllKeys(['featured',
             'today',
             'current',
@@ -22,6 +23,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         expect(home.potd).toBeArray()
         expect(home.banners).toBeArray()
         expect(home.upcoming).toBeArray()
+
         if (home.banners.length > 0) {
             for (let banner of home.banners) {
                 expect(banner.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
@@ -32,6 +34,8 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
 
     test('GET / today sales', async () => {
         let sales = await request.getSales(config.api.todaySales)
+        expect(sales.length).toBeGreaterThanOrEqual(1)
+
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
@@ -46,6 +50,8 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
 
     test('GET / current sales', async () => {
         let sales = await request.getSales(config.api.currentSales)
+        expect(sales.length).toBeGreaterThanOrEqual(1)
+
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
@@ -60,6 +66,8 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
 
     test('GET / featured sales', async () => {
         let sales = await request.getSales(config.api.featuredSales)
+        expect(sales.length).toBeGreaterThanOrEqual(1)
+
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
@@ -74,6 +82,8 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
 
     test('GET / international sales', async () => {
         let sales = await request.getSales(config.api.internationalSales)
+        expect(sales.length).toBeGreaterThanOrEqual(1)
+
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
@@ -88,6 +98,8 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
 
     test('GET / POTD sales', async () => {
         let sales = await request.getSales(config.api.potdSales)
+        expect(sales.length).toBeGreaterThanOrEqual(1)
+
         for (let sale of sales) {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
@@ -108,11 +120,15 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
 
     test('GET / Upcoming sales', async () => {
         let dates = await request.getUpcomingSales()
+        expect(dates.length).toBeGreaterThanOrEqual(1)
+
         for (let date of dates) {
             expect(date.date).not.toBeEmpty()
             expect(date.year).not.toBeEmpty()
             expect(date.sales).toBeArray()
             for (let sale of date.sales) {
+                expect(date.sales.length).toBeGreaterThanOrEqual(1)
+
                 expect(sale.id).not.toBeEmpty()
                 expect(sale.title).not.toBeEmpty()
                 expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)

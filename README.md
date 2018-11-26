@@ -1,6 +1,6 @@
 *Precondition*
 - Install latest node v10
-- Run `npm install` to install all dependencies specified in package.json
+- Run `npm install` to install all dependencies specified in package.json (if have permission issue: use flag `--unsafe-perm=true`)
 - Import `jest-extended` to test case to extend Jest matcher
 - *optional* Set up debug node js for jest with Visual Studio Code https://github.com/Microsoft/vscode-recipes/tree/master/debugging-jest-tests
 - *optional* Install `wait-for-expect` to extend Jest wait for expectation to be true

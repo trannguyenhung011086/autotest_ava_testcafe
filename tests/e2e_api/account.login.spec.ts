@@ -74,7 +74,7 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         expect(signIn.firstName).toBeString()
         expect(signIn.lastName).toBeString()
         expect(signIn.email).toEqual(config.testAccount.email)
-        expect(signIn.language).toEqual('vn')
+        expect(signIn.language).toMatch(/en|vn/)
         expect(signIn.accountCredit).toBeNumber()
         expect(signIn.provider).toEqual('local')
         expect(signIn.state).toEqual('confirmed')

@@ -121,8 +121,13 @@ export class Browser {
     public async type(selector: string, content: string) {
         var el = await this.findElement(selector)
         await el.clear()
-        await el.sendKeys(Key.chord(Key.CONTROL, 'a'))
-        await el.sendKeys(Key.DELETE)
+        
+        const text = await this.getAttribute(selector, 'value')
+        if (text.length > 0) {
+            await el.sendKeys(Key.HOME,Key.chord(Key.SHIFT,Key.END))
+            await el.sendKeys(Key.DELETE)
+        }
+
         await el.sendKeys(content)
             .catch(e => {
                 throw { msg: 'cannot type at ' + selector, error: e }

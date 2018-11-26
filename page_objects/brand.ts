@@ -13,6 +13,7 @@ export default class Brand extends Page {
     public brandFooterDescription = '.brand-footer > .description'
 
     public async getBrandTitle() {
+        await this.browser.scrollTo(this.brandTitle)
         return await this.browser.getText(this.brandTitle)
     }
 
