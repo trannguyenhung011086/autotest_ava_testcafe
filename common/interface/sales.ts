@@ -12,7 +12,8 @@ export type Products = {
     queryParams: string,
     slug: string,
     quantity: number,
-    numberOfVariations: number
+    numberOfVariations: number,
+    product: string
 }
 
 export type Product = {
@@ -28,6 +29,7 @@ export type Product = {
     quantity: number,
     isVirtual?: boolean,
     isBulky?: boolean,
+    _id: string
 }
 
 export type ProductDescription = {
@@ -151,7 +153,9 @@ export interface ProductInfoModel {
     sizeChart?: Array<{ name: string, values: string[] }>
     colors?: Color[]
     sizes?: Size[]
-    products: Product[]
+    products: Product[],
+    variations: Product[],
+    name: string
 }
 
 export interface BestSellers {

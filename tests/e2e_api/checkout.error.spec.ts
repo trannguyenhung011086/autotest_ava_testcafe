@@ -10,57 +10,11 @@ let checkout: Model.Checkout
 let item: Model.Product
 let cart: Model.Cart
 let cookie: string
-let cartData = {
-    "email": "qa_tech@leflair.vn",
-    "address": {
-        "shipping": {
-            "id": "5bfbb26f18246700010e4c41",
-            "firstName": "Phan",
-            "lastName": "Nhân",
-            "phone": "35955",
-            "address": "150 Vương Vista",
-            "district": {
-                "id": "578c1c2c4bda02a85e93f254",
-                "name": "Huyện Kim Sơn"
-            },
-            "city": {
-                "id": "578c1c2c4bda02a85e93f1c6",
-                "name": "Ninh Bình"
-            },
-            "default": true
-        },
-        "billing": {
-            "id": "5bfbb27218246700010e4c42",
-            "nsId": "907323",
-            "firstName": "Phan",
-            "lastName": "Nhân",
-            "taxCode": "97436",
-            "phone": "01992250922",
-            "address": "150 Vương Vista",
-            "district": {
-                "id": "578c1c2c4bda02a85e93f254",
-                "name": "Huyện Kim Sơn"
-            },
-            "city": {
-                "id": "578c1c2c4bda02a85e93f1c6",
-                "name": "Ninh Bình"
-            },
-            "default": true
-        }
-    },
-    "cart": [{
-        "id": "5bfba77f9ab4c80001024a72",
-        "quantity": 1,
-        "salePrice": 429000
-    }],
-    "shipping": 0,
-    "accountCredit": 429000,
-    "method": "FREE"
-}
 
 describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
+        await request.addAddresses(cookie)
         account = await request.getAccountInfo(cookie)
         addresses = await request.getAddresses(cookie)
     })
@@ -68,6 +22,8 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
     afterEach(async () => {
         await request.emptyCart(cookie)
     })
+
+    // validate required data
 
     test('POST / cannot checkout with empty data', async () => {
         let response = await request.post(config.api.checkout, {}, cookie)
@@ -81,6 +37,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
                 "billing": {}
             }
         }, cookie)
+
         expect(response.status).toEqual(400)
         expect(response.data.message).toContainEqual('SHIPPING_ADDRESS_REQUIRED')
         expect(response.data.message).toContainEqual('BILLING_ADDRESS_REQUIRED')
@@ -94,30 +51,9 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             },
             "cart": []
         }, cookie)
+
         expect(response.status).toEqual(400)
         expect(response.data.message).toContainEqual('THERE_ARE_NO_ITEMS_IN_YOUR_ORDER')
-    })
-
-    test.skip('POST / cannot checkout with invalid email', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
-
-        response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": [{
-                "id": cart.id,
-                "quantity": cart.quantity,
-                "salePrice": cart.salePrice
-            }],
-            "email": "INVALID-EMAIL",
-            "method": "FREE"
-        }, cookie)
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toContainEqual('EMAIL_ADDRESS_NOT_WELL_FORMAT')
     })
 
     test('POST / cannot checkout with invalid phone and tax code', async () => {
@@ -141,6 +77,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
                 "salePrice": cart.salePrice
             }]
         }, cookie)
+
         expect(response.status).toEqual(400)
         expect(response.data.message).toContainEqual('SHIPPING_PHONE_NUMBER_IS_NOT_VALID')
         expect(response.data.message).toContainEqual('BILLING_PHONE_NUMBER_IS_NOT_VALID')
@@ -163,9 +100,12 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
                 "salePrice": cart.salePrice
             }]
         }, cookie)
+
         expect(response.status).toEqual(400)
         expect(response.data.message).toContainEqual('PLEASE_SELECT_A_PAYMENT_METHOD')
     })
+
+    // validate cart
 
     test('POST / cannot checkout with mismatched cart', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 1)
@@ -189,11 +129,12 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             }],
             "method": "FREE"
         }, cookie)
+
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('CART_MISMATCH')
     })
 
-    test.only('POST / cannot checkout with mismatched quantity', async () => {
+    test('POST / cannot checkout with mismatched quantity', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
@@ -210,9 +151,135 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             }],
             "method": "FREE"
         }, cookie)
-        console.log(response.data.cart)
-        console.log(response.data.message[0].cart)
+
         expect(response.status).toEqual(400)
         expect(response.data.message[0].message).toEqual('QUANTITY_SUBMITTED_NOT_MATCH_IN_THE_CART')
     })
+
+    test('POST / cannot checkout with mismatched price', async () => {
+        item = await request.getInStockProduct(config.api.currentSales, 1)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        cart = response.data
+
+        response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": [{
+                "id": cart.id,
+                "quantity": 1,
+                "salePrice": cart.salePrice + 1
+            }],
+            "method": "FREE"
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message[0].message).toEqual('PRICE_MISMATCH')
+    })
+
+    test('POST / cannot checkout with mismatched price', async () => {
+        item = await request.getInStockProduct(config.api.currentSales, 1)
+        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        cart = response.data
+
+        response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": [{
+                "id": "INVALID-ID",
+                "quantity": 1,
+                "salePrice": cart.salePrice
+            }],
+            "method": "FREE"
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message[0].message).toEqual('CART_MISMATCH_CANT_FIND_PRODUCT')
+    })
+
+    test('POST / cannot checkout with more than 8 unique products', async () => {
+        let items = await request.getInStockProducts(config.api.currentSales, 1)
+        await request.addToCart([
+            items[0].id,
+            items[1].id,
+            items[2].id,
+            items[3].id,
+            items[4].id,
+            items[5].id,
+            items[6].id,
+            items[7].id,
+            items[8].id
+        ], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "FREE"
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('CART_EXCEEDS_THE_MAXIMUM_SIZE')
+        expect(response.data.values.quantity).toEqual(8)
+    })
+
+    // validate availability
+
+    test('POST / cannot checkout with sold out product', async () => {
+        let soldOut = await request.getSoldOutProduct(config.api.featuredSales)
+        await request.addToCart([soldOut.products[0].id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "FREE"
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message[0].message).toEqual('TITLE_IS_OUT_OF_STOCK')
+        expect(response.data.message[0].values.title).toEqual(soldOut.title)
+        expect(response.data.data.cart).toBeArrayOfSize(0)
+    })
+
+    test('POST / cannot checkout with sale ended product', async () => {
+        let endedSale = await request.getEndedSale({
+            startDate: { $gte: new Date('2018-11-11 01:00:00.000Z') },
+            endDate: { $lt: new Date() }
+        })
+        let item = await request.getProduct({
+            _id: endedSale.products[0].product
+        })
+
+        await request.addToCart([item.variations[0]._id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "FREE"
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message[0].message).toEqual('THE_SALE_FOR_TITLE_HAS_ENDED')
+        expect(response.data.message[0].values.title).toEqual(item.name)
+        expect(response.data.data.cart).toBeArrayOfSize(0)
+    })
+
+    // validate voucher
+
+    
+
 })

@@ -48,10 +48,10 @@ export class Utils {
         return await axios.get(encodeURI(api), settings)
     }
 
-    public async getLogInCookie(): Promise<string> {
+    public async getLogInCookie(email: string = config.testAccount.email, password = config.testAccount.password): Promise<string> {
         const data: Object = {
-            email: config.testAccount.email,
-            password: config.testAccount.password
+            email: email,
+            password: password
         }
         return await this.post(config.api.login, data)
             .then(response => response.headers['set-cookie'][0])
@@ -75,6 +75,23 @@ export class Utils {
                 await this.delete(config.api.cart + item.id)
             }
         }
+    }
+
+    public async addToCart(productIds: string[], cookie: string): Promise<void> {
+        for (let itemId of productIds) {
+            let response = await this.post(config.api.cart, { "productId": itemId }, cookie)
+            if (response.status != 200) {
+                throw {message: 'Cannot add to cart: ' + itemId, error: response.data}
+            }
+        }
+    }
+
+    public async updateQuantityCart(cartId: string, quantity: number, cookie: string): Promise<Model.Cart> {
+        let response = await this.put(config.api.cart + cartId, { "quantity": quantity }, cookie)
+        if (response.status != 200) {
+            throw {message: 'Cannot update quantity: ' + cartId, error: response.data}
+        }
+        return response.data
     }
 
     public async getSales(saleType: string): Promise<Model.SalesModel[]> {
@@ -209,6 +226,34 @@ export class Utils {
                 return product
             }
         }
+    }
+
+    public async getInStockProducts(saleType: string, quantity: number): Promise<Model.Product[]> {
+        let products = await this.getProducts(saleType)
+        let matched: Model.Products[] = []
+
+        for (let product of products) {
+            if (product.soldOut == false) {
+                matched.push(product)
+            }
+            if (matched.length >= 10) {
+                break
+            }
+        }
+
+        let result: Model.Product[] = []
+        for (let item of matched) {
+            let info = await this.getProductInfo(item.id)
+            for (let product of info.products) {
+                if (product.quantity >= quantity) {
+                    result.push(product)
+                }
+                if (result.length >= 10) {
+                    break
+                }
+            }
+        }
+        return result
     }
 
     public async getSoldOutProduct(saleType: string): Promise<Model.ProductInfoModel> {
@@ -380,5 +425,13 @@ export class Utils {
 
     public async getGiftCard(query: Object): Promise<Model.GiftcardModel> {
         return await this.getDbData('giftcards', query)
+    }
+
+    public async getEndedSale(query: Object): Promise<Model.SaleInfoModel> {
+        return await this.getDbData('sales', query)
+    }
+
+    public async getProduct(query: Object): Promise<Model.ProductInfoModel> {
+        return await this.getDbData('products', query)
     }
 }
