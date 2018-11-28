@@ -59,7 +59,7 @@ describe('View empty brand page on ' + config.browser + ' - ' + config.baseUrl, 
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
-        api = new Utils()
+        api = new Utils.ApiUtils()
         brandWithNoProduct = await api.getBrandWithNoProduct()
         await browser.navigate(config.baseUrl + '/brands/' + brandWithNoProduct.id)
         await pages.popup.closePopup()

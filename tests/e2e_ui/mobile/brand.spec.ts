@@ -59,7 +59,7 @@ describe('View empty brand page on ' + config.device + ' - ' + config.baseUrl, (
     beforeAll(async () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
-        api = new Utils()
+        api = new Utils.ApiUtils()
         brandWithNoProduct = await api.getBrandWithNoProduct()
         await browser.navigate(config.baseUrl + '/brands/' + brandWithNoProduct.id)
         await pages.popup.closeBoardingPopup()
