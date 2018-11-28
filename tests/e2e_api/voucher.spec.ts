@@ -1,7 +1,8 @@
 import config from '../../config/config'
-import { Utils } from '../../common'
+import * as Utils from '../../common/utils'
+let request = new Utils.ApiUtils()
+let access = new Utils.MongoUtils()
 import 'jest-extended'
-let request = new Utils()
 import * as model from '../../common/interface'
 let cookie: string
 let voucher: model.Voucher
@@ -19,7 +20,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     })
 
     test('GET / check expired voucher', async () => {
-        voucherInfo = await request.getVoucher({
+        voucherInfo = await access.getVoucher({
             startDate: { $gt: new Date('2018-11-01T14:56:59.301Z') },
             expiry: { $lt: new Date() }
         })
@@ -29,7 +30,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     })
 
     test('GET / check not started voucher', async () => {
-        voucherInfo = await request.getVoucher({
+        voucherInfo = await access.getVoucher({
             startDate: { $gt: new Date() }
         })
         if (voucherInfo) {
@@ -40,7 +41,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     })
 
     test('GET / check redeemed voucher', async () => {
-        voucherInfo = await request.getVoucher({
+        voucherInfo = await access.getVoucher({
             startDate: { $gt: new Date('2018-11-01T14:56:59.301Z') },
             expiry: { $gte: new Date() },
             used: true
@@ -57,7 +58,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     }) // wait for WWW-349
 
     test('GET / check not allowed to use voucher', async () => {
-        voucherInfo = await request.getVoucher({
+        voucherInfo = await access.getVoucher({
             expiry: { $gte: new Date() },
             customer: { $exists: true }
         })
@@ -69,7 +70,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     })
 
     test('GET / check valid voucher', async () => {
-        voucherInfo = await request.getVoucher({
+        voucherInfo = await access.getVoucher({
             startDate: { $gt: new Date('2018-11-01T14:56:59.301Z') },
             expiry: { $gte: new Date() },
             used: false

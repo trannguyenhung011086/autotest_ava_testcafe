@@ -1,4 +1,5 @@
-import { Browser, Utils } from '../../../common'
+import { Browser } from '../../../common'
+import * as Utils from '../../../common/utils'
 import config from '../../../config/config'
 import { AllPages } from '../../../page_objects'
 import 'jest-extended'
@@ -15,7 +16,7 @@ describe('View subcategory page on ' + config.device + ' - ' + config.baseUrl, (
 
     test('Get product card info', async () => {
         const info = await pages.productList.getProductInfo()
-        const product_info = await new Utils().get(config.api.product + info.id)
+        const product_info = await new Utils.ApiUtils().get(config.api.product + info.id)
         
         expect(info.brand).toEqual(product_info.data.brand.name)
         expect(info.title).toEqual(product_info.data.title)

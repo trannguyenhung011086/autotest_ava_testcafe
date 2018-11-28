@@ -1,16 +1,17 @@
-import { Browser, Utils } from '../../../common'
+import { Browser } from '../../../common'
+import * as Utils from '../../../common/utils'
 import config from '../../../config/config'
 import { AllPages } from '../../../page_objects'
 import 'jest-extended'
 let browser: Browser
 let pages: AllPages
-let api: Utils
+let api: Utils.ApiUtils
 
 describe('View subcategory page on ' + config.browser + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
-        api = new Utils()
+        api = new Utils.ApiUtils()
         await browser.navigate(config.baseUrl + '/vn/subcategories/thoi-trang-nu-5b56d3448f0dd7c0480acd1c')
         await pages.popup.closePopup()
     })

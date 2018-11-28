@@ -1,7 +1,8 @@
 import config from '../../config/config'
-import { Utils } from '../../common'
+import * as Utils from '../../common/utils'
+let request = new Utils.ApiUtils()
+let access = new Utils.MongoUtils()
 import 'jest-extended'
-let request = new Utils()
 import * as Model from '../../common/interface'
 let account: Model.Account
 let creditcard: Model.CreditCardModel

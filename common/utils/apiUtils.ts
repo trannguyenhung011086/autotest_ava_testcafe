@@ -1,54 +1,14 @@
-import config from '../config/config'
-import * as Model from './interface'
-import axios, { AxiosRequestConfig } from 'axios'
+import config from '../../config/config'
+import * as Model from '../interface'
+import AxiosUtils from './axiosUtils'
 import * as faker from "faker/locale/vi"
-import { MongoClient } from 'mongodb'
 
-export class Utils {
-    public settings: AxiosRequestConfig = {
-        baseURL: config.baseUrl,
-        withCredentials: true,
-        headers: {
-            'Content-type': 'application/json'
-        },
-        validateStatus: (status) => {
-            return true
-        }
+export default class ApiUtils extends AxiosUtils {
+    constructor() {
+        super()
     }
-
-    public async post(api: string, data: Object, cookie?: string) {
-        if (cookie) {
-            this.settings.headers['Cookie'] = cookie
-        }
-        const settings = this.settings
-        return await axios.post(encodeURI(api), data, settings)
-    }
-
-    public async put(api: string, data: Object, cookie?: string) {
-        if (cookie) {
-            this.settings.headers['Cookie'] = cookie
-        }
-        const settings = this.settings
-        return await axios.put(encodeURI(api), data, settings)
-    }
-
-    public async delete(api: string, cookie?: string) {
-        if (cookie) {
-            this.settings.headers['Cookie'] = cookie
-        }
-        const settings = this.settings
-        return await axios.delete(encodeURI(api), settings)
-    }
-
-    public async get(api: string, cookie?: string) {
-        if (cookie) {
-            this.settings.headers['Cookie'] = cookie
-        }
-        const settings = this.settings
-        return await axios.get(encodeURI(api), settings)
-    }
-
-    public async getLogInCookie(email: string = config.testAccount.email, password = config.testAccount.password): Promise<string> {
+    public async getLogInCookie(email: string = config.testAccount.email,
+        password = config.testAccount.password): Promise<string> {
         const data: Object = {
             email: email,
             password: password
@@ -81,7 +41,7 @@ export class Utils {
         for (let itemId of productIds) {
             let response = await this.post(config.api.cart, { "productId": itemId }, cookie)
             if (response.status != 200) {
-                throw {message: 'Cannot add to cart: ' + itemId, error: response.data}
+                throw { message: 'Cannot add to cart: ' + itemId, error: response.data }
             }
         }
     }
@@ -89,7 +49,7 @@ export class Utils {
     public async updateQuantityCart(cartId: string, quantity: number, cookie: string): Promise<Model.Cart> {
         let response = await this.put(config.api.cart + cartId, { "quantity": quantity }, cookie)
         if (response.status != 200) {
-            throw {message: 'Cannot update quantity: ' + cartId, error: response.data}
+            throw { message: 'Cannot update quantity: ' + cartId, error: response.data }
         }
         return response.data
     }
@@ -403,35 +363,5 @@ export class Utils {
     public async getOrders(cookie: string): Promise<Model.OrderSummary[]> {
         let response = await this.get(config.api.orders, cookie)
         return response.data
-    }
-
-    public async getDbData(collectionName: string, query: Object): Promise<any> {
-        let client: MongoClient
-        try {
-            client = await MongoClient.connect(config.stagingDb.uri, { useNewUrlParser: true })
-            const db = client.db(config.stagingDb.name)
-            const collection = db.collection(collectionName)
-            return await collection.findOne(query)
-        } catch (err) {
-            throw err
-        } finally {
-            await client.close()
-        }
-    }
-
-    public async getVoucher(query: Object): Promise<Model.VoucherModel> {
-        return await this.getDbData('vouchers', query)
-    }
-
-    public async getGiftCard(query: Object): Promise<Model.GiftcardModel> {
-        return await this.getDbData('giftcards', query)
-    }
-
-    public async getEndedSale(query: Object): Promise<Model.SaleInfoModel> {
-        return await this.getDbData('sales', query)
-    }
-
-    public async getProduct(query: Object): Promise<Model.ProductInfoModel> {
-        return await this.getDbData('products', query)
     }
 }

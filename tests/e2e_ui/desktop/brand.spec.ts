@@ -1,10 +1,11 @@
-import { Browser, Utils } from '../../../common'
+import { Browser } from '../../../common'
+import * as Utils from '../../../common/utils'
 import config from '../../../config/config'
 import { AllPages } from '../../../page_objects'
 import 'jest-extended'
 let browser: Browser
 let pages: AllPages
-let api: Utils
+let api: Utils.ApiUtils
 import * as model from '../../../common/interface'
 let brandWithProducts: model.BrandInfo
 let brandWithNoProduct: model.BrandInfo
@@ -13,7 +14,7 @@ describe('View brand page on ' + config.browser + ' - ' + config.baseUrl, () => 
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
-        api = new Utils()
+        api = new Utils.ApiUtils()
         brandWithProducts = await api.getBrandWithProducts()
         await browser.navigate(config.baseUrl + '/brands/' + brandWithProducts.id)
         await pages.popup.closePopup()

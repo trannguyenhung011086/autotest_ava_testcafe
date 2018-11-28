@@ -1,7 +1,7 @@
 import config from '../../config/config'
-import { Utils } from '../../common'
+import * as Utils from '../../common/utils'
+let request = new Utils.ApiUtils()
 import 'jest-extended'
-let request = new Utils()
 import * as Model from '../../common/interface'
 let item: Model.Product
 let cart: Model.Cart

@@ -1,16 +1,17 @@
-import { Browser, Utils } from '../../../common'
+import { Browser } from '../../../common'
+import * as Utils from '../../../common/utils'
 import config from '../../../config/config'
 import { AllPages } from '../../../page_objects'
 import 'jest-extended'
 let browser: Browser
 let pages: AllPages
-let api: Utils
+let api: Utils.ApiUtils
 
 describe('View sale page on ' + config.device + ' - ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
-        api = new Utils()
+        api = new Utils.ApiUtils()
         const sales = await api.getSaleWithManyProducts(config.api.featuredSales)
         await browser.navigate(config.baseUrl + '/vn/sales/' + sales.slug)
         await pages.popup.closeBoardingPopup()

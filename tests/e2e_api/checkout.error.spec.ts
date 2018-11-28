@@ -1,7 +1,8 @@
 import config from '../../config/config'
-import { Utils } from '../../common'
+import * as Utils from '../../common/utils'
+let request = new Utils.ApiUtils()
+let access = new Utils.MongoUtils()
 import 'jest-extended'
-let request = new Utils()
 import * as Model from '../../common/interface'
 let account: Model.Account
 let addresses: Model.Addresses
@@ -252,11 +253,11 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
     })
 
     test('POST / cannot checkout with sale ended product', async () => {
-        let endedSale = await request.getEndedSale({
+        let endedSale = await access.getEndedSale({
             startDate: { $gte: new Date('2018-11-11 01:00:00.000Z') },
             endDate: { $lt: new Date() }
         })
-        let item = await request.getProduct({
+        let item = await access.getProduct({
             _id: endedSale.products[0].product
         })
 

@@ -1,7 +1,7 @@
 import config from '../../config/config'
-import { Utils } from '../../common'
+import * as Utils from '../../common/utils'
+let request = new Utils.ApiUtils()
 import 'jest-extended'
-let request = new Utils()
 
 describe('Best sellers info API ' + config.baseUrl + config.api.bestSellers, () => {
     test('GET / best sellers list', async () => {

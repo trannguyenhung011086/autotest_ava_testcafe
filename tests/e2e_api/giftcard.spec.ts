@@ -1,7 +1,8 @@
 import config from '../../config/config'
-import { Utils } from '../../common'
+import * as Utils from '../../common/utils'
+let request = new Utils.ApiUtils()
+let access = new Utils.MongoUtils()
 import 'jest-extended'
-let request = new Utils()
 import * as model from '../../common/interface'
 let cookie: string
 let giftCard: model.Giftcard
@@ -19,14 +20,14 @@ describe('Giftcard API ' + config.baseUrl + config.api.giftcard, () => {
     })
 
     test('GET / check redeemed giftcard', async () => {
-        giftcardInfo = await request.getGiftCard({ redeemed: true })
+        giftcardInfo = await access.getGiftCard({ redeemed: true })
         let response = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
     })
 
     test('GET / check not redeemed giftcard', async () => {
-        giftcardInfo = await request.getGiftCard({ redeemed: false })
+        giftcardInfo = await access.getGiftCard({ redeemed: false })
         let response = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
         giftCard = response.data
         expect(response.status).toEqual(200)
