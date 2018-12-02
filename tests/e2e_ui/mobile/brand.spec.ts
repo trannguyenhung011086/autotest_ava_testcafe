@@ -5,7 +5,7 @@ import { AllPages } from '../../../page_objects'
 import 'jest-extended'
 let browser: Browser
 let pages: AllPages
-let api: Utils.ApiUtils()
+let api: Utils.ApiUtils
 import * as model from '../../../common/interface'
 let brandWithProducts: model.BrandInfo
 let brandWithNoProduct: model.BrandInfo
