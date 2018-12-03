@@ -12,6 +12,7 @@ export type Voucher = {
 }
 
 export interface VoucherModel {
+    _id: string
     code: string
     campaign: string
     webCampaign: string

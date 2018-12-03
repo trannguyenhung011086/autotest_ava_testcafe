@@ -364,4 +364,9 @@ export default class ApiUtils extends AxiosUtils {
         let response = await this.get(config.api.orders, cookie)
         return response.data
     }
+
+    public async getOrderInfo(orderId: string, cookie: string): Promise<Model.Order> {
+        let response = await this.get(config.api.orders + '/' + orderId, cookie)
+        return response.data
+    }
 }

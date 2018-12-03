@@ -55,6 +55,7 @@ export type Address = {
 }
 
 export type Order = {
+    _id: string,
     id: string,
     code: string,
     user: string,

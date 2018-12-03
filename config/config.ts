@@ -65,8 +65,8 @@ const config = {
         checkout: '/api/v2/checkout'
     },
     testAccount: {
-        email: 'qa_tech@leflair.vn',
-        password: 'leflairqa',
+        email: 'test1234@test.com',
+        password: '123456789',
         facebook: 'trannguyenhung011086@protonmail.com',
         passwordFacebook: '0944226282',
         usedVoucher: 'VCB150'

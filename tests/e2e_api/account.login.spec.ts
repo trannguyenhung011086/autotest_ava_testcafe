@@ -78,7 +78,7 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         expect(signIn.accountCredit).toBeNumber()
         expect(signIn.provider).toEqual('local')
         expect(signIn.state).toEqual('confirmed')
-        expect(signIn.preview).toBeFalse()
+        expect(signIn.preview).toBeTrue()
         expect(signIn.nsId).toBeString()
         expect(signIn.gender).toBeString()
         expect(signIn.cart).toBeArray()

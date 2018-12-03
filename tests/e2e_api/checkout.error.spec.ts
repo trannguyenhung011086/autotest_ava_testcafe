@@ -4,6 +4,7 @@ let request = new Utils.ApiUtils()
 let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as Model from '../../common/interface'
+let customer: Model.Customer
 let account: Model.Account
 let addresses: Model.Addresses
 let creditcard: Model.CreditCardModel
@@ -16,8 +17,9 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
         addresses = await request.getAddresses(cookie)
+        account = await request.getAccountInfo(cookie)
+        customer = await access.getCustomerInfo({ email: account.email })
     })
 
     afterEach(async () => {
@@ -25,6 +27,26 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
     })
 
     // validate required data
+
+    test('POST / cannot checkout with invalid email', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "FREE"
+        }, 'abc')
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toContainEqual('EMAIL_ADDRESS_REQUIRED')
+        expect(response.data.message).toContainEqual('EMAIL_ADDRESS_NOT_WELL_FORMAT')
+    })
 
     test('POST / cannot checkout with empty data', async () => {
         let response = await request.post(config.api.checkout, {}, cookie)
@@ -281,6 +303,434 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
     // validate voucher
 
-    
+    test('POST / cannot checkout with voucher not meeting min items', async () => {
+        let voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            used: false,
+            numberOfItems: { $gte: 2 }
+        })
+        if (voucher) {
+            let item = await request.getInStockProduct(config.api.currentSales, 1)
 
+            await request.addToCart([item.id], cookie)
+            account = await request.getAccountInfo(cookie)
+
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "COD",
+                "shipping": 25000,
+                "voucher": voucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('NOT_MEET_MINIMUM_ITEMS')
+            expect(response.data.data.voucher.numberOfItems).toEqual(voucher.numberOfItems)
+        }
+    })
+
+    test('POST / cannot checkout with voucher not applied for today', async () => {
+        const today = new Date().getDay()
+        let voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            used: false,
+            specificDays: { $size: 1 },
+            'specificDays.0': { $exists: true, $ne: today }
+        })
+
+        if (voucher) {
+            let item = await request.getInStockProduct(config.api.currentSales, 1)
+
+            await request.addToCart([item.id], cookie)
+            account = await request.getAccountInfo(cookie)
+
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "COD",
+                "shipping": 25000,
+                "voucher": voucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('VOUCHER_NOT_APPLY_FOR_TODAY')
+            expect(response.data.data.voucher.specificDays).toEqual(voucher.specificDays)
+        }
+    })
+
+    test('POST / cannot checkout with voucher not meeting min purchase', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            used: false,
+            minimumPurchase: { $gte: account.cart[0].salePrice }
+        })
+
+        if (voucher) {
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "COD",
+                "shipping": 25000,
+                "voucher": voucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM')
+        }
+    })
+
+    test('POST / cannot checkout with voucher exceeding number of usage', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let vouchers = await access.getVoucherList({
+            expiry: { $gte: new Date() },
+            oncePerAccount: true,
+            numberOfUsage: { $gte: 1 }
+        })
+        let matchedVoucher: Model.VoucherModel
+
+        for (let voucher of vouchers) {
+            const used = await access.countUsedVoucher(voucher._id)
+            if (voucher.numberOfUsage <= used) {
+                matchedVoucher = voucher
+                break
+            }
+        }
+
+        if (matchedVoucher) {
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "COD",
+                "shipping": 25000,
+                "voucher": matchedVoucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('EXCEED_TIME_OF_USAGE')
+        }
+    })
+
+    test('POST / cannot checkout with expired voucher', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let voucher = await access.getVoucher({
+            expiry: { $lt: new Date() },
+            binRange: { $exists: false },
+            used: false
+        })
+
+        if (voucher) {
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "COD",
+                "shipping": 25000,
+                "voucher": voucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('VOUCHER_OR_NOT_VALID')
+        }
+    })
+
+    test('POST / cannot checkout with COD using voucher for CC', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            binRange: { $exists: true },
+            used: false
+        })
+
+        if (voucher) {
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "COD",
+                "shipping": 25000,
+                "voucher": voucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('REQUIRES_CC_PAYMENT')
+        }
+    })
+
+    test('POST / cannot checkout with voucher for Stripe using wrong bin range', async () => {
+        let item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            binRange: { $exists: true },
+            used: false,
+            minimumPurchase: { $lte: item.salePrice }
+        })
+
+        var stripe = require("stripe")("pk_test_zrI3lNk5K5ttTT5LumHpDZWy")
+        const stripeData = {
+            "type": "card",
+            "card[number]": "4000000000003063",
+            "card[cvc]": "222",
+            "card[exp_month]": "02",
+            "card[exp_year]": "22",
+            "guid": "d7954ec1-b754-4de9-aff1-47f65a90f988",
+            "muid": "4f81e594-2a7c-4ddb-b966-db9db589e63f",
+            "sid": "4f81e594-2a7c-4ddb-b966-db9db589e63f",
+            "pasted_fields": "number",
+            "payment_user_agent": "stripe.js/596ce0d0; stripe-js-v3/596ce0d0",
+            "referrer": "https://secure.staging.leflair.io/checkout?language=vn",
+            "key": "pk_test_zrI3lNk5K5ttTT5LumHpDZWy"
+        }
+        const stripeSource = await stripe.sources.create(stripeData)
+
+        if (voucher) {
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "STRIPE",
+                "methodData": stripeSource,
+                "shipping": 0,
+                "voucher": voucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('THIS_CC_NOT_ACCEPTABLE')
+        }
+    })
+
+    test('POST / cannot checkout with already used voucher', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+        customer = await access.getCustomerInfo({ email: account.email })
+
+        let vouchers = await access.getVoucherList({
+            expiry: { $gte: new Date() },
+            binRange: { $exists: false },
+            used: false
+        })
+        let matchedVoucher: Model.VoucherModel
+
+        for (let voucher of vouchers) {
+            const checkUsed = await access.checkUsedVoucher(voucher._id, customer._id)
+            if (voucher.oncePerAccount && checkUsed) {
+                matchedVoucher = voucher
+                break
+            }
+        }
+
+        if (matchedVoucher) {
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "COD",
+                "shipping": 25000,
+                "voucher": matchedVoucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('YOU_ALREADY_USED_THIS_VOUCHER')
+        }
+    })
+
+    test('POST / cannot checkout with voucher only used for other customer', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+        customer = await access.getCustomerInfo({ email: account.email })
+
+        let voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            used: false,
+            binRange: { $exists: false },
+            customer: { $exists: true, $ne: customer._id }
+        })
+
+        if (voucher) {
+            let response = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "COD",
+                "shipping": 25000,
+                "voucher": voucher._id,
+                "accountCredit": account.accountCredit
+            }, cookie)
+            console.log(response.data)
+            expect(response.status).toEqual(400)
+            expect(response.data.message).toEqual('NOT_ALLOWED_TO_USE_VOUCHER')
+        }
+    })
+
+    // validate account credit
+
+    test('POST / cannot checkout with more than available credit', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "COD",
+            "shipping": 25000,
+            "accountCredit": account.accountCredit + 1
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE')
+    })
+
+    // validate product type
+
+    test('POST / cannot checkout with COD - international product', async () => {
+        let item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "COD",
+            "shipping": 0,
+            "accountCredit": 0
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
+    })
+
+    test('POST / cannot checkout with COD - domestic + international product', async () => {
+        let item1 = await request.getInStockProduct(config.api.internationalSales, 1)
+        let item2 = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item1.id, item2.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "COD",
+            "shipping": 0,
+            "accountCredit": 0
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
+    })
+
+    test('POST / cannot checkout with CC - international product', async () => {
+        let item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "CC",
+            "saveCard": true,
+            "shipping": 0,
+            "accountCredit": 0
+        }, cookie)
+
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
+    })
+
+    test.skip('POST / cannot checkout with Stripe - domestic product', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart([item.id], cookie)
+        account = await request.getAccountInfo(cookie)
+
+        var stripe = require("stripe")("pk_test_zrI3lNk5K5ttTT5LumHpDZWy")
+        const stripeData = {
+            "type": "card",
+            "card[number]": "4000000000000093",
+            "card[cvc]": "222",
+            "card[exp_month]": "02",
+            "card[exp_year]": "22",
+            "guid": "d7954ec1-b754-4de9-aff1-47f65a90f988",
+            "muid": "4f81e594-2a7c-4ddb-b966-db9db589e63f",
+            "sid": "4f81e594-2a7c-4ddb-b966-db9db589e63f",
+            "pasted_fields": "number",
+            "payment_user_agent": "stripe.js/596ce0d0; stripe-js-v3/596ce0d0",
+            "referrer": "https://secure.staging.leflair.io/checkout?language=vn",
+            "key": "pk_test_zrI3lNk5K5ttTT5LumHpDZWy"
+        }
+        const stripeSource = await stripe.sources.create(stripeData)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "STRIPE",
+            "methodData": stripeSource,
+            "shipping": 0,
+            "accountCredit": 0
+        }, cookie)
+
+        console.log(response.data)
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
+    }) // wait for WWW-372
 })
