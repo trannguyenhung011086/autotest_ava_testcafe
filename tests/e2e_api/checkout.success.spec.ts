@@ -29,6 +29,7 @@ describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.car
     test('GET / access checkout with empty cart', async () => {
         let response = await request.get(config.api.checkout, cookie)
         checkout = response.data
+
         expect(response.status).toEqual(200)
         expect(checkout.accountCredit).toEqual(account.accountCredit)
         expect(checkout.cart).toBeArrayOfSize(0)
@@ -42,6 +43,7 @@ describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.car
 
         response = await request.get(config.api.checkout, cookie)
         checkout = response.data
+
         expect(response.status).toEqual(200)
         expect(checkout.accountCredit).toEqual(account.accountCredit)
         expect(checkout.creditCards).toBeArray()
@@ -50,7 +52,7 @@ describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.car
 
     test('POST / checkout with COD - domestic product', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -68,13 +70,13 @@ describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.car
         expect(response.data.orderId).not.toBeEmpty()
         expect(response.data.code).not.toBeEmpty()
 
-        let orders = await request.getOrders(cookie)
-        expect(orders[0].code).toInclude(response.data.code)
+        let order = await request.getOrderInfo(response.data.orderId, cookie)
+        expect(order.code).toInclude(response.data.code)
     })
 
-    test('POST / checkout with CC - domestic product', async () => {
+    test('POST / checkout with saved CC - domestic product', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         checkout = (await request.get(config.api.checkout, cookie)).data
@@ -94,11 +96,39 @@ describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.car
             "cart": account.cart,
             "method": "CC",
             "methodData": matchedCard,
+            "shipping": 0,
+            "accountCredit": 0,
+            "email": "test1234@test.com"
+        }, cookie)
+
+        expect(response.status).toEqual(200)
+        expect(response.data.orderId).not.toBeEmpty()
+
+        let order = await request.getOrderInfo(response.data.orderId, cookie)
+        expect(response.data.creditCard.orderRef).toInclude(order.code)
+    })
+
+    test.only('POST / checkout with new CC - domestic product', async () => {
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
+
+        checkout = (await request.get(config.api.checkout, cookie)).data
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "CC",
             "saveCard": true,
             "shipping": 0,
             "accountCredit": 0,
             "email": "test1234@test.com"
         }, cookie)
+
+        console.log(response.data)
 
         expect(response.status).toEqual(200)
         expect(response.data.orderId).not.toBeEmpty()

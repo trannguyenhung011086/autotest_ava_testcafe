@@ -64,6 +64,7 @@ const config = {
         cart: '/api/v2/cart-items/',
         checkout: '/api/v2/checkout'
     },
+    stripeKey: 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy',
     testAccount: {
         email: 'test1234@test.com',
         password: '123456789',

@@ -2,6 +2,7 @@ import config from '../../config/config'
 import * as Model from '../interface'
 import AxiosUtils from './axiosUtils'
 import * as faker from "faker/locale/vi"
+import { doesNotReject } from 'assert';
 
 export default class ApiUtils extends AxiosUtils {
     constructor() {
@@ -37,13 +38,12 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async addToCart(productIds: string[], cookie: string): Promise<void> {
-        for (let itemId of productIds) {
-            let response = await this.post(config.api.cart, { "productId": itemId }, cookie)
-            if (response.status != 200) {
-                throw { message: 'Cannot add to cart: ' + itemId, error: response.data }
-            }
-        }
+    public async addToCart(productId: string, cookie: string): Promise<Model.Cart> {
+        let response = await this.post(config.api.cart, { "productId": productId }, cookie)
+        // if (response.status != 200) {
+        //     throw { message: 'Cannot add to cart: ' + productId, error: response.data }
+        // }
+        return response.data
     }
 
     public async updateQuantityCart(cartId: string, quantity: number, cookie: string): Promise<Model.Cart> {

@@ -12,6 +12,8 @@ let checkout: Model.Checkout
 let item: Model.Product
 let cart: Model.Cart
 let cookie: string
+const stripe = require('stripe')(config.stripeKey)
+
 
 describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
@@ -31,7 +33,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
     test('POST / cannot checkout with invalid email', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
 
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -225,17 +227,9 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
     test('POST / cannot checkout with more than 8 unique products', async () => {
         let items = await request.getInStockProducts(config.api.currentSales, 1)
-        await request.addToCart([
-            items[0].id,
-            items[1].id,
-            items[2].id,
-            items[3].id,
-            items[4].id,
-            items[5].id,
-            items[6].id,
-            items[7].id,
-            items[8].id
-        ], cookie)
+        for (let item of items) {
+            await request.addToCart(item.id, cookie)
+        }
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -256,7 +250,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
     test('POST / cannot checkout with sold out product', async () => {
         let soldOut = await request.getSoldOutProduct(config.api.featuredSales)
-        await request.addToCart([soldOut.products[0].id], cookie)
+        await request.addToCart(soldOut.products[0].id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -283,7 +277,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             _id: endedSale.products[0].product
         })
 
-        await request.addToCart([item.variations[0]._id], cookie)
+        await request.addToCart(item.variations[0]._id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -312,7 +306,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
         if (voucher) {
             let item = await request.getInStockProduct(config.api.currentSales, 1)
 
-            await request.addToCart([item.id], cookie)
+            await request.addToCart(item.id, cookie)
             account = await request.getAccountInfo(cookie)
 
             let response = await request.post(config.api.checkout, {
@@ -330,6 +324,8 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('NOT_MEET_MINIMUM_ITEMS')
             expect(response.data.data.voucher.numberOfItems).toEqual(voucher.numberOfItems)
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
@@ -345,7 +341,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
         if (voucher) {
             let item = await request.getInStockProduct(config.api.currentSales, 1)
 
-            await request.addToCart([item.id], cookie)
+            await request.addToCart(item.id, cookie)
             account = await request.getAccountInfo(cookie)
 
             let response = await request.post(config.api.checkout, {
@@ -363,12 +359,14 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('VOUCHER_NOT_APPLY_FOR_TODAY')
             expect(response.data.data.voucher.specificDays).toEqual(voucher.specificDays)
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
     test('POST / cannot checkout with voucher not meeting min purchase', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let voucher = await access.getVoucher({
@@ -392,12 +390,14 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM')
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
     test('POST / cannot checkout with voucher exceeding number of usage', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let vouchers = await access.getVoucherList({
@@ -430,12 +430,14 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('EXCEED_TIME_OF_USAGE')
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
     test('POST / cannot checkout with expired voucher', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let voucher = await access.getVoucher({
@@ -459,12 +461,14 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('VOUCHER_OR_NOT_VALID')
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
     test('POST / cannot checkout with COD using voucher for CC', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let voucher = await access.getVoucher({
@@ -488,12 +492,14 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('REQUIRES_CC_PAYMENT')
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
     test('POST / cannot checkout with voucher for Stripe using wrong bin range', async () => {
         let item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let voucher = await access.getVoucher({
@@ -503,7 +509,6 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             minimumPurchase: { $lte: item.salePrice }
         })
 
-        var stripe = require("stripe")("pk_test_zrI3lNk5K5ttTT5LumHpDZWy")
         const stripeData = {
             "type": "card",
             "card[number]": "4000000000003063",
@@ -536,12 +541,14 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('THIS_CC_NOT_ACCEPTABLE')
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
     test('POST / cannot checkout with already used voucher', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
 
@@ -575,12 +582,14 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('YOU_ALREADY_USED_THIS_VOUCHER')
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
     test('POST / cannot checkout with voucher only used for other customer', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
 
@@ -603,9 +612,11 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
                 "voucher": voucher._id,
                 "accountCredit": account.accountCredit
             }, cookie)
-            console.log(response.data)
+
             expect(response.status).toEqual(400)
             expect(response.data.message).toEqual('NOT_ALLOWED_TO_USE_VOUCHER')
+        } else {
+            throw new Error('No voucher satisfied for this test!')
         }
     })
 
@@ -613,7 +624,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
     test('POST / cannot checkout with more than available credit', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -635,7 +646,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
     test('POST / cannot checkout with COD - international product', async () => {
         let item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -656,7 +667,8 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
     test('POST / cannot checkout with COD - domestic + international product', async () => {
         let item1 = await request.getInStockProduct(config.api.internationalSales, 1)
         let item2 = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item1.id, item2.id], cookie)
+        await request.addToCart(item1.id, cookie)
+        await request.addToCart(item2.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -676,7 +688,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
     test('POST / cannot checkout with CC - international product', async () => {
         let item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
@@ -697,10 +709,9 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
 
     test.skip('POST / cannot checkout with Stripe - domestic product', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart([item.id], cookie)
+        await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
-        var stripe = require("stripe")("pk_test_zrI3lNk5K5ttTT5LumHpDZWy")
         const stripeData = {
             "type": "card",
             "card[number]": "4000000000000093",
@@ -729,8 +740,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             "accountCredit": 0
         }, cookie)
 
-        console.log(response.data)
         expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
+        expect(response.data.message).toEqual('Domestic orders cannot be paid by Stripe. Please refresh the page and try again.')
     }) // wait for WWW-372
 })

@@ -35,6 +35,7 @@
     "@types/mongodb": "^3.1.14",
     "@types/node": "^10.12.10",
     "@types/selenium-webdriver": "^3.0.13",
+    "@types/stripe": "^6.0.4",
     "axios": "^0.18.0",
     "babel-core": "^6.26.3",
     "babel-jest": "^23.6.0",
@@ -47,6 +48,7 @@
     "mongodb": "^3.1.10",
     "selenium-standalone": "^6.15.4",
     "selenium-webdriver": "^4.0.0-alpha.1",
+    "stripe": "^6.17.0",
     "ts-jest": "^23.10.5",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.6"
