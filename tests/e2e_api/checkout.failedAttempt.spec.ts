@@ -11,7 +11,7 @@ let payDollarCreditCard: Model.PayDollarCreditCard
 let failedAttemptOrder: Model.FailedAttempt
 let cookie: string
 
-describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
@@ -57,8 +57,31 @@ describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.car
         expect(item.id).toEqual(failedData.products[0].productId)
     })
 
-    test.only('POST / recheckout with COD', async () => {
+    test('POST / recheckout with COD', async () => {
         failedAttemptOrder = await request.createFailedAttemptOrder(cookie)
-        console.log(failedAttemptOrder)
+        let response = await request.post(config.api.checkout + '/order/' + failedAttemptOrder.code, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": [
+                {
+                    "id": failedAttemptOrder.products[0].id,
+                    "quantity": failedAttemptOrder.products[0].quantity,
+                    "salePrice": failedAttemptOrder.products[0].salePrice
+                }
+            ],
+            "method": "COD",
+            "shipping": 25000,
+            "accountCredit": 0
+        }, cookie)
+
+        expect(response.status).toEqual(200)
+        expect(response.data.code).not.toBeEmpty()
+
+        let order = await request.getOrderInfo(response.data.orderId, cookie)
+        expect(order.code).toInclude(response.data.code)
+        expect(order.paymentSummary.method).toEqual('COD')
+        expect(order.paymentSummary.shipping).toEqual(25000)
     })
 })

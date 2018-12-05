@@ -9,7 +9,7 @@ let cart: Model.Cart
 let addresses: Model.Addresses
 let cookie: string
 
-describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
@@ -85,5 +85,7 @@ describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.car
 
         let order = await request.getOrderInfo(response.data.orderId, cookie)
         expect(order.code).toInclude(response.data.code)
+        expect(order.paymentSummary.method).toEqual('COD')
+        expect(order.paymentSummary.shipping).toEqual(25000)
     })
 })

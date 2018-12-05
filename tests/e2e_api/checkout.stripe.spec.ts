@@ -24,7 +24,7 @@ const stripeData = {
     "key": config.stripeKey
 }
 
-describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)

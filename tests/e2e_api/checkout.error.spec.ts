@@ -7,14 +7,12 @@ import * as Model from '../../common/interface'
 let customer: Model.Customer
 let account: Model.Account
 let addresses: Model.Addresses
-let creditcard: Model.CreditCardModel
-let checkout: Model.Checkout
 let item: Model.Product
 let cart: Model.Cart
 let cookie: string
 const stripe = require('stripe')(config.stripeKey)
 
-describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Error ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         await request.addAddresses(cookie)
@@ -193,7 +191,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             "cart": [{
                 "id": cart.id,
                 "quantity": 1,
-                "salePrice": cart.salePrice + 1
+                "salePrice": cart.salePrice - 1
             }],
             "method": "FREE"
         }, cookie)
@@ -202,7 +200,7 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
         expect(response.data.message[0].message).toEqual('PRICE_MISMATCH')
     })
 
-    test('POST / cannot checkout with mismatched price', async () => {
+    test('POST / cannot checkout with invalid product', async () => {
         item = await request.getInStockProduct(config.api.currentSales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
@@ -512,6 +510,10 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             minimumPurchase: { $lte: item.salePrice }
         })
 
+        if (!voucher) {
+            throw new Error('No voucher found for this test!')
+        }
+
         const stripeData = {
             "type": "card",
             "card[number]": "4000000000003063",
@@ -527,10 +529,6 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
             "key": config.stripeKey
         }
         const stripeSource = await stripe.sources.create(stripeData)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -553,7 +551,6 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
         let item = await request.getInStockProduct(config.api.currentSales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
-        customer = await access.getCustomerInfo({ email: account.email })
 
         let vouchers = await access.getVoucherList({
             expiry: { $gte: new Date() },
@@ -594,7 +591,6 @@ describe('Checkout API - Logged in - Error ' + config.baseUrl + config.api.cart,
         let item = await request.getInStockProduct(config.api.currentSales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
-        customer = await access.getCustomerInfo({ email: account.email })
 
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },

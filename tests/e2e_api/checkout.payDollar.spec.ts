@@ -11,7 +11,7 @@ let addresses: Model.Addresses
 let payDollarCreditCard: Model.PayDollarCreditCard
 let cookie: string
 
-describe('Checkout API - Logged in - Success ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
