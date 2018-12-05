@@ -8,8 +8,10 @@ export class Browser {
     private driver: ThenableWebDriver;
     public constructor(private browserName: string, private device: string = 'desktop') {
         let chromeOptions = new ChromeOptions()
+        chromeOptions.addArguments("--window-size=1280,720")
         // chromeOptions.headless()
         let firefoxOptions = new FirefoxOptions()
+        firefoxOptions.addArguments("--window-size=1280,720")
         // firefoxOptions.headless()
 
         if (device == 'desktop') {
@@ -97,6 +99,13 @@ export class Browser {
         await this.driver.executeScript("arguments[0].scrollIntoView(true)", el)
         el = await this.findElement(selector)
         await this.driver.wait(until.elementIsVisible(el), 1000)
+        return el
+    }
+
+    public async hover(selector: string) {
+        var el = await this.scrollTo(selector)
+        var strJavaScript = "var mouseEventObj = document.createEvent('MouseEvents'); mouseEventObj.initEvent( 'mouseover', true, true ); arguments[0].dispatchEvent(mouseEventObj);"
+        await this.driver.executeScript(strJavaScript, el)
     }
 
     public async click(selector: string) {

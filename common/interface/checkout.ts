@@ -1,10 +1,23 @@
 import * as cart from '../interface/cart'
 import * as creditcard from '../interface/creditcard'
+import * as address from '../interface/addresses'
+import * as order from '../interface/orders'
 
 export interface Checkout {
     accountCredit: number
     cart: cart.Cart[]
     creditCards: creditcard.CreditCardModel[]
+}
+
+export interface FailedAttempt extends Checkout {
+    address: {
+        billing: address.Billing,
+        shipping: address.Shipping
+    }
+    code: string
+    email: string
+    orderId: string
+    products: order.OrderedProduct[]
 }
 
 export interface StripeSource {
@@ -47,4 +60,44 @@ export interface StripeSource {
     status: string
     type: string
     usage: string
+}
+
+export type PayDollarCreditCard = {
+    lang: string,
+    currCode: string,
+    payType: string,
+    merchantId: string,
+    orderRef: string,
+    amount: number,
+    transactionUrl: string,
+    memberPay_service: string,
+    memberPay_memberId?: string,
+    cardHolder?: string,
+    cardNo?: string,
+    pMethod?: string,
+    epMonth?: number,
+    epYear?: number,
+    securityCode?: string
+}
+
+export interface PayDollarOrder {
+    orderId: string
+    code: string
+    creditCard: PayDollarCreditCard
+    cardService: string
+}
+
+export interface PayDollarResponse {
+    successcode: string
+    Ref: string
+    PayRef: string
+    Amt: string
+    Cur: string
+    prc: string
+    src: string
+    Ord: string
+    Holder: string
+    AuthId: string
+    TxTime: string
+    errMsg: string
 }

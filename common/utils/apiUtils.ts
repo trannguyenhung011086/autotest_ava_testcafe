@@ -29,20 +29,28 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async emptyCart(cookie: string): Promise<void> {
-        let response = await this.get(config.api.account, cookie)
-        let account: Model.Account = response.data
-        if (account.cart.length >= 1) {
+        let account = await this.getAccountInfo(cookie)
+        let deletedList = []
+
+        if (account.cart.length > 0) {
             for (let item of account.cart) {
-                await this.delete(config.api.cart + item.id)
+                deletedList.push(item.id)
+            }
+
+            let response = await this.put(config.api.cart + 'delete-multiple',
+                { "cartItemIds": deletedList }, cookie)
+
+            if (response.status != 200) {
+                throw { message: 'Cannot remove from cart!', error: response.data }
             }
         }
     }
 
-    public async addToCart(productId: string, cookie: string): Promise<Model.Cart> {
+    public async addToCart(productId: string, cookie: string, check = true): Promise<Model.Cart> {
         let response = await this.post(config.api.cart, { "productId": productId }, cookie)
-        // if (response.status != 200) {
-        //     throw { message: 'Cannot add to cart: ' + productId, error: response.data }
-        // }
+        if (check && response.status != 200) {
+            throw { message: 'Cannot add to cart: ' + productId, error: response.data }
+        }
         return response.data
     }
 
@@ -368,5 +376,71 @@ export default class ApiUtils extends AxiosUtils {
     public async getOrderInfo(orderId: string, cookie: string): Promise<Model.Order> {
         let response = await this.get(config.api.orders + '/' + orderId, cookie)
         return response.data
+    }
+
+    public async parsePayDollarRes(content: string): Promise<Model.PayDollarResponse> {
+        let result: any = content.split('&').reduce((result, value) => {
+            result[value.split('=')[0]] = value.split('=')[1]
+            return result
+        }, {})
+        return result
+    }
+
+    public async failedAttempt(orderCode: string, cookie: string): Promise<Model.FailedAttempt> {
+        let response = await this.post(config.api.checkout + '/order/failed-attempt', {
+            "errorMsg": "invalid card",
+            "orderCode": orderCode
+        }, cookie)
+
+        if (response.status != 200) {
+            throw { message: 'Cannot execute failed-attempt checkout', error: response.data }
+        }
+        return response.data
+    }
+
+    public async checkoutPayDollar(account: Model.Account, addresses: Model.Addresses,
+        cookie: string): Promise<Model.PayDollarOrder> {
+        let response = await this.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "CC",
+            "saveCard": true,
+            "shipping": 0,
+            "accountCredit": account.accountCredit
+        }, cookie)
+
+        if (response.status != 200) {
+            throw { message: 'Cannot execute checkout', error: response.data }
+        }
+        return response.data
+    }
+    public async createFailedAttemptOrder(cookie: string): Promise<Model.FailedAttempt> {
+        let item = await this.getInStockProduct(config.api.currentSales, 1)
+        await this.addToCart(item.id, cookie)
+        let account = await this.getAccountInfo(cookie)
+        let addresses = await this.getAddresses(cookie)
+
+        let checkout = await this.checkoutPayDollar(account, addresses, cookie)
+
+        let payDollarCreditCard = checkout.creditCard
+        payDollarCreditCard.cardHolder = 'testing card'
+        payDollarCreditCard.cardNo = '5422882800700006'
+        payDollarCreditCard.pMethod = 'Master'
+        payDollarCreditCard.epMonth = 7
+        payDollarCreditCard.epYear = 2020
+        payDollarCreditCard.securityCode = '123'
+
+        let result = await this.postFormUrl(config.payDollarBase, config.payDollarApi, payDollarCreditCard)
+        let parse = await this.parsePayDollarRes(result.data)
+
+        if (parse.successcode != '1') {
+            throw new Error('Transaction is not failed. Cannot create failed-attempt order!')
+        }
+
+        let failedAttempt = await this.failedAttempt(parse.Ref, cookie)
+        return failedAttempt
     }
 }

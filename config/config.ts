@@ -65,6 +65,8 @@ const config = {
         checkout: '/api/v2/checkout'
     },
     stripeKey: 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy',
+    payDollarBase: 'https://test.paydollar.com',
+    payDollarApi: '/b2cDemo/eng/directPay/payComp.jsp',
     testAccount: {
         email: 'test1234@test.com',
         password: '123456789',
