@@ -12,7 +12,7 @@ let cookie: string
 
 describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.cart, () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)

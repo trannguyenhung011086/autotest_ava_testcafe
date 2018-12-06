@@ -60,7 +60,9 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
             }
 
             expect(orderItem.isBulky).toBeBoolean()
-            expect(orderItem.isCrossBorder).toBeBoolean()
+            if (orderItem.isCrossBorder != null) {
+                expect(orderItem.isCrossBorder).toBeBoolean()
+            }
             expect(orderItem.isFirstOrder).toBeBoolean()
             expect(orderItem.isVirtual).toBeBoolean()
 
@@ -86,16 +88,19 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
                 orderItem.paymentSummary.method == 'STRIPE') {
                 expect(orderItem.paymentSummary.card).toBeNull()
             }
-            if (orderItem.paymentSummary.method == 'CC') {
+            if (orderItem.paymentSummary.card != null) {
                 expect(orderItem.paymentSummary.card.lastDigits).toMatch(/\d{4}/)
                 expect(card).toContain(orderItem.paymentSummary.card.type)
             }
 
+            let total = orderItem.paymentSummary.subtotal + orderItem.paymentSummary.shipping +
+                orderItem.paymentSummary.accountCredit - orderItem.paymentSummary.voucherAmount
             expect(orderItem.paymentSummary.shipping).toBeLessThanOrEqual(25000)
             expect(orderItem.paymentSummary.subtotal).toBeGreaterThanOrEqual(0)
             expect(orderItem.paymentSummary.total).toBeGreaterThanOrEqual(0)
             expect(orderItem.paymentSummary.accountCredit).toBeLessThanOrEqual(0)
             expect(orderItem.paymentSummary.voucherAmount).toBeGreaterThanOrEqual(0)
+            expect(orderItem.paymentSummary.total).toEqual(total)
 
             for (let product of orderItem.products) {
                 expect(product.id).not.toBeEmpty()
@@ -115,8 +120,7 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
     })
 
     test('GET / cannot access order info with invalid cookie', async () => {
-        let response = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc',
-            cookie = 'abc')
+        let response = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', 'abc')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Invalid request.')
     })

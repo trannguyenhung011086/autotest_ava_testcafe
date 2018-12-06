@@ -7,10 +7,12 @@ import * as model from '../../common/interface'
 let cookie: string
 let voucher: model.Voucher
 let voucherInfo: model.VoucherModel
+let customer: model.Customer
 
 describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
+        customer = await access.getCustomerInfo({ email: config.testAccount.email })
     })
 
     test('GET / check invalid voucher', async () => {
@@ -24,6 +26,11 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
             startDate: { $gt: new Date('2018-11-01T14:56:59.301Z') },
             expiry: { $lt: new Date() }
         })
+
+        if (!voucherInfo) {
+            throw new Error('No voucher found for this test!')
+        }
+
         let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('VOUCHER_CAMPAIGN_INVALID_OR_ENDED')
@@ -33,11 +40,14 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
         voucherInfo = await access.getVoucher({
             startDate: { $gt: new Date() }
         })
-        if (voucherInfo) {
-            let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
-            expect(response.status).toEqual(400)
-            expect(response.data.message).toEqual('VOUCHER_CAMPAIGN_INVALID_OR_NOT_STARTED')
+
+        if (!voucherInfo) {
+            throw new Error('No voucher found for this test!')
         }
+
+        let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('VOUCHER_CAMPAIGN_INVALID_OR_NOT_STARTED')
     })
 
     test('GET / check redeemed voucher', async () => {
@@ -46,27 +56,45 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
             expiry: { $gte: new Date() },
             used: true
         })
+
+        if (!voucherInfo) {
+            throw new Error('No voucher found for this test!')
+        }
+
         let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('VOUCHER_HAS_BEEN_REDEEMED')
     })
 
-    test.skip('GET / check already used voucher', async () => {
-        let response = await request.get(config.api.voucher + config.testAccount.usedVoucher, cookie)
+    test('GET / check already used voucher', async () => {
+        let voucher = await access.getUsedVoucher({
+            expiry: { $gte: new Date() },
+            used: false,
+            oncePerAccount: true
+        }, customer)
+
+        if (!voucher) {
+            throw new Error('No voucher found for this test!')
+        }
+
+        let response = await request.get(config.api.voucher + voucher.code, cookie)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('YOU_ALREADY_USED_THIS_VOUCHER')
-    }) // wait for WWW-349
+    })
 
     test('GET / check not allowed to use voucher', async () => {
         voucherInfo = await access.getVoucher({
             expiry: { $gte: new Date() },
             customer: { $exists: true }
         })
-        if (voucherInfo) {
-            let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
-            expect(response.status).toEqual(400)
-            expect(response.data.message).toEqual('NOT_ALLOWED_TO_USE_VOUCHER')
+
+        if (!voucherInfo) {
+            throw new Error('No voucher found for this test!')
         }
+
+        let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('NOT_ALLOWED_TO_USE_VOUCHER')
     })
 
     test('GET / check valid voucher', async () => {
@@ -75,6 +103,11 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
             expiry: { $gte: new Date() },
             used: false
         })
+
+        if (!voucherInfo) {
+            throw new Error('No voucher found for this test!')
+        }
+
         let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
         voucher = response.data
         expect(response.status).toEqual(200)

@@ -9,6 +9,7 @@ let item: Model.Product
 let cart: Model.Cart
 let addresses: Model.Addresses
 let payDollarCreditCard: Model.PayDollarCreditCard
+let creditCards: Model.CreditCard[]
 let cookie: string
 
 describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.cart, () => {
@@ -68,6 +69,10 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
 
         let order = await request.getOrderInfo(response.data.orderId, cookie)
         expect(response.data.creditCard.orderRef).toInclude(order.code)
+        expect(order.status).toEqual('pending')
+        expect(order.isCrossBorder).toBeFalse()
+        expect(order.paymentSummary.method).toEqual('CC')
+        expect(order.paymentSummary.shipping).toEqual(0)
 
         payDollarCreditCard = response.data.creditCard
         payDollarCreditCard.cardHolder = 'testing card'
@@ -109,6 +114,10 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
 
         let order = await request.getOrderInfo(response.data.orderId, cookie)
         expect(response.data.creditCard.orderRef).toInclude(order.code)
+        expect(order.status).toEqual('pending')
+        expect(order.isCrossBorder).toBeFalse()
+        expect(order.paymentSummary.method).toEqual('CC')
+        expect(order.paymentSummary.shipping).toEqual(0)
 
         payDollarCreditCard = response.data.creditCard
         payDollarCreditCard.cardHolder = 'testing card'
@@ -126,14 +135,10 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
         expect(parse.errMsg).toMatch(/Transaction completed/)
     })
 
-    test('POST / checkout with saved CC - domestic product', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        checkout = (await request.get(config.api.checkout, cookie)).data
+    test('POST / checkout with saved CC', async () => {
+        creditCards = await request.getCards(cookie)
         let matchedCard: string
-        for (let card of checkout.creditCards) {
+        for (let card of creditCards) {
             if (!card.provider) {
                 matchedCard = card.id
                 break
@@ -141,8 +146,12 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
         }
 
         if (!matchedCard) {
-            throw new Error('No CC found for this test!')
+            throw new Error('No saved CC found for this test!')
         }
+
+        item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -161,6 +170,10 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
 
         let order = await request.getOrderInfo(response.data.orderId, cookie)
         expect(response.data.creditCard.orderRef).toInclude(order.code)
+        expect(order.status).toEqual('pending')
+        expect(order.isCrossBorder).toBeFalse()
+        expect(order.paymentSummary.method).toEqual('CC')
+        expect(order.paymentSummary.shipping).toEqual(0)
 
         payDollarCreditCard = response.data.creditCard
         let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi, payDollarCreditCard)

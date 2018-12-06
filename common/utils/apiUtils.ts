@@ -28,7 +28,7 @@ export default class ApiUtils extends AxiosUtils {
         return response.data
     }
 
-    public async emptyCart(cookie: string): Promise<void> {
+    public async emptyCart(cookie: string) {
         let account = await this.getAccountInfo(cookie)
         let deletedList = []
 
@@ -43,6 +43,7 @@ export default class ApiUtils extends AxiosUtils {
             if (response.status != 200) {
                 throw { message: 'Cannot remove from cart!', error: response.data }
             }
+            return response.data
         }
     }
 
@@ -188,6 +189,10 @@ export default class ApiUtils extends AxiosUtils {
             }
         }
 
+        if (!matched) {
+            throw new Error('There is no product with stock!')
+        }
+
         let info = await this.getProductInfo(matched.id)
         for (let product of info.products) {
             if (product.quantity >= quantity) {
@@ -207,6 +212,10 @@ export default class ApiUtils extends AxiosUtils {
             if (matched.length >= 10) {
                 break
             }
+        }
+
+        if (matched.length == 0) {
+            throw new Error('There is no product with stock')
         }
 
         let result: Model.Product[] = []
@@ -375,6 +384,11 @@ export default class ApiUtils extends AxiosUtils {
 
     public async getOrderInfo(orderId: string, cookie: string): Promise<Model.Order> {
         let response = await this.get(config.api.orders + '/' + orderId, cookie)
+        return response.data
+    }
+
+    public async getCards(cookie: string): Promise<Model.CreditCard[]> {
+        let response = await this.get(config.api.creditcard, cookie)
         return response.data
     }
 

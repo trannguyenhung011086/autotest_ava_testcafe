@@ -23,7 +23,7 @@ export default class MongoUtils {
             client = await MongoClient.connect(config.stagingDb.uri, { useNewUrlParser: true })
             const db = client.db(config.stagingDb.name)
             const collection = db.collection(collectionName)
-            const result = await collection.find(query).limit(10)
+            const result = await collection.find(query).limit(20)
             return result.toArray()
         } catch (err) {
             throw err
@@ -98,5 +98,25 @@ export default class MongoUtils {
             }
         })
         return !!count
+    }
+
+    public async getUsedVoucher(query: Object, customer: Model.Customer): Promise<Model.VoucherModel> {
+        let vouchers = await this.getVoucherList(query)
+        for (let voucher of vouchers) {
+            const checkUsed = await this.checkUsedVoucher(voucher._id, customer._id)
+            if (checkUsed) {
+                return voucher
+            }
+        }
+    }
+
+    public async getNotUsedVoucher(query: Object, customer: Model.Customer): Promise<Model.VoucherModel> {
+        let vouchers = await this.getVoucherList(query)
+        for (let voucher of vouchers) {
+            const checkUsed = await this.checkUsedVoucher(voucher._id, customer._id)
+            if (!checkUsed) {
+                return voucher
+            }
+        }
     }
 }

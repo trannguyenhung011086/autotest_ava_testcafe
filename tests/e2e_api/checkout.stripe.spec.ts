@@ -5,7 +5,7 @@ import 'jest-extended'
 import * as Model from '../../common/interface'
 let account: Model.Account
 let item: Model.Product
-let cart: Model.Cart
+let creditCards: Model.CreditCard[]
 let addresses: Model.Addresses
 let cookie: string
 const stripe = require('stripe')(config.stripeKey)
@@ -51,9 +51,7 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.cart
             },
             "cart": account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource,
-            "shipping": 0,
-            "accountCredit": 0
+            "methodData": stripeSource
         }, cookie)
 
         expect(response.status).toEqual(400)
@@ -75,9 +73,7 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.cart
             },
             "cart": account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource,
-            "shipping": 0,
-            "accountCredit": 0
+            "methodData": stripeSource
         }, cookie)
 
         expect(response.status).toEqual(500)
@@ -103,9 +99,7 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.cart
             "cart": account.cart,
             "method": "STRIPE",
             "methodData": stripeSource,
-            "saveCard": false,
-            "shipping": 0,
-            "accountCredit": 0
+            "saveCard": false
         }, cookie)
 
         expect(response.status).toEqual(200)
@@ -113,6 +107,10 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.cart
 
         let order = await request.getOrderInfo(response.data.orderId, cookie)
         expect(order.code).toInclude(response.data.code)
+        expect(order.status).toEqual('placed')
+        expect(order.isCrossBorder).toBeTrue()
+        expect(order.paymentSummary.method).toEqual('STRIPE')
+        expect(order.paymentSummary.shipping).toEqual(0)
     })
 
     test('POST / checkout with new Stripe (save card) - MASTER', async () => {
@@ -131,9 +129,7 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.cart
             "cart": account.cart,
             "method": "STRIPE",
             "methodData": stripeSource,
-            "saveCard": true,
-            "shipping": 0,
-            "accountCredit": 0
+            "saveCard": true
         }, cookie)
 
         expect(response.status).toEqual(200)
@@ -141,5 +137,49 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.cart
 
         let order = await request.getOrderInfo(response.data.orderId, cookie)
         expect(order.code).toInclude(response.data.code)
+        expect(order.status).toEqual('placed')
+        expect(order.isCrossBorder).toBeTrue()
+        expect(order.paymentSummary.method).toEqual('STRIPE')
+        expect(order.paymentSummary.shipping).toEqual(0)
+    })
+
+    test('POST / checkout with saved Stripe', async () => {
+        creditCards = await request.getCards(cookie)
+        let matchedCard: string
+        for (let card of creditCards) {
+            if (card.provider) {
+                matchedCard = card.id
+                break
+            }
+        }
+
+        if (!matchedCard) {
+            throw new Error('No saved CC found for this test!')
+        }
+
+        item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "STRIPE",
+            "methodData": matchedCard,
+            "saveCard": true
+        }, cookie)
+
+        expect(response.status).toEqual(200)
+        expect(response.data.orderId).not.toBeEmpty()
+
+        let order = await request.getOrderInfo(response.data.orderId, cookie)
+        expect(order.code).toInclude(response.data.code)
+        expect(order.status).toEqual('placed')
+        expect(order.isCrossBorder).toBeTrue()
+        expect(order.paymentSummary.method).toEqual('STRIPE')
+        expect(order.paymentSummary.shipping).toEqual(0)
     })
 })
