@@ -431,8 +431,10 @@ export default class ApiUtils extends AxiosUtils {
         }
         return response.data
     }
-    public async createFailedAttemptOrder(cookie: string): Promise<Model.FailedAttempt> {
-        let item = await this.getInStockProduct(config.api.currentSales, 1)
+    public async createFailedAttemptOrder(cookie: string,
+        saleType = config.api.currentSales): Promise<Model.FailedAttempt> {
+
+        let item = await this.getInStockProduct(saleType, 2)
         await this.addToCart(item.id, cookie)
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)

@@ -18,7 +18,7 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
-        failedAttemptOrder = await request.createFailedAttemptOrder(cookie)
+        failedAttemptOrder = await request.createFailedAttemptOrder(cookie, config.api.featuredSales)
     })
 
     afterEach(async () => {
@@ -490,22 +490,14 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
     })
 
     test('POST / cannot recheckout with already used voucher', async () => {
-        let vouchers = await access.getVoucherList({
+        let voucher = await access.getUsedVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: false },
-            used: false
-        })
-        let matchedVoucher: Model.VoucherModel
+            used: false,
+            oncePerAccount: true
+        }, customer)
 
-        for (let voucher of vouchers) {
-            const checkUsed = await access.checkUsedVoucher(voucher._id, customer._id)
-            if (voucher.oncePerAccount && checkUsed) {
-                matchedVoucher = voucher
-                break
-            }
-        }
-
-        if (!matchedVoucher) {
+        if (!voucher) {
             throw new Error('No voucher found for this test!')
         }
 
@@ -524,7 +516,7 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
                 ],
                 "method": "COD",
                 "shipping": 25000,
-                "voucher": matchedVoucher._id
+                "voucher": voucher._id
             }, cookie)
 
         expect(response.status).toEqual(400)
