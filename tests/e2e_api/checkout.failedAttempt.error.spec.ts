@@ -11,7 +11,7 @@ let failedAttemptOrder: Model.FailedAttempt
 let cookie: string
 const stripe = require('stripe')(config.stripeKey)
 
-describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
@@ -223,6 +223,29 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
         expect(response.status).toEqual(400)
         expect(response.data.message[0].message).toEqual('CART_MISMATCH_CANT_FIND_PRODUCT')
     })
+
+    // validate address
+
+    // test.only('POST / cannot recheckout with new address', async () => {
+    //     let response = await request.post(config.api.checkout + '/order/' +
+    //         failedAttemptOrder.code, {
+    //             "address": {
+    //                 "shipping": addresses.shipping[1],
+    //                 "billing": addresses.billing[1]
+    //             },
+    //             "cart": [
+    //                 {
+    //                     "id": failedAttemptOrder.products[0].id,
+    //                     "quantity": failedAttemptOrder.products[0].quantity,
+    //                     "salePrice": failedAttemptOrder.products[0].salePrice
+    //                 }
+    //             ],
+    //             "method": "FREE"
+    //         }, cookie)
+
+    //     expect(response.status).toEqual(400)
+    //     expect(response.data.message[0].message).toEqual('CART_MISMATCH_CANT_FIND_PRODUCT')
+    // })
 
     // validate voucher
 

@@ -1,6 +1,7 @@
 import config from '../../config/config'
 import * as Model from '../interface'
 import AxiosUtils from './axiosUtils'
+import MongoUtils from './mongoUtils'
 import * as faker from "faker/locale/vi"
 import { doesNotReject } from 'assert';
 
@@ -392,6 +393,27 @@ export default class ApiUtils extends AxiosUtils {
         return response.data
     }
 
+    public async getCard(provider: string, cookie: string): Promise<string> {
+        let creditCards = await this.getCards(cookie)
+        let matchedCard: string
+
+        for (let card of creditCards) {
+            if (provider == 'PayDollar' && !card.provider) {
+                matchedCard = card.id
+                break
+            }
+            if (provider == 'Stripe' && card.provider) {
+                matchedCard = card.id
+                break
+            }
+        }
+
+        if (!matchedCard) {
+            throw new Error('No saved CC found for this test!')
+        }
+        return matchedCard
+    }
+
     public async parsePayDollarRes(content: string): Promise<Model.PayDollarResponse> {
         let result: any = content.split('&').reduce((result, value) => {
             result[value.split('=')[0]] = value.split('=')[1]
@@ -413,26 +435,229 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async checkoutPayDollar(account: Model.Account, addresses: Model.Addresses,
-        cookie: string): Promise<Model.PayDollarOrder> {
-        let response = await this.post(config.api.checkout, {
+        cookie: string, saveNewCard?: boolean, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        let data = {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
             },
             "cart": account.cart,
             "method": "CC",
-            "saveCard": true,
-            "shipping": 0,
-            "accountCredit": account.accountCredit
-        }, cookie)
+            "shipping": 0
+        }
+        if (saveNewCard) {
+            data['saveCard'] = saveNewCard
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
 
+        let response = await this.post(config.api.checkout, data, cookie)
         if (response.status != 200) {
             throw { message: 'Cannot execute checkout', error: response.data }
         }
         return response.data
     }
+
+    public async reCheckoutPayDollar(failedAttemptOrder: Model.FailedAttempt,
+        addresses: Model.Addresses, cookie: string, saveNewCard?: boolean,
+        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        let data = {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": [
+                {
+                    "id": failedAttemptOrder.products[0].id,
+                    "quantity": failedAttemptOrder.products[0].quantity,
+                    "salePrice": failedAttemptOrder.products[0].salePrice
+                }
+            ],
+            "method": "CC",
+            "shipping": 0
+        }
+        if (saveNewCard) {
+            data['saveCard'] = saveNewCard
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
+
+        let response = await this.post(config.api.checkout + '/order/' +
+            failedAttemptOrder.code, data, cookie)
+
+        if (response.status != 200) {
+            throw { message: 'Cannot execute re-checkout', error: response.data }
+        }
+        return response.data
+    }
+
+    public async checkoutSavedPayDollar(account: Model.Account, addresses: Model.Addresses,
+        cookie: string, cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        let data = {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "CC",
+            "methodData": cardId,
+            "shipping": 0
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
+
+        let response = await this.post(config.api.checkout, data, cookie)
+        if (response.status != 200) {
+            throw { message: 'Cannot execute checkout', error: response.data }
+        }
+        return response.data
+    }
+
+    public async reCheckoutSavedPayDollar(failedAttemptOrder: Model.FailedAttempt,
+        addresses: Model.Addresses, cookie: string, cardId: string,
+        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        let data = {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": [
+                {
+                    "id": failedAttemptOrder.products[0].id,
+                    "quantity": failedAttemptOrder.products[0].quantity,
+                    "salePrice": failedAttemptOrder.products[0].salePrice
+                }
+            ],
+            "method": "CC",
+            "methodData": cardId,
+            "shipping": 0
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
+
+        let response = await this.post(config.api.checkout + '/order/' +
+            failedAttemptOrder.code, data, cookie)
+
+        if (response.status != 200) {
+            throw { message: 'Cannot execute re-checkout', error: response.data }
+        }
+        return response.data
+    }
+
+    public async checkoutCod(account: Model.Account, addresses: Model.Addresses,
+        cookie: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        let data = {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "COD",
+            "shipping": 25000
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
+
+        let response = await this.post(config.api.checkout, data, cookie)
+        if (response.status != 200) {
+            throw { message: 'Cannot execute checkout', error: response.data }
+        }
+        return response.data
+    }
+
+    public async checkoutStripe(account: Model.Account, addresses: Model.Addresses,
+        cookie: string, stripeSource: any, saveNewCard?: boolean,
+        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        let data = {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "STRIPE",
+            "methodData": stripeSource,
+            "shipping": 0
+        }
+        if (saveNewCard) {
+            data['saveCard'] = saveNewCard
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
+
+        let response = await this.post(config.api.checkout, data, cookie)
+        if (response.status != 200) {
+            throw { message: 'Cannot execute checkout', error: response.data }
+        }
+        return response.data
+    }
+
+    public async reCheckoutCod(failedAttemptOrder: Model.FailedAttempt,
+        addresses: Model.Addresses, cookie: string,
+        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        let data = {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": [
+                {
+                    "id": failedAttemptOrder.products[0].id,
+                    "quantity": failedAttemptOrder.products[0].quantity,
+                    "salePrice": failedAttemptOrder.products[0].salePrice
+                }
+            ],
+            "method": "COD",
+            "shipping": 25000
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
+
+        let response = await this.post(config.api.checkout + '/order/' +
+            failedAttemptOrder.code, data, cookie)
+
+        if (response.status != 200) {
+            throw { message: 'Cannot execute re-checkout', error: response.data }
+        }
+        return response.data
+    }
+
     public async createFailedAttemptOrder(cookie: string,
-        saleType = config.api.currentSales): Promise<Model.FailedAttempt> {
+        saleType = config.api.featuredSales): Promise<Model.FailedAttempt> {
 
         let item = await this.getInStockProduct(saleType, 2)
         await this.addToCart(item.id, cookie)
@@ -458,5 +683,45 @@ export default class ApiUtils extends AxiosUtils {
 
         let failedAttempt = await this.failedAttempt(parse.Ref, cookie)
         return failedAttempt
+    }
+
+    public async createCodOrder(cookie: string, item: Model.Product, voucherId?: string,
+        credit?: number): Promise<Model.CheckoutOrder> {
+
+        await this.addToCart(item.id, cookie)
+        let account = await this.getAccountInfo(cookie)
+        let addresses = await this.getAddresses(cookie)
+
+        return await this.checkoutCod(account, addresses, cookie, voucherId, credit)
+    }
+
+    public async createPayDollarOrder(cookie: string, item: Model.Product, saveNewCard?: boolean,
+        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        await this.addToCart(item.id, cookie)
+        let account = await this.getAccountInfo(cookie)
+        let addresses = await this.getAddresses(cookie)
+
+        return await this.checkoutPayDollar(account, addresses, cookie, saveNewCard, voucherId, credit)
+    }
+
+    public async createSavedPayDollarOrder(cookie: string, item: Model.Product,
+        cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        await this.addToCart(item.id, cookie)
+        let account = await this.getAccountInfo(cookie)
+        let addresses = await this.getAddresses(cookie)
+
+        return await this.checkoutSavedPayDollar(account, addresses, cookie, cardId, voucherId, credit)
+    }
+
+    public async createStripeOrder(cookie: string, item: Model.Product, stripeSource: any,
+        saveNewCard?: boolean, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        await this.addToCart(item.id, cookie)
+        let account = await this.getAccountInfo(cookie)
+        let addresses = await this.getAddresses(cookie)
+
+        return await this.checkoutStripe(account, addresses, cookie, stripeSource, saveNewCard, voucherId, credit)
     }
 }

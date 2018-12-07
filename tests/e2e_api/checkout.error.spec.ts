@@ -12,9 +12,9 @@ let cart: Model.Cart
 let cookie: string
 const stripe = require('stripe')(config.stripeKey)
 
-describe('Checkout API - Error ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
@@ -395,27 +395,18 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.cart, () => {
         expect(response.data.message).toEqual('TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM')
     })
 
-    test('POST / cannot checkout with voucher exceeding number of usage', async () => {
+    test('POST / cannot checkout with expired voucher', async () => {
         let item = await request.getInStockProduct(config.api.featuredSales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
-        let vouchers = await access.getVoucherList({
-            expiry: { $gte: new Date() },
-            oncePerAccount: true,
-            numberOfUsage: { $gte: 1 }
+        let voucher = await access.getVoucher({
+            expiry: { $lt: new Date() },
+            binRange: { $exists: false },
+            used: false
         })
-        let matchedVoucher: Model.VoucherModel
 
-        for (let voucher of vouchers) {
-            const used = await access.countUsedVoucher(voucher._id)
-            if (voucher.numberOfUsage <= used) {
-                matchedVoucher = voucher
-                break
-            }
-        }
-
-        if (!matchedVoucher) {
+        if (!voucher) {
             throw new Error('No voucher found for this test!')
         }
 
@@ -427,15 +418,15 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.cart, () => {
             "cart": account.cart,
             "method": "COD",
             "shipping": 25000,
-            "voucher": matchedVoucher._id,
+            "voucher": voucher._id,
             "accountCredit": account.accountCredit
         }, cookie)
 
         expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('EXCEED_TIME_OF_USAGE')
+        expect(response.data.message).toEqual('VOUCHER_OR_NOT_VALID')
     })
 
-    test('POST / cannot checkout with expired voucher', async () => {
+    test('POST / cannot checkout with redeemed voucher', async () => {
         let item = await request.getInStockProduct(config.api.featuredSales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
@@ -443,7 +434,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.cart, () => {
         let voucher = await access.getVoucher({
             expiry: { $lt: new Date() },
             binRange: { $exists: false },
-            used: false
+            used: true
         })
 
         if (!voucher) {

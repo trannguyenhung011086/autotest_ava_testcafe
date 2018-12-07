@@ -4,15 +4,12 @@ let request = new Utils.ApiUtils()
 import 'jest-extended'
 import * as Model from '../../common/interface'
 let account: Model.Account
-let checkout: Model.Checkout
 let item: Model.Product
-let cart: Model.Cart
 let addresses: Model.Addresses
 let payDollarCreditCard: Model.PayDollarCreditCard
-let creditCards: Model.CreditCard[]
 let cookie: string
 
-describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
@@ -46,35 +43,19 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
     })
 
     test('POST / checkout with new CC (not save card) - VISA', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await request.getInStockProduct(config.api.featuredSales, 1)
 
-        checkout = (await request.get(config.api.checkout, cookie)).data
+        let checkout = await request.createPayDollarOrder(cookie, item, false)
+        expect(checkout.orderId).not.toBeEmpty()
 
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "CC",
-            "saveCard": false,
-            "shipping": 0,
-            "accountCredit": 0
-        }, cookie)
-
-        expect(response.status).toEqual(200)
-        expect(response.data.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(response.data.orderId, cookie)
-        expect(response.data.creditCard.orderRef).toInclude(order.code)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(checkout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
         expect(order.paymentSummary.method).toEqual('CC')
         expect(order.paymentSummary.shipping).toEqual(0)
 
-        payDollarCreditCard = response.data.creditCard
+        payDollarCreditCard = checkout.creditCard
         payDollarCreditCard.cardHolder = 'testing card'
         payDollarCreditCard.cardNo = '4335900000140045'
         payDollarCreditCard.pMethod = 'VISA'
@@ -86,40 +67,27 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
         let parse = await request.parsePayDollarRes(result.data)
 
         expect(parse.successcode).toEqual('0')
-        expect(parse.Ref).toEqual(response.data.creditCard.orderRef)
+        expect(parse.Ref).toEqual(checkout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
+
+        order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.status).toEqual('placed')
     })
 
     test('POST / checkout with new CC (save card) - MASTER', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        
+        let checkout = await request.createPayDollarOrder(cookie, item, true)
+        expect(checkout.orderId).not.toBeEmpty()
 
-        checkout = (await request.get(config.api.checkout, cookie)).data
-
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "CC",
-            "saveCard": true,
-            "shipping": 0,
-            "accountCredit": 0
-        }, cookie)
-
-        expect(response.status).toEqual(200)
-        expect(response.data.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(response.data.orderId, cookie)
-        expect(response.data.creditCard.orderRef).toInclude(order.code)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(checkout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
         expect(order.paymentSummary.method).toEqual('CC')
         expect(order.paymentSummary.shipping).toEqual(0)
 
-        payDollarCreditCard = response.data.creditCard
+        payDollarCreditCard = checkout.creditCard
         payDollarCreditCard.cardHolder = 'testing card'
         payDollarCreditCard.cardNo = '5422882800700007'
         payDollarCreditCard.pMethod = 'Master'
@@ -131,56 +99,36 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
         let parse = await request.parsePayDollarRes(result.data)
 
         expect(parse.successcode).toEqual('0')
-        expect(parse.Ref).toEqual(response.data.creditCard.orderRef)
+        expect(parse.Ref).toEqual(checkout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
+
+        order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.status).toEqual('placed')
     })
 
     test('POST / checkout with saved CC', async () => {
-        creditCards = await request.getCards(cookie)
-        let matchedCard: string
-        for (let card of creditCards) {
-            if (!card.provider) {
-                matchedCard = card.id
-                break
-            }
-        }
+        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        let matchedCard = await request.getCard('PayDollar', cookie)
+        
+        let checkout = await request.createSavedPayDollarOrder(cookie, item, matchedCard)
+        expect(checkout.orderId).not.toBeEmpty()
 
-        if (!matchedCard) {
-            throw new Error('No saved CC found for this test!')
-        }
-
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "CC",
-            "methodData": matchedCard,
-            "shipping": 0,
-            "accountCredit": 0
-        }, cookie)
-
-        expect(response.status).toEqual(200)
-        expect(response.data.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(response.data.orderId, cookie)
-        expect(response.data.creditCard.orderRef).toInclude(order.code)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(checkout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
         expect(order.paymentSummary.method).toEqual('CC')
         expect(order.paymentSummary.shipping).toEqual(0)
 
-        payDollarCreditCard = response.data.creditCard
+        payDollarCreditCard = checkout.creditCard
         let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi, payDollarCreditCard)
         let parse = await request.parsePayDollarRes(result.data)
 
         expect(parse.successcode).toEqual('0')
-        expect(parse.Ref).toEqual(response.data.creditCard.orderRef)
+        expect(parse.Ref).toEqual(checkout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
+
+        order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.status).toEqual('placed')
     })
 })

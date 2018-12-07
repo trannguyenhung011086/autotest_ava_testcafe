@@ -10,7 +10,7 @@ let cart: Model.Cart
 let addresses: Model.Addresses
 let cookie: string
 
-describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         await request.addAddresses(cookie)
@@ -33,7 +33,7 @@ describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.car
     })
 
     test('GET / proceed checkout with cart', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
+        item = await request.getInStockProduct(config.api.featuredSales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 

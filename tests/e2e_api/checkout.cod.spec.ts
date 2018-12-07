@@ -10,9 +10,9 @@ let item: Model.Product
 let addresses: Model.Addresses
 let cookie: string
 
-describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, () => {
+describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
@@ -63,23 +63,12 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, (
 
     test('POST / checkout with COD', async () => {
         item = await request.getInStockProduct(config.api.featuredSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
 
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "COD"
-        }, cookie)
+        let checkout = await request.createCodOrder(cookie, item)
+        expect(checkout.orderId).not.toBeEmpty()
 
-        expect(response.status).toEqual(200)
-        expect(response.data.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(response.data.orderId, cookie)
-        expect(order.code).toInclude(response.data.code)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
         expect(order.paymentSummary.method).toEqual('COD')
@@ -87,40 +76,28 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, (
     })
 
     test('POST / checkout with COD - voucher (amount)', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             used: false,
             numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: item.salePrice },
+            minimumPurchase: null,
             binRange: { $exists: false },
             discountType: 'amount',
-            amount: { $gt: 0, $lt: item.salePrice },
+            amount: { $gt: 0 },
             specificDays: []
         }, customer)
 
         if (!voucher) {
             throw new Error('No voucher found for this test!')
         }
+        
+        item = await request.getInStockProduct(config.api.featuredSales, 1)
 
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "COD",
-            "voucher": voucher._id
-        }, cookie)
+        let checkout = await request.createCodOrder(cookie, item, voucher._id)
+        expect(checkout.orderId).not.toBeEmpty()
 
-        expect(response.status).toEqual(200)
-        expect(response.data.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(response.data.orderId, cookie)
-        expect(order.code).toInclude(response.data.code)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
         expect(order.paymentSummary.method).toEqual('COD')
@@ -129,18 +106,14 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, (
     })
 
     test('POST / checkout with COD - voucher (amount) + credit', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             used: false,
             numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: item.salePrice },
+            minimumPurchase: null,
             binRange: { $exists: false },
             discountType: 'amount',
-            amount: { $gt: 0, $lt: item.salePrice },
+            amount: { $gt: 0 },
             specificDays: []
         }, customer)
 
@@ -148,41 +121,30 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, (
             throw new Error('No voucher found for this test!')
         }
 
+        item = await request.getInStockProduct(config.api.featuredSales, 1)
+
         let credit: number
-        if (account.accountCredit < item.salePrice) {
+        if (account.accountCredit < (item.salePrice + 25000)) {
             credit = account.accountCredit
-        } else if (account.accountCredit >= item.salePrice) {
-            credit = account.accountCredit - item.salePrice
+        } else if (account.accountCredit >= (item.salePrice + 25000)) {
+            credit = item.salePrice + 25000
         }
 
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "COD",
-            "voucher": voucher._id,
-            "accountCredit": credit
-        }, cookie)
+        let checkout = await request.createCodOrder(cookie, item, voucher._id, credit)
+        expect(checkout.orderId).not.toBeEmpty()
 
-        expect(response.status).toEqual(200)
-        expect(response.data.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(response.data.orderId, cookie)
-        expect(order.code).toInclude(response.data.code)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
         expect(order.paymentSummary.method).toEqual('COD')
         expect(order.paymentSummary.shipping).toEqual(25000)
         expect(order.paymentSummary.voucherAmount).toEqual(voucher.amount)
-        expect(order.paymentSummary.accountCredit).toEqual(credit)
+        expect(Math.abs(order.paymentSummary.accountCredit)).toEqual(credit)
     })
 
     test('POST / checkout with COD - voucher (percentage)', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
@@ -199,21 +161,11 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, (
             throw new Error('No voucher found for this test!')
         }
 
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "COD",
-            "voucher": voucher._id
-        }, cookie)
+        let checkout = await request.createCodOrder(cookie, item, voucher._id)
+        expect(checkout.orderId).not.toBeEmpty()
 
-        expect(response.status).toEqual(200)
-        expect(response.data.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(response.data.orderId, cookie)
-        expect(order.code).toInclude(response.data.code)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
         expect(order.paymentSummary.method).toEqual('COD')
@@ -225,9 +177,7 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, (
     })
 
     test('POST / checkout with COD - voucher (percentage + max discount)', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
@@ -244,21 +194,11 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.cart, (
             throw new Error('No voucher found for this test!')
         }
 
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "COD",
-            "voucher": voucher._id
-        }, cookie)
+        let checkout = await request.createCodOrder(cookie, item, voucher._id)
+        expect(checkout.orderId).not.toBeEmpty()
 
-        expect(response.status).toEqual(200)
-        expect(response.data.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(response.data.orderId, cookie)
-        expect(order.code).toInclude(response.data.code)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
         expect(order.paymentSummary.method).toEqual('COD')

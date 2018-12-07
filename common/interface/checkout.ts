@@ -80,11 +80,11 @@ export type PayDollarCreditCard = {
     securityCode?: string
 }
 
-export interface PayDollarOrder {
+export interface CheckoutOrder {
     orderId: string
     code: string
-    creditCard: PayDollarCreditCard
-    cardService: string
+    creditCard?: PayDollarCreditCard
+    cardService?: string
 }
 
 export interface PayDollarResponse {
