@@ -1,6 +1,7 @@
 import config from '../../config/config'
 import * as Utils from '../../common/utils'
 let request = new Utils.ApiUtils()
+let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../common/interface'
 let product: model.ProductInfoModel
@@ -12,14 +13,20 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
         expect(response.data.message).toEqual('COULD_NOT_LOAD_PRODUCT')
     })
 
-    test('GET / product of sale not found', async () => {
-        let response = await request.get(config.api.product + '5b0fd3bf1e73c50001f6fced')
+    test('GET / product of sale not started', async () => {
+        let futureSale = await access.getSale({
+            startDate: { $gt: new Date() }
+        })
+        let response = await request.get(config.api.product + futureSale.products[0].product)
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('SALE_NOT_FOUND')
     })
 
     test('GET / product of sale ended', async () => {
-        let response = await request.get(config.api.product + '56697a9d34cbcd1000619683')
+        let endedSale = await access.getSale({
+            endDate: { $lt: new Date() }
+        })
+        let response = await request.get(config.api.product + endedSale.products[0].product)
         expect(response.status).toEqual(410)
         expect(response.data.message).toEqual('SALE_HAS_ENDED')
     })
@@ -69,7 +76,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
     })
 
     test('GET / sold out product', async () => {
-        let product = await request.getSoldOutProduct(config.api.trendingApparel)
+        let product = await request.getSoldOutProduct(config.api.todaySales)
 
         for (let item of product.products) {
             expect(item.inStock).toBeFalse()
@@ -91,7 +98,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
         product = await request.getProductWithSizes(config.api.currentSales)
 
         if (!product) {
-            product = await request.getProductWithSizes(config.api.trendingApparel)
+            product = await request.getProductWithSizes(config.api.todaySales)
         }
 
         expect(product.sizes.length).toBeGreaterThanOrEqual(1)
@@ -107,7 +114,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
         product = await request.getProductWithColors(config.api.currentSales)
 
         if (!product) {
-            product = await request.getProductWithColors(config.api.trendingApparel)
+            product = await request.getProductWithColors(config.api.todaySales)
         }
         
         expect(product.colors.length).toBeGreaterThanOrEqual(2)

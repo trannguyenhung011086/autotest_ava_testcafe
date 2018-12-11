@@ -78,7 +78,7 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         expect(signIn.accountCredit).toBeNumber()
         expect(signIn.provider).toEqual('local')
         expect(signIn.state).toEqual('confirmed')
-        expect(signIn.preview).toBeTrue()
+        expect(signIn.preview).toBeFalse()
         expect(signIn.nsId).toBeString()
         expect(signIn.gender).toBeString()
         expect(signIn.cart).toBeArray()
@@ -94,7 +94,7 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
     test('POST / internal Leflair email', async () => {
         let response = await request.post(config.api.login,
             {
-                "email": "hungtn@leflair.vn", "password": "0944226282"
+                "email": "qa_tech@leflair.vn", "password": "leflairqa"
             })
         signIn = response.data
         expect(response.status).toEqual(200)

@@ -25,7 +25,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
     })
 
     test('PUT / cannot update quantity in cart to 0', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 3)
+        item = await request.getInStockProduct(config.api.todaySales, 3)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -35,7 +35,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
     })
 
     test('PUT / cannot update invalid quantity in cart', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 3)
+        item = await request.getInStockProduct(config.api.todaySales, 3)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -45,7 +45,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
     })
 
     test('PUT / cannot update more than max quantity in cart', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 3)
+        item = await request.getInStockProduct(config.api.todaySales, 3)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -55,7 +55,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
     })
 
     test('DELETE / cannot remove product from cart with wrong cart item', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
@@ -65,7 +65,7 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
     })
 
     test('DELETE / cannot remove product from cart without cart item', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 

@@ -179,30 +179,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async getInStockProduct(saleType: string, quantity: number): Promise<Model.Product> {
-        let products = await this.getProducts(saleType)
-        let matched: Model.Products
-
-        for (let product of products) {
-            if (product.soldOut == false) {
-                matched = product
-                break
-            }
-        }
-
-        if (!matched) {
-            throw new Error('There is no product with stock!')
-        }
-
-        let info = await this.getProductInfo(matched.id)
-        for (let product of info.products) {
-            if (product.quantity >= quantity) {
-                return product
-            }
-        }
-    }
-
-    public async getInStockProducts(saleType: string, quantity: number): Promise<Model.Product[]> {
+    public async getInStockProduct(saleType: string, quantity: number, price?: number): Promise<Model.Product> {
         let products = await this.getProducts(saleType)
         let matched: Model.Products[] = []
 
@@ -216,14 +193,53 @@ export default class ApiUtils extends AxiosUtils {
         }
 
         if (matched.length == 0) {
-            throw new Error('There is no product with stock')
+            throw new Error(`There is no product with stock from ${saleType}`)
+        }
+
+        let result: Model.Product
+        for (let item of matched) {
+            let info = await this.getProductInfo(item.id)
+            for (let product of info.products) {
+                if (price && product.salePrice >= price && product.quantity >= quantity) {
+                    result = product
+                    break
+                } else if (!price && product.quantity >= quantity) {
+                    result = product
+                    break
+                }
+            }
+        }
+
+        if (!result) {
+            throw new Error('There is no product with stock!')
+        }
+        return result
+    }
+
+    public async getInStockProducts(saleType: string, quantity: number, price?: number): Promise<Model.Product[]> {
+        let products = await this.getProducts(saleType)
+        let matched: Model.Products[] = []
+
+        for (let product of products) {
+            if (product.soldOut == false) {
+                matched.push(product)
+            }
+            if (matched.length >= 10) {
+                break
+            }
+        }
+
+        if (matched.length == 0) {
+            throw new Error(`There is no product with stock from ${saleType}`)
         }
 
         let result: Model.Product[] = []
         for (let item of matched) {
             let info = await this.getProductInfo(item.id)
             for (let product of info.products) {
-                if (product.quantity >= quantity) {
+                if (price && product.salePrice >= price && product.quantity >= quantity) {
+                    result.push(product)
+                } else if (!price && product.quantity >= quantity) {
                     result.push(product)
                 }
                 if (result.length >= 10) {
@@ -590,37 +606,6 @@ export default class ApiUtils extends AxiosUtils {
         return response.data
     }
 
-    public async checkoutStripe(account: Model.Account, addresses: Model.Addresses,
-        cookie: string, stripeSource: any, saveNewCard?: boolean,
-        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
-
-        let data = {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "STRIPE",
-            "methodData": stripeSource,
-            "shipping": 0
-        }
-        if (saveNewCard) {
-            data['saveCard'] = saveNewCard
-        }
-        if (voucherId) {
-            data['voucher'] = voucherId
-        }
-        if (credit) {
-            data['accountCredit'] = credit
-        }
-
-        let response = await this.post(config.api.checkout, data, cookie)
-        if (response.status != 200) {
-            throw { message: 'Cannot execute checkout', error: response.data }
-        }
-        return response.data
-    }
-
     public async reCheckoutCod(failedAttemptOrder: Model.FailedAttempt,
         addresses: Model.Addresses, cookie: string,
         voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
@@ -656,11 +641,68 @@ export default class ApiUtils extends AxiosUtils {
         return response.data
     }
 
-    public async createFailedAttemptOrder(cookie: string,
-        saleType = config.api.featuredSales): Promise<Model.FailedAttempt> {
+    public async checkoutStripe(account: Model.Account, addresses: Model.Addresses,
+        cookie: string, stripeSource: any, saveNewCard?: boolean,
+        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
 
-        let item = await this.getInStockProduct(saleType, 2)
-        await this.addToCart(item.id, cookie)
+        let data = {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "STRIPE",
+            "methodData": stripeSource,
+            "shipping": 0
+        }
+        if (saveNewCard) {
+            data['saveCard'] = saveNewCard
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
+
+        let response = await this.post(config.api.checkout, data, cookie)
+        if (response.status != 200) {
+            throw { message: 'Cannot execute checkout', error: response.data }
+        }
+        return response.data
+    }
+
+    public async checkoutSavedStripe(account: Model.Account, addresses: Model.Addresses,
+        cookie: string, cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        let data = {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "STRIPE",
+            "methodData": cardId,
+            "shipping": 0
+        }
+        if (voucherId) {
+            data['voucher'] = voucherId
+        }
+        if (credit) {
+            data['accountCredit'] = credit
+        }
+
+        let response = await this.post(config.api.checkout, data, cookie)
+        if (response.status != 200) {
+            throw { message: 'Cannot execute checkout', error: response.data }
+        }
+        return response.data
+    }
+
+    public async createFailedAttemptOrder(cookie: string, items: Model.Product[]): Promise<Model.FailedAttempt> {
+        for (let item of items) {
+            await this.addToCart(item.id, cookie)
+        }
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
@@ -685,43 +727,63 @@ export default class ApiUtils extends AxiosUtils {
         return failedAttempt
     }
 
-    public async createCodOrder(cookie: string, item: Model.Product, voucherId?: string,
+    public async createCodOrder(cookie: string, items: Model.Product[], voucherId?: string,
         credit?: number): Promise<Model.CheckoutOrder> {
 
-        await this.addToCart(item.id, cookie)
+        for (let item of items) {
+            await this.addToCart(item.id, cookie)
+        }
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
         return await this.checkoutCod(account, addresses, cookie, voucherId, credit)
     }
 
-    public async createPayDollarOrder(cookie: string, item: Model.Product, saveNewCard?: boolean,
+    public async createPayDollarOrder(cookie: string, items: Model.Product[], saveNewCard?: boolean,
         voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
 
-        await this.addToCart(item.id, cookie)
+        for (let item of items) {
+            await this.addToCart(item.id, cookie)
+        }
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
         return await this.checkoutPayDollar(account, addresses, cookie, saveNewCard, voucherId, credit)
     }
 
-    public async createSavedPayDollarOrder(cookie: string, item: Model.Product,
+    public async createSavedPayDollarOrder(cookie: string, items: Model.Product[],
         cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
 
-        await this.addToCart(item.id, cookie)
+        for (let item of items) {
+            await this.addToCart(item.id, cookie)
+        }
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
         return await this.checkoutSavedPayDollar(account, addresses, cookie, cardId, voucherId, credit)
     }
 
-    public async createStripeOrder(cookie: string, item: Model.Product, stripeSource: any,
+    public async createStripeOrder(cookie: string, items: Model.Product[], stripeSource: any,
         saveNewCard?: boolean, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
 
-        await this.addToCart(item.id, cookie)
+        for (let item of items) {
+            await this.addToCart(item.id, cookie)
+        }
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
         return await this.checkoutStripe(account, addresses, cookie, stripeSource, saveNewCard, voucherId, credit)
+    }
+
+    public async createSavedStripeOrder(cookie: string, items: Model.Product[],
+        cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+
+        for (let item of items) {
+            await this.addToCart(item.id, cookie)
+        }
+        let account = await this.getAccountInfo(cookie)
+        let addresses = await this.getAddresses(cookie)
+
+        return await this.checkoutSavedStripe(account, addresses, cookie, cardId, voucherId, credit)
     }
 }

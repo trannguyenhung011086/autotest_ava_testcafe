@@ -31,7 +31,7 @@ describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => 
         let response = await request.get(config.api.creditcard, cookie)
         creditcards = response.data
         if (creditcards.length > 0) {
-            response = await request.delete(config.api.creditcard + '/' + creditcards[0].id)
+            response = await request.delete(config.api.creditcard + '/' + creditcards[0].id, cookie)
             await waitForExpect(() => {
                 expect(response.status).toEqual(200)
                 expect(response.data).toBeTrue()
@@ -42,7 +42,7 @@ describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => 
     test('DELETE / cannot delete invalid creditcard', async () => {
         let response = await request.get(config.api.creditcard, cookie)
         creditcards = response.data
-        response = await request.delete(config.api.creditcard + '/INVALID-ID')
+        response = await request.delete(config.api.creditcard + '/INVALID-ID', cookie)
         await waitForExpect(() => {
             expect(response.status).toEqual(500)
             expect(response.data.message).toEqual('INVALID_CREDIT_CARD_OR_CANNOT_DELETE')

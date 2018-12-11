@@ -1,6 +1,7 @@
 import config from '../../config/config'
 import * as Utils from '../../common/utils'
 let request = new Utils.ApiUtils()
+let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../common/interface'
 
@@ -17,8 +18,20 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
         expect(response.data.message).toEqual('NO_SALE_MATCHING')
     })
 
+    test('GET / sale not started', async () => {
+        let futureSale = await access.getSale({
+            startDate: { $gt: new Date() }
+        })
+        let response = await request.get(config.api.sales + futureSale._id)
+        expect(response.status).toEqual(404)
+        expect(response.data.message).toEqual('SALE_NOT_FOUND')
+    })
+
     test('GET / sale has ended', async () => {
-        let response = await request.get(config.api.sales + '566979b534cbcd100061967a')
+        let endedSale = await access.getSale({
+            endDate: { $lt: new Date() }
+        })
+        let response = await request.get(config.api.sales + endedSale._id)
         expect(response.status).toEqual(410)
         expect(response.data.message).toEqual('SALE_HAS_ENDED')
     })
@@ -36,7 +49,10 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
     })
 
     test('GET / upcoming sale ended', async () => {
-        let response = await request.get(config.api.upcomingSale + '566979b534cbcd100061967a')
+        let endedSale = await access.getSale({
+            endDate: { $lt: new Date() }
+        })
+        let response = await request.get(config.api.upcomingSale + endedSale._id)
         expect(response.status).toEqual(410)
         expect(response.data.message).toEqual('SALE_HAS_ENDED')
     })
@@ -50,7 +66,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
             expect(response.id).toEqual(sale.id)
             expect(response.title).not.toBeEmpty()
             expect(response.endTime).toEqual(sale.endTime)
-            expect(new Date(response.startTime).getTime()).toBeLessThanOrEqual(new Date().getTime())
+            expect(new Date(response.startTime)).toBeBefore(new Date())
 
             expect(response.products).toBeArray()
             for (let product of response.products) {
@@ -91,13 +107,18 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
         for (let date of dates) {
             for (let sale of date.sales) {
                 expect(date.sales.length).toBeGreaterThan(1)
-                
+
                 let response = await request.get(config.api.upcomingSale + sale.id)
                 let upcoming: model.UpcomingInfo
                 upcoming = response.data
+
                 expect(response.status).toEqual(200)
                 expect(upcoming.id).toEqual(sale.id)
-                expect(upcoming.description).not.toBeEmpty()
+
+                if (upcoming.description) {
+                    expect(upcoming.description).not.toBeEmpty()
+                }
+
                 expect(upcoming.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
                 expect(upcoming.title).not.toBeEmpty()
                 expect(new Date(upcoming.startTime)).toBeAfter(new Date())

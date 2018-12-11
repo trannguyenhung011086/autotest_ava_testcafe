@@ -139,6 +139,7 @@ export interface SaleInfoModel {
     image: string
     campaign: boolean
     slug: string
+    _id: string
 }
 
 export interface ProductInfoModel {

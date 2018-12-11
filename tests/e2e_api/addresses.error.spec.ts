@@ -156,7 +156,7 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         expect(addresses.shipping[0].phone).not.toEqual(clone.phone)
     }) // wait for WWW-354
 
-    test('POST / cannot add address with invalid tax code', async () => {
+    test.skip('POST / cannot add address with invalid tax code', async () => {
         let clone = Object.assign({}, address)
         clone.taxCode = faker.random.number().toString()
         clone.type = 'billing'

@@ -11,7 +11,7 @@ export default class MongoUtils {
             const collection = db.collection(collectionName)
             return await collection.findOne(query)
         } catch (err) {
-            throw err
+            throw { message: 'Error with database!', error: err }
         } finally {
             await client.close()
         }
@@ -26,7 +26,7 @@ export default class MongoUtils {
             const result = await collection.find(query).limit(20)
             return result.toArray()
         } catch (err) {
-            throw err
+            throw { message: 'Error with database!', error: err }
         } finally {
             await client.close()
         }
@@ -40,7 +40,7 @@ export default class MongoUtils {
             const collection = db.collection(collectionName)
             return await collection.countDocuments(query)
         } catch (err) {
-            throw err
+            throw { message: 'Error with database!', error: err }
         } finally {
             await client.close()
         }
@@ -62,7 +62,7 @@ export default class MongoUtils {
         return await this.getDbData('giftcards', query)
     }
 
-    public async getEndedSale(query: Object): Promise<Model.SaleInfoModel> {
+    public async getSale(query: Object): Promise<Model.SaleInfoModel> {
         return await this.getDbData('sales', query)
     }
 

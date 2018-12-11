@@ -7,6 +7,7 @@ import * as Model from '../../common/interface'
 let account: Model.Account
 let customer: Model.Customer
 let addresses: Model.Addresses
+let item: Model.Product
 let failedAttemptOrder: Model.FailedAttempt
 let cookie: string
 const stripe = require('stripe')(config.stripeKey)
@@ -18,7 +19,8 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
-        failedAttemptOrder = await request.createFailedAttemptOrder(cookie, config.api.featuredSales)
+        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        failedAttemptOrder = await request.createFailedAttemptOrder(cookie, [item])
     })
 
     afterEach(async () => {
@@ -226,26 +228,26 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
 
     // validate address
 
-    // test.only('POST / cannot recheckout with new address', async () => {
-    //     let response = await request.post(config.api.checkout + '/order/' +
-    //         failedAttemptOrder.code, {
-    //             "address": {
-    //                 "shipping": addresses.shipping[1],
-    //                 "billing": addresses.billing[1]
-    //             },
-    //             "cart": [
-    //                 {
-    //                     "id": failedAttemptOrder.products[0].id,
-    //                     "quantity": failedAttemptOrder.products[0].quantity,
-    //                     "salePrice": failedAttemptOrder.products[0].salePrice
-    //                 }
-    //             ],
-    //             "method": "FREE"
-    //         }, cookie)
+    test.skip('POST / cannot recheckout with new address', async () => {
+        let response = await request.post(config.api.checkout + '/order/' +
+            failedAttemptOrder.code, {
+                "address": {
+                    "shipping": addresses.shipping[1],
+                    "billing": addresses.billing[1]
+                },
+                "cart": [
+                    {
+                        "id": failedAttemptOrder.products[0].id,
+                        "quantity": failedAttemptOrder.products[0].quantity,
+                        "salePrice": failedAttemptOrder.products[0].salePrice
+                    }
+                ],
+                "method": "FREE"
+            }, cookie)
 
-    //     expect(response.status).toEqual(400)
-    //     expect(response.data.message[0].message).toEqual('CART_MISMATCH_CANT_FIND_PRODUCT')
-    // })
+        expect(response.status).toEqual(400)
+        expect(response.data.message[0].message).toEqual('CART_MISMATCH_CANT_FIND_PRODUCT')
+    }) // wait for WWW-401
 
     // validate voucher
 
@@ -323,6 +325,7 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
+            binRange: { $exists: false },
             minimumPurchase: { $gte: failedAttemptOrder.products[0].salePrice }
         })
 
@@ -355,8 +358,9 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
     test('POST / cannot recheckout with voucher exceeding number of usage', async () => {
         let vouchers = await access.getVoucherList({
             expiry: { $gte: new Date() },
-            oncePerAccount: true,
-            numberOfUsage: { $gte: 1 }
+            multipleUser: true,
+            numberOfUsage: { $gte: 1 },
+            used: false
         })
         let matchedVoucher: Model.VoucherModel
 
