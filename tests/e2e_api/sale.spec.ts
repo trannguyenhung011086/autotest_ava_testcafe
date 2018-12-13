@@ -99,7 +99,40 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
             expect(response.campaign).toBeBoolean()
             expect(response.slug).toInclude(response.id)
         }
-    }, 90000)
+    })
+
+    test('GET / valid ongoing sale ID with filter', async () => {
+        let sales = await request.getSales(config.api.featuredSales)
+        let sale = await request.getSaleInfo(sales[0].id)
+        
+        for (let filter of Object.keys(sale.filter)) {
+            if (sale.filter[filter].length > 0) {
+                let filterValue = sale.filter[filter][0]['value']
+                let filteredSale = await request.getSaleInfo(sales[0].id + `?${filter}=${filterValue}`)
+                expect(filteredSale.products.length).toBeLessThan(sale.products.length)
+            }
+        }
+    })
+
+    test('GET / valid ongoing sale ID with multiple filters', async () => {
+        let sales = await request.getSales(config.api.featuredSales)
+        let sale = await request.getSaleInfo(sales[0].id)
+        
+        let filterList = []
+        for (let filter of Object.keys(sale.filter)) {
+            if (sale.filter[filter].length > 0) {
+                let filterValue = sale.filter[filter][0]['value']
+                filterList.push(`${filter}=${filterValue}`)
+            }
+        }
+
+        let filterString = '?' + filterList[0]
+        filterList.shift()
+        filterString = filterString + '&' + filterList.join('&')
+
+        let filteredSale = await request.getSaleInfo(sales[0].id + filterString)
+        expect(filteredSale.products.length).toBeLessThan(sale.products.length)
+    })
 
     test('GET / valid upcoming sale ID', async () => {
         let dates = await request.getUpcomingSales()

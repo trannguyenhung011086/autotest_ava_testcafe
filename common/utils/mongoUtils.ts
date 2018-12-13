@@ -66,6 +66,10 @@ export default class MongoUtils {
         return await this.getDbData('sales', query)
     }
 
+    public async getSaleList(query: Object): Promise<Model.SaleInfoModel[]> {
+        return await this.getDbDataList('sales', query)
+    }
+
     public async getProduct(query: Object): Promise<Model.ProductInfoModel> {
         return await this.getDbData('products', query)
     }

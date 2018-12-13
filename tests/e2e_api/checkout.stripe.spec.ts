@@ -38,28 +38,6 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
         await request.emptyCart(cookie)
     })
 
-    test.skip('POST / cannot checkout with Stripe - domestic product', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        stripeData['card[number]'] = '4000000000000077'
-        const stripeSource = await stripe.sources.create(stripeData)
-
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "STRIPE",
-            "methodData": stripeSource
-        }, cookie)
-
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('Domestic orders cannot be paid by Stripe. Please refresh the page and try again.')
-    }) // wait for WWW-372
-
     test('POST / cannot checkout with insufficient Stripe', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
         await request.addToCart(item.id, cookie)

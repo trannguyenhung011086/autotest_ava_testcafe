@@ -78,13 +78,12 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
     test('POST / checkout with COD - voucher (amount) + credit', async () => {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
+            multipleUser: true,
+            numberOfUsage: { $gte: 1 },
             used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: null,
-            binRange: { $exists: false },
             discountType: 'amount',
-            amount: { $gt: 0 },
-            specificDays: []
+            minimumPurchase: 0,
+            numberOfItems: 0
         }, customer)
 
         if (!voucher) {

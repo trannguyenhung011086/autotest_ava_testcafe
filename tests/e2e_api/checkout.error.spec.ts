@@ -223,12 +223,16 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with more than 8 unique products', async () => {
-        let items = await request.getInStockProducts(config.api.todaySales, 1)
+        let items = await request.getInStockProducts(config.api.featuredSales, 1)
 
         for (let item of items) {
             await request.addToCart(item.id, cookie, false)
         }
         account = await request.getAccountInfo(cookie)
+
+        if (account.cart.length < 9) {
+            throw new Error('Cart does not have more than 8 unique products for this test!')
+        }
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -365,12 +369,12 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with voucher not meeting min purchase', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getProductWithPrice('VN', 0, 500000, 1)
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
             binRange: { $exists: false },
-            minimumPurchase: { $gte: item.salePrice }
+            minimumPurchase: { $gte: 500000 }
         })
 
         if (!voucher) {

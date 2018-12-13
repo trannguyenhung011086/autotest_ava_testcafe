@@ -41,10 +41,91 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
         }
     })
 
-    test('GET / can see order info', async () => {
+    test('GET / can see order info using order ID', async () => {
         orders = await request.getOrders(cookie)
+
         for (let order of orders) {
             let response = await request.get(config.api.orders + '/' + order.id, cookie)
+            orderItem = response.data
+            expect(response.status).toEqual(200)
+
+            expect(orderItem.id).toEqual(order.id)
+            expect(orderItem.code).toMatch(/^SG|HK|VN/)
+            expect(orderItem.createdDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+            expect(orderStatus).toContain(orderItem.status)
+            if (orderItem.shippedDate != null) {
+                expect(orderItem.shippedDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+            }
+            if (orderItem.deliveredDate != null) {
+                expect(orderItem.deliveredDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+            }
+
+            expect(orderItem.isBulky).toBeBoolean()
+            if (orderItem.isCrossBorder != null) {
+                expect(orderItem.isCrossBorder).toBeBoolean()
+            }
+            expect(orderItem.isFirstOrder).toBeBoolean()
+            expect(orderItem.isVirtual).toBeBoolean()
+
+            expect(orderItem.tracking).toMatch(/dhlecommerce\.asia|ghn\.vn/)
+            expect(orderItem.user).toEqual(account.id)
+
+            expect(orderItem.address.billing.address).not.toBeEmpty()
+            expect(orderItem.address.billing.city).not.toBeEmpty()
+            expect(orderItem.address.billing.district).not.toBeEmpty()
+            expect(orderItem.address.billing.firstName).not.toBeEmpty()
+            expect(orderItem.address.billing.lastName).not.toBeEmpty()
+            expect(orderItem.address.billing.phone).not.toBeEmpty()
+
+            expect(orderItem.address.shipping.address).not.toBeEmpty()
+            expect(orderItem.address.shipping.city).not.toBeEmpty()
+            expect(orderItem.address.shipping.district).not.toBeEmpty()
+            expect(orderItem.address.shipping.firstName).not.toBeEmpty()
+            expect(orderItem.address.shipping.lastName).not.toBeEmpty()
+            expect(orderItem.address.shipping.phone).not.toBeEmpty()
+
+            expect(paymentMethod).toContain(orderItem.paymentSummary.method)
+            if (orderItem.paymentSummary.method == 'COD' ||
+                orderItem.paymentSummary.method == 'STRIPE') {
+                expect(orderItem.paymentSummary.card).toBeNull()
+            }
+            if (orderItem.paymentSummary.card != null) {
+                expect(orderItem.paymentSummary.card.lastDigits).toMatch(/\d{4}/)
+                expect(card).toContain(orderItem.paymentSummary.card.type)
+            }
+
+            let total = orderItem.paymentSummary.subtotal + orderItem.paymentSummary.shipping +
+                orderItem.paymentSummary.accountCredit - orderItem.paymentSummary.voucherAmount
+            expect(orderItem.paymentSummary.shipping).toBeLessThanOrEqual(25000)
+            expect(orderItem.paymentSummary.subtotal).toBeGreaterThanOrEqual(0)
+            expect(orderItem.paymentSummary.total).toBeGreaterThanOrEqual(0)
+            expect(orderItem.paymentSummary.accountCredit).toBeLessThanOrEqual(0)
+            expect(orderItem.paymentSummary.voucherAmount).toBeGreaterThanOrEqual(0)
+            expect(orderItem.paymentSummary.total).toEqual(total)
+
+            for (let product of orderItem.products) {
+                expect(product.id).not.toBeEmpty()
+                expect(product.productContentId).not.toBeEmpty()
+                expect(product.title).not.toBeEmpty()
+                expect(product.slug).toInclude(product.productContentId)
+                expect(product.retailPrice).toBeGreaterThan(product.salePrice)
+                expect(product.salePrice).toBeLessThanOrEqual(product.totalSalePrice)
+                expect(product.quantity).toBeNumber()
+                expect(product.image.toLowerCase()).toMatch(/\.jpg|\.jpeg|\.png|\.jpe/)
+                expect(product.returnable).toBeBoolean()
+                expect(product.type).not.toBeEmpty()
+                expect(product.brand._id).not.toBeEmpty()
+                expect(product.brand.name).not.toBeEmpty()
+            }
+        }
+    })
+
+    test('GET / can see order info using order code', async () => {
+        orders = await request.getOrders(cookie)
+
+        for (let order of orders) {
+            let orderCode = order.code.split('-')[1]
+            let response = await request.get(config.api.orders + '/' + orderCode, cookie)
             orderItem = response.data
             expect(response.status).toEqual(200)
 

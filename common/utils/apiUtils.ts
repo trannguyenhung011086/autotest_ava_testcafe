@@ -192,10 +192,6 @@ export default class ApiUtils extends AxiosUtils {
             }
         }
 
-        if (matched.length == 0) {
-            throw new Error(`There is no product with stock from ${saleType}`)
-        }
-
         let result: Model.Product
         for (let item of matched) {
             let info = await this.getProductInfo(item.id)
@@ -211,7 +207,7 @@ export default class ApiUtils extends AxiosUtils {
         }
 
         if (!result) {
-            throw new Error('There is no product with stock!')
+            throw new Error(`There is no product with stock from ${saleType}!`)
         }
         return result
     }
@@ -227,10 +223,6 @@ export default class ApiUtils extends AxiosUtils {
             if (matched.length >= 10) {
                 break
             }
-        }
-
-        if (matched.length == 0) {
-            throw new Error(`There is no product with stock from ${saleType}`)
         }
 
         let result: Model.Product[] = []
@@ -269,6 +261,41 @@ export default class ApiUtils extends AxiosUtils {
                 return info
             }
         }
+    }
+
+    public async getProductWithPrice(country: string, minPrice: number, maxPrice: number, quantity: number) {
+        let sales = await new MongoUtils().getSaleList({
+            country: country,
+            startDate: { $lte: new Date() },
+            endDate: { $gte: new Date() }
+        })
+        let matched: Model.Products[] = []
+
+        for (let sale of sales) {
+            let saleInfo = await this.getSaleInfo(sale._id)
+            for (let product of saleInfo.products) {
+                if (product.soldOut == false && product.salePrice >= minPrice &&
+                    product.salePrice <= maxPrice) {
+                    matched.push(product)
+                }
+            }
+        }
+
+        let result: Model.Product
+        for (let item of matched) {
+            let info = await this.getProductInfo(item.id)
+            for (let product of info.products) {
+                if (product.quantity >= quantity) {
+                    result = product
+                    break
+                }
+            }
+        }
+
+        if (!result) {
+            throw new Error(`There is no product with stock from ${country}!`)
+        }
+        return result
     }
 
     public async getAddresses(cookie: string): Promise<Model.Addresses> {
@@ -387,9 +414,7 @@ export default class ApiUtils extends AxiosUtils {
         for (let item of brandList) {
             if (item.name == products[0].brand) {
                 let response = await this.get(config.api.brands + item.id)
-                let brandInfo: Model.BrandInfo
-                brandInfo = response.data
-                return brandInfo
+                return response.data
             }
         }
     }
@@ -401,6 +426,11 @@ export default class ApiUtils extends AxiosUtils {
 
     public async getOrderInfo(orderId: string, cookie: string): Promise<Model.Order> {
         let response = await this.get(config.api.orders + '/' + orderId, cookie)
+        return response.data
+    }
+
+    public async getSplitOrderInfo(orderCode: string, cookie: string): Promise<Model.Order[]> {
+        let response = await this.get(config.api.orders + '/' + orderCode, cookie)
         return response.data
     }
 
