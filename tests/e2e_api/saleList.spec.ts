@@ -89,9 +89,14 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
             expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-            expect(sale.slug).toInclude(sale.id)
+
+            if (sale.potd == false) {
+                expect(sale.slug).toInclude(sale.id)  
+            } else {
+                expect(sale.slug).not.toInclude(sale.id)  
+            }
+
             expect(sale.categories.length).toBeGreaterThanOrEqual(1)
-            expect(sale.potd).toBeBoolean()
             expect(sale.international).toBeTrue()
         }
     })
