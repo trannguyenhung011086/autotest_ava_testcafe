@@ -97,9 +97,10 @@ describe('Category menu API ' + config.baseUrl + '/api/menus/items/<cateID>', ()
 
             if (sale.potd == false) {
                 expect(sale.slug).toInclude(sale.id)
+            } else {
+                expect(sale.slug).not.toInclude(sale.id)
             }
-
-            expect(sale.potd).toBeBoolean()
+            
             expect(sale.international).toBeBoolean()
         }
     })
