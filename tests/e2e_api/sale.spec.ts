@@ -109,7 +109,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
             if (sale.filter[filter].length > 0) {
                 let filterValue = sale.filter[filter][0]['value']
                 let filteredSale = await request.getSaleInfo(sales[0].id + `?${filter}=${filterValue}`)
-                expect(filteredSale.products.length).toBeLessThan(sale.products.length)
+                expect(filteredSale.products.length).toBeLessThanOrEqual(sale.products.length)
             }
         }
     })
