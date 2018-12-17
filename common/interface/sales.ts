@@ -106,7 +106,9 @@ export interface SalesModel {
     title: string
     endTime: string
     image: string
+    image1?: string
     image2?: string
+    image3?: string
     image4?: string
     slug: string
     categories: string[]
