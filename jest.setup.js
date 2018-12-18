@@ -1,7 +1,3 @@
-require('jest-extended');
-
-var allure = require("jest-allure/dist/setup")
-
-allure.registerAllureReporter()
+require('jest-extended')
 
 jest.setTimeout(60000)
