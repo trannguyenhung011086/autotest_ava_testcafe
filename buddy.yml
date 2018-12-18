@@ -4,7 +4,7 @@
   folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
   target_site_url: "https://www.staging.leflair.io"
-  trigger_condition: "ON_CHANGE_AT_PATH"
+  trigger_condition: "ALWAYS"
   trigger_condition_paths:
   - "/tests/e2e_api"
   actions:
@@ -44,17 +44,17 @@
   folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
   target_site_url: "https://www.staging.leflair.io"
-  trigger_condition: "ON_CHANGE_AT_PATH"
+  trigger_condition: "ALWAYS"
   trigger_condition_paths:
   - "/tests/e2e_ui/desktop"
   actions:
   - action: "Check https://www.staging.leflair.io status"
     type: "WEB"
     headers:
-    - name: "Content-Type"
-      value: "application/json"
     - name: "User-Agent"
       value: "Buddy"
+    - name: "Content-Type"
+      value: "application/json"
     text: "leflair"
     text_existence: true
     destination: "https://www.staging.leflair.io"
@@ -93,17 +93,17 @@
   folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
   target_site_url: "https://www.staging.leflair.io"
-  trigger_condition: "ON_CHANGE_AT_PATH"
+  trigger_condition: "ALWAYS"
   trigger_condition_paths:
   - "/tests/e2e_ui/desktop"
   actions:
   - action: "Check https://www.staging.leflair.io status"
     type: "WEB"
     headers:
-    - name: "User-Agent"
-      value: "Buddy"
     - name: "Content-Type"
       value: "application/json"
+    - name: "User-Agent"
+      value: "Buddy"
     text: "leflair"
     text_existence: true
     destination: "https://www.staging.leflair.io"
@@ -142,7 +142,7 @@
   folder: "E2E Test on Testing"
   ref_type: "WILDCARD"
   target_site_url: "https://www.staging.leflair.io"
-  trigger_condition: "ON_CHANGE_AT_PATH"
+  trigger_condition: "ALWAYS"
   trigger_condition_paths:
   - "/tests/e2e_ui/mobile"
   actions:
@@ -278,10 +278,10 @@
   - action: "Check https://www.leflair.vn status"
     type: "WEB"
     headers:
-    - name: "Content-Type"
-      value: "application/json"
     - name: "User-Agent"
       value: "Buddy"
+    - name: "Content-Type"
+      value: "application/json"
     text: "leflair"
     text_existence: true
     destination: "https://www.leflair.vn"
@@ -324,10 +324,10 @@
   - action: "Check https://www.leflair.vn status"
     type: "WEB"
     headers:
-    - name: "User-Agent"
-      value: "Buddy"
     - name: "Content-Type"
       value: "application/json"
+    - name: "User-Agent"
+      value: "Buddy"
     text: "leflair"
     text_existence: true
     destination: "https://www.leflair.vn"

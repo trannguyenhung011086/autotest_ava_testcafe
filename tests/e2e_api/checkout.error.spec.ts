@@ -223,7 +223,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with more than 8 unique products', async () => {
-        let items = await request.getInStockProducts(config.api.featuredSales, 1)
+        let items = await request.getInStockProducts(config.api.currentSales, 1)
 
         for (let item of items) {
             await request.addToCart(item.id, cookie, false)

@@ -6,3 +6,4 @@ junit.xml
 /selenoid_logs
 /logs
 /.vscode
+/jest-stare
