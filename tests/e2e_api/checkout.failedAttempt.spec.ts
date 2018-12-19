@@ -19,7 +19,7 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
-        jest.setTimeout(90000)
+        jest.setTimeout(120000)
     })
 
     afterEach(async () => {
@@ -173,10 +173,6 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
             specificDays: []
         }, customer)
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         item = await request.getInStockProduct(config.api.featuredSales, 1)
 
         let credit: number
@@ -200,22 +196,16 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
     })
 
     test('POST / recheckout with saved CC - voucher (percentage + max discount)', async () => {
-        let voucher = await access.getNotUsedVoucher({
+        let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 500000 },
-            binRange: { $exists: false },
+            binRange: '433590,542288,555555,400000',
             discountType: 'percentage',
             maximumDiscountAmount: { $gt: 0 },
             specificDays: []
-        }, customer)
+        })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.currentSales, 1, 500000)
         let matchedCard = await request.getCard('PayDollar', cookie)
 
         failedAttemptOrder = await request.createFailedAttemptOrder(cookie, [item])

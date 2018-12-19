@@ -111,21 +111,15 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
     })
 
     test('POST / checkout with new Stripe (save card) - MASTER - voucher (amount) + credit', async () => {
-        let voucher = await access.getNotUsedVoucher({
+        let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: null,
-            binRange: { $exists: false },
+            binRange: '433590,542288,555555,400000',
             discountType: 'amount',
             amount: { $gt: 0 },
             specificDays: []
-        }, customer)
+        })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-        
         item = await request.getInStockProduct(config.api.internationalSales, 1)
 
         let credit: number
@@ -151,57 +145,16 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
         expect(Math.abs(order.paymentSummary.accountCredit)).toEqual(credit)
     })
 
-    test('POST / checkout with new Stripe (not save card) - VISA - voucher (percentage)', async () => {
-        let voucher = await access.getNotUsedVoucher({
-            expiry: { $gte: new Date() },
-            used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 500000 },
-            binRange: { $exists: false },
-            discountType: 'percentage',
-            maximumDiscountAmount: null,
-            specificDays: []
-        }, customer)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
-        item = await request.getInStockProduct(config.api.internationalSales, 1, 500000)
-        stripeData['card[number]'] = '4000000000000077'
-        const stripeSource = await stripe.sources.create(stripeData)
-
-        let checkout = await request.createStripeOrder(cookie, [item], stripeSource, false, voucher._id)
-        expect(checkout.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
-        expect(order.code).toInclude(checkout.code)
-        expect(order.status).toEqual('placed')
-        expect(order.isCrossBorder).toBeTrue()
-        expect(order.paymentSummary.method).toEqual('STRIPE')
-        expect(order.paymentSummary.shipping).toEqual(0)
-
-        let discount = (order.paymentSummary.subtotal + order.paymentSummary.shipping +
-            order.paymentSummary.accountCredit) * voucher.amount
-        expect(order.paymentSummary.voucherAmount).toEqual(discount)
-    })
-
     test('POST / checkout with saved Stripe - voucher (percentage + max discount)', async () => {
-        let voucher = await access.getNotUsedVoucher({
+        let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 500000 },
-            binRange: { $exists: false },
+            binRange: '433590,542288,555555,400000',
             discountType: 'percentage',
             maximumDiscountAmount: { $gt: 0 },
             specificDays: []
-        }, customer)
+        })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-        
         let matchedCard = await request.getCard('Stripe', cookie)
         item = await request.getInStockProduct(config.api.internationalSales, 1, 500000)
 

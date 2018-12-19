@@ -21,6 +21,7 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
         customer = await access.getCustomerInfo({ email: account.email })
         item = await request.getInStockProduct(config.api.featuredSales, 1)
         failedAttemptOrder = await request.createFailedAttemptOrder(cookie, [item])
+        jest.setTimeout(120000)
     })
 
     afterEach(async () => {
@@ -258,10 +259,6 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
             numberOfItems: { $gte: 2 }
         })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         let response = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
                 "address": {
@@ -294,10 +291,6 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
             'specificDays.0': { $exists: true, $ne: today }
         })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         let response = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
                 "address": {
@@ -328,10 +321,6 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
             binRange: { $exists: false },
             minimumPurchase: { $gte: failedAttemptOrder.products[0].salePrice }
         })
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         let response = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
@@ -373,7 +362,7 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
         }
 
         if (!matchedVoucher) {
-            throw new Error('No voucher found for this test!')
+            throw 'No matched voucher!'
         }
 
         let response = await request.post(config.api.checkout + '/order/' +
@@ -405,10 +394,6 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
             used: false
         })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         let response = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
                 "address": {
@@ -439,10 +424,6 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
             minimumPurchase: { $lte: failedAttemptOrder.products[0].salePrice }
         })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         let response = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
                 "address": {
@@ -472,10 +453,6 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
             used: false,
             minimumPurchase: { $lte: failedAttemptOrder.products[0].salePrice }
         })
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         const stripeData = {
             "type": "card",
@@ -524,10 +501,6 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
             oncePerAccount: true
         }, customer)
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         let response = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
                 "address": {
@@ -557,10 +530,6 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
             binRange: { $exists: false },
             customer: { $exists: true, $ne: customer._id }
         })
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         let response = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {

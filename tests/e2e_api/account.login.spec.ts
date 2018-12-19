@@ -79,9 +79,9 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         expect(signIn.provider).toEqual('local')
         expect(signIn.state).toEqual('confirmed')
         expect(signIn.preview).toBeFalse()
-        expect(signIn.nsId).toBeString()
         expect(signIn.gender).toBeString()
         expect(signIn.cart).toBeArray()
+        expect(signIn.nsId).toBeUndefined() // fix after Netsuite release
     })
 
     test('GET / log out', async () => {

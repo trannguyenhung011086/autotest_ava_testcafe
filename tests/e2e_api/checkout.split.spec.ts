@@ -305,10 +305,6 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
             specificDays: []
         }, customer)
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         let itemSG = await request.getProductWithPrice('SG', 0, 2000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
@@ -335,74 +331,26 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
             orders[1].paymentSummary.voucherAmount).toEqual(voucher.amount)
     })
 
-    test('POST / split SG and VN order - voucher (percentage)', async () => {
-        let voucher = await access.getNotUsedVoucher({
-            expiry: { $gte: new Date() },
-            used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 500000 },
-            binRange: { $exists: false },
-            discountType: 'percentage',
-            maximumDiscountAmount: null,
-            specificDays: []
-        }, customer)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
-        let itemSG = await request.getProductWithPrice('SG', 0, 2000000, 1)
-        let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
-
-        let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG, itemVN],
-            stripeSource, true, voucher._id)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
-
-        expect(orders).toBeArrayOfSize(2)
-        for (let order of orders) {
-            if (order.products[0].productId == itemSG.id) {
-                expect(order.code).toEqual(`SGVN-${checkout.code}-1`)
-                expect(order.isCrossBorder).toBeTrue()
-                expect(order.products[0].salePrice).toEqual(itemSG.salePrice)
-            }
-            if (order.products[0].productId == itemVN.id) {
-                expect(order.code).toEqual(`VN-${checkout.code}`)
-                expect(order.isCrossBorder).toBeFalse()
-                expect(order.products[0].salePrice).toEqual(itemVN.salePrice)
-            }
-            let discount = (order.paymentSummary.subtotal + order.paymentSummary.shipping +
-                order.paymentSummary.accountCredit) * voucher.amount
-            expect(order.paymentSummary.voucherAmount).toEqual(discount)
-            expect(order.paymentSummary.method).toEqual('STRIPE')
-        }
-    })
-
     test('POST / split SG order when total >= 1,000,000 - voucher (percentage + max discount)', async () => {
-        let voucher = await access.getNotUsedVoucher({
+        let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 500000 },
-            binRange: { $exists: false },
+            binRange: '433590,542288,555555,400000',
             discountType: 'percentage',
             maximumDiscountAmount: { $gt: 0 },
             specificDays: []
-        }, customer)
+        })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
-        let itemSG1 = await request.getProductWithPrice('SG', 300000, 400000, 1)
+        let itemSG1 = await request.getProductWithPrice('SG', 500000, 2000000, 1)
         let itemSG2 = await request.getProductWithPrice('SG', 800000, 2000000, 1)
+        let itemSG3 = await request.getProductWithPrice('SG', 1000000, 2000000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG1, itemSG2],
+        let checkout = await request.createStripeOrder(cookie, [itemSG1, itemSG2, itemSG3],
             stripeSource, true, voucher._id)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
-        expect(orders).toBeArrayOfSize(2)
+        expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {
             if (order.products[0].productId == itemSG1.id) {
                 expect(order.products[0].salePrice).toEqual(itemSG1.salePrice)
@@ -410,12 +358,16 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
             if (order.products[0].productId == itemSG2.id) {
                 expect(order.products[0].salePrice).toEqual(itemSG2.salePrice)
             }
+            if (order.products[0].productId == itemSG3.id) {
+                expect(order.products[0].salePrice).toEqual(itemSG3.salePrice)
+            }
             expect(order.code).toInclude(checkout.code)
             expect(order.code).toMatch(/SGVN-.+-\d/)
             expect(order.isCrossBorder).toBeTrue()
             expect(order.paymentSummary.method).toEqual('STRIPE')
         }
         expect(orders[0].paymentSummary.voucherAmount +
-            orders[1].paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
+            orders[1].paymentSummary.voucherAmount +
+            orders[2].paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
     })
 })

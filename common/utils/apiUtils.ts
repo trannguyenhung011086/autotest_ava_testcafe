@@ -15,17 +15,33 @@ export default class ApiUtils extends AxiosUtils {
             email: email,
             password: password
         }
-        return await this.post(config.api.login, data)
+        let cookie = await this.post(config.api.login, data)
             .then(response => response.headers['set-cookie'][0])
+
+        if (!cookie) {
+            throw 'Cannot get login cookie!'
+        }
+        return cookie
     }
 
     public async getGuestCookie(): Promise<string> {
-        return await this.get(config.api.account)
+        let cookie = await this.get(config.api.account)
             .then(response => response.headers['set-cookie'][0])
+
+        if (!cookie) {
+            throw 'Cannot get guest cookie!'
+        }
+        return cookie
     }
 
     public async getAccountInfo(cookie: string): Promise<Model.Account> {
         let response = await this.get(config.api.account, cookie)
+        if (response.status != 200) {
+            throw {
+                message: 'Cannot get account info!',
+                error: JSON.stringify(response.data, null, '\t')
+            }
+        }
         return response.data
     }
 
@@ -42,7 +58,10 @@ export default class ApiUtils extends AxiosUtils {
                 { "cartItemIds": deletedList }, cookie)
 
             if (response.status != 200) {
-                throw { message: 'Cannot remove from cart!', error: response.data }
+                throw {
+                    message: 'Cannot remove from cart!',
+                    error: JSON.stringify(response.data, null, '\t')
+                }
             }
             return response.data
         }
@@ -51,7 +70,10 @@ export default class ApiUtils extends AxiosUtils {
     public async addToCart(productId: string, cookie: string, check = true): Promise<Model.Cart> {
         let response = await this.post(config.api.cart, { "productId": productId }, cookie)
         if (check && response.status != 200) {
-            throw { message: 'Cannot add to cart: ' + productId, error: response.data }
+            throw {
+                message: 'Cannot add to cart: ' + productId,
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -59,41 +81,56 @@ export default class ApiUtils extends AxiosUtils {
     public async updateQuantityCart(cartId: string, quantity: number, cookie: string): Promise<Model.Cart> {
         let response = await this.put(config.api.cart + cartId, { "quantity": quantity }, cookie)
         if (response.status != 200) {
-            throw { message: 'Cannot update quantity: ' + cartId, error: response.data }
+            throw {
+                message: 'Cannot update quantity: ' + cartId,
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
 
     public async getSales(saleType: string): Promise<Model.SalesModel[]> {
-        const r = await this.get(saleType)
-        if (r.status != 200) {
-            throw r.data
+        const response = await this.get(saleType)
+        if (response.status != 200) {
+            throw {
+                message: 'Cannot get sales from ' + saleType,
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
-        return r.data
+        return response.data
     }
 
     public async getUpcomingSales(): Promise<Model.UpcomingSalesModel[]> {
-        const r = await this.get(config.api.upcomingSales)
-        if (r.status != 200) {
-            throw r.data
+        const response = await this.get(config.api.upcomingSales)
+        if (response.status != 200) {
+            throw {
+                message: 'Cannot get upcoming sales!',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
-        return r.data
+        return response.data
     }
 
     public async getSaleInfo(saleId: string): Promise<Model.SaleInfoModel> {
-        const r = await this.get(config.api.sales + saleId)
-        if (r.status != 200) {
-            throw r.data
+        const response = await this.get(config.api.sales + saleId)
+        if (response.status != 200) {
+            throw {
+                message: 'Cannot get info from sale: ' + saleId,
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
-        return r.data
+        return response.data
     }
 
     public async getProductInfo(productId: string): Promise<Model.ProductInfoModel> {
-        const r = await this.get(config.api.product + productId)
-        if (r.status != 200) {
-            throw r.data
+        const response = await this.get(config.api.product + productId)
+        if (response.status != 200) {
+            throw {
+                message: 'Cannot get info from product: ' + productId,
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
-        return r.data
+        return response.data
     }
 
     public async getProducts(saleType: string, productType?: string): Promise<Model.Products[]> {
@@ -111,13 +148,13 @@ export default class ApiUtils extends AxiosUtils {
 
         if (productType == 'international' || saleType == config.api.internationalSales) {
             if (international.length == 0) {
-                throw 'There is no international sale!'
+                throw 'There is no international product from ' + saleType
             }
             const saleInfo = await this.getSaleInfo(international[0]['id'])
             return saleInfo.products
         } else {
             if (domestic.length == 0) {
-                throw 'There is no domestic sale!'
+                throw 'There is no domestic product from ' + saleType
             }
             const saleInfo = await this.getSaleInfo(domestic[0]['id'])
             return saleInfo.products
@@ -136,47 +173,56 @@ export default class ApiUtils extends AxiosUtils {
             }
         }
         if (matched == undefined) {
-            throw `There is no sale with ${amount} products!`
+            throw `There is no sale with ${amount} products from ${saleType}`
         }
         return matched
     }
 
     public async getBestSellers(): Promise<Model.BestSellers[]> {
-        const r = await this.get(config.api.bestSellers)
-        if (r.status != 200) {
-            throw r.data
+        const response = await this.get(config.api.bestSellers)
+        if (response.status != 200) {
+            throw {
+                message: 'Cannot get bestsellers!',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
-        return r.data
+        return response.data
     }
 
     public async getProductWithSizes(saleType: string): Promise<Model.ProductInfoModel> {
         let products = await this.getProducts(saleType)
+
+        let result: Model.ProductInfoModel
         for (let product of products) {
             let response = await this.getProductInfo(product.id)
-            if (response.sizes.length >= 1) {
-                return response
+            if (response.sizes.length > 1) {
+                result = response
+                break
             }
         }
+
+        if (!result) {
+            throw 'Cannot get product with sizes from ' + saleType
+        }
+        return result
     }
 
     public async getProductWithColors(saleType: string): Promise<Model.ProductInfoModel> {
         let products = await this.getProducts(saleType)
-        for (let product of products) {
-            let response = await this.getProductInfo(product.id)
-            if (response.colors.length >= 2) {
-                return response
-            }
-        }
-    }
 
-    public async getProductWithNoSizeNoColor(saleType: string): Promise<Model.ProductInfoModel> {
-        let products = await this.getProducts(saleType)
+        let result: Model.ProductInfoModel
         for (let product of products) {
             let response = await this.getProductInfo(product.id)
-            if (response.sizes.length == 0 && response.colors.length == 0) {
-                return response
+            if (response.colors.length > 1) {
+                result = response
+                break
             }
         }
+
+        if (!result) {
+            throw 'Cannot get product with colors from ' + saleType
+        }
+        return result
     }
 
     public async getInStockProduct(saleType: string, quantity: number, price?: number): Promise<Model.Product> {
@@ -207,7 +253,7 @@ export default class ApiUtils extends AxiosUtils {
         }
 
         if (!result) {
-            throw new Error(`There is no product with stock from ${saleType}!`)
+            throw `There is no product ${saleType} satisfying the conditions!`
         }
         return result
     }
@@ -239,6 +285,10 @@ export default class ApiUtils extends AxiosUtils {
                 }
             }
         }
+
+        if (!result) {
+            throw 'There is no product with stock from ' + saleType
+        }
         return result
     }
 
@@ -252,21 +302,28 @@ export default class ApiUtils extends AxiosUtils {
             }
         }
 
+        let result: Model.ProductInfoModel
         for (let item of matched) {
             let info = await this.getProductInfo(item.id)
             let soldOut = info.products.every((input) => {
                 return input.inStock == false
             })
             if (soldOut == true) {
-                return info
+                result = info
+                break
             }
         }
+
+        if (!result) {
+            throw 'There is no sold out product from ' + saleType
+        }
+        return result
     }
 
     public async getProductWithPrice(country: string, minPrice: number, maxPrice: number, quantity: number) {
         let sales = await new MongoUtils().getSaleList({
             country: country,
-            startDate: { $lte: new Date() },
+            startDate: { $lt: new Date() },
             endDate: { $gte: new Date() }
         })
         let matched: Model.Products[] = []
@@ -274,7 +331,7 @@ export default class ApiUtils extends AxiosUtils {
         for (let sale of sales) {
             let saleInfo = await this.getSaleInfo(sale._id)
             for (let product of saleInfo.products) {
-                if (product.soldOut == false && product.salePrice >= minPrice &&
+                if (product.soldOut === false && product.salePrice >= minPrice &&
                     product.salePrice <= maxPrice) {
                     matched.push(product)
                 }
@@ -283,17 +340,20 @@ export default class ApiUtils extends AxiosUtils {
 
         let result: Model.Product
         for (let item of matched) {
-            let info = await this.getProductInfo(item.id)
-            for (let product of info.products) {
-                if (product.quantity >= quantity) {
-                    result = product
-                    break
+            if (item.quantity >= quantity && item.soldOut == false) {
+                let info = await this.getProductInfo(item.id)
+                for (let product of info.products) {
+                    if (product.quantity >= quantity) {
+                        result = product
+                        break
+                    }
                 }
+                break
             }
         }
 
         if (!result) {
-            throw new Error(`There is no product with stock from ${country}!`)
+            throw `There is no product with stock from ${country}!`
         }
         return result
     }
@@ -303,25 +363,49 @@ export default class ApiUtils extends AxiosUtils {
             let response = await this.get(config.api.addresses, cookie)
             return response.data
         } catch (e) {
-            throw 'Current account cannot access address list!'
+            throw {
+                message: 'Cannot get address list!',
+                error: JSON.stringify(e, null, '\t')
+            }
         }
     }
 
     public async getCities(): Promise<Model.City[]> {
-        let response = await this.get(config.api.addresses + '/cities')
-        return response.data
+        try {
+            let response = await this.get(config.api.addresses + '/cities')
+            return response.data
+        } catch (e) {
+            throw {
+                message: 'Cannot get city list!',
+                error: JSON.stringify(e, null, '\t')
+            }
+        }
+
     }
 
     public async getDistricts(cityId: string): Promise<Model.District[]> {
-        let response = await this.get(config.api.addresses + '/cities/' + cityId + '/districts')
-        return response.data
+        try {
+            let response = await this.get(config.api.addresses + '/cities/' + cityId + '/districts')
+            return response.data
+        } catch (e) {
+            throw {
+                message: 'Cannot get district list!',
+                ererror: JSON.stringify(e, null, '\t')
+            }
+        }
     }
 
     public getCity(cities: Model.City[]): Model.City {
+        if (!cities) {
+            throw 'City list has error!'
+        }
         return this.getArrayRandomElement(cities)
     }
 
     public getDistrict(districts: Model.District[]): Model.District {
+        if (!districts) {
+            throw 'City list has error!'
+        }
         return this.getArrayRandomElement(districts)
     }
 
@@ -345,7 +429,10 @@ export default class ApiUtils extends AxiosUtils {
                 }
             }
         } catch (e) {
-            throw e
+            throw {
+                message: 'Cannot delete address!',
+                ererror: JSON.stringify(e, null, '\t')
+            }
         }
     }
 
@@ -355,7 +442,10 @@ export default class ApiUtils extends AxiosUtils {
         shipping.duplicateBilling = true
         let response = await this.post(config.api.addresses, shipping, cookie)
         if (response.status != 200) {
-            throw 'Cannot add address!'
+            throw {
+                message: 'Cannot add address!',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
     }
 
@@ -393,50 +483,96 @@ export default class ApiUtils extends AxiosUtils {
                 brandList.push(brand)
             }
         }
+
+        if (!brandList) {
+            throw 'Cannot get brand list!'
+        }
         return brandList
     }
 
     public async getBrandWithNoProduct(): Promise<Model.BrandInfo> {
         let brandList = await this.getBrandsList()
+
+        let result: Model.BrandInfo
         for (let brand of brandList) {
             let response = await this.get(config.api.brands + brand.id)
-            let brandInfo: Model.BrandInfo
-            brandInfo = response.data
-            if (brandInfo.products.length == 0) {
-                return brandInfo
+            if (response.data.products.length == 0) {
+                result = response.data
+                break
             }
         }
+
+        if (!result) {
+            throw 'Cannot get brand with no product!'
+        }
+        return result
     }
 
-    public async getBrandWithProducts(): Promise<Model.BrandInfo> {
-        let products = await this.getProducts(config.api.featuredSales)
+    public async getBrandWithProducts(saleType = config.api.featuredSales): Promise<Model.BrandInfo> {
+        let products = await this.getProducts(saleType)
         let brandList = await this.getBrandsList()
+
+        let result: Model.BrandInfo
         for (let item of brandList) {
             if (item.name == products[0].brand) {
                 let response = await this.get(config.api.brands + item.id)
-                return response.data
+                result = response.data
+                break
+            }
+        }
+
+        if (!result) {
+            throw 'Cannot get brand with products from ' + saleType
+        }
+        return result
+    }
+
+    public async getOrders(cookie: string): Promise<Model.OrderSummary[]> {
+        try {
+            let response = await this.get(config.api.orders, cookie)
+            return response.data
+        } catch (e) {
+            throw {
+                message: 'Cannot get order list!',
+                error: JSON.stringify(e, null, '\t')
             }
         }
     }
 
-    public async getOrders(cookie: string): Promise<Model.OrderSummary[]> {
-        let response = await this.get(config.api.orders, cookie)
-        return response.data
-    }
-
     public async getOrderInfo(orderId: string, cookie: string): Promise<Model.Order> {
-        let response = await this.get(config.api.orders + '/' + orderId, cookie)
-        return response.data
+        try {
+            let response = await this.get(config.api.orders + '/' + orderId, cookie)
+            return response.data
+        } catch (e) {
+            throw {
+                message: 'Cannot get order info of ' + orderId,
+                error: JSON.stringify(e, null, '\t')
+            }
+        }
     }
 
     public async getSplitOrderInfo(orderCode: string, cookie: string): Promise<Model.Order[]> {
-        let response = await this.get(config.api.orders + '/' + orderCode, cookie)
-        return response.data
+        try {
+            let response = await this.get(config.api.orders + '/' + orderCode, cookie)
+            return response.data
+        } catch (e) {
+            throw {
+                message: 'Cannot get order info of ' + orderCode,
+                error: JSON.stringify(e, null, '\t')
+            }
+        }
     }
 
     public async getCards(cookie: string): Promise<Model.CreditCard[]> {
-        let response = await this.get(config.api.creditcard, cookie)
-        return response.data
+        try {
+            let response = await this.get(config.api.creditcard, cookie)
+            return response.data
+        } catch (e) {
+            throw {
+                message: 'Cannot get card list!',
+                error: JSON.stringify(e, null, '\t')
+            }
+        }
     }
 
     public async getCard(provider: string, cookie: string): Promise<string> {
@@ -455,17 +591,21 @@ export default class ApiUtils extends AxiosUtils {
         }
 
         if (!matchedCard) {
-            throw new Error('No saved CC found for this test!')
+            throw 'No saved CC found for ' + provider
         }
         return matchedCard
     }
 
     public async parsePayDollarRes(content: string): Promise<Model.PayDollarResponse> {
-        let result: any = content.split('&').reduce((result, value) => {
-            result[value.split('=')[0]] = value.split('=')[1]
+        try {
+            let result: any = content.split('&').reduce((result, value) => {
+                result[value.split('=')[0]] = value.split('=')[1]
+                return result
+            }, {})
             return result
-        }, {})
-        return result
+        } catch (e) {
+            throw e
+        }
     }
 
     public async failedAttempt(orderCode: string, cookie: string): Promise<Model.FailedAttempt> {
@@ -475,7 +615,10 @@ export default class ApiUtils extends AxiosUtils {
         }, cookie)
 
         if (response.status != 200) {
-            throw { message: 'Cannot execute failed-attempt checkout', error: response.data }
+            throw {
+                message: 'Cannot execute failed-attempt checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -504,7 +647,10 @@ export default class ApiUtils extends AxiosUtils {
 
         let response = await this.post(config.api.checkout, data, cookie)
         if (response.status != 200) {
-            throw { message: 'Cannot execute checkout', error: response.data }
+            throw {
+                message: 'Cannot execute checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -542,7 +688,10 @@ export default class ApiUtils extends AxiosUtils {
             failedAttemptOrder.code, data, cookie)
 
         if (response.status != 200) {
-            throw { message: 'Cannot execute re-checkout', error: response.data }
+            throw {
+                message: 'Cannot execute re-checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -569,7 +718,10 @@ export default class ApiUtils extends AxiosUtils {
 
         let response = await this.post(config.api.checkout, data, cookie)
         if (response.status != 200) {
-            throw { message: 'Cannot execute checkout', error: response.data }
+            throw {
+                message: 'Cannot execute checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -605,7 +757,10 @@ export default class ApiUtils extends AxiosUtils {
             failedAttemptOrder.code, data, cookie)
 
         if (response.status != 200) {
-            throw { message: 'Cannot execute re-checkout', error: response.data }
+            throw {
+                message: 'Cannot execute re-checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -631,7 +786,10 @@ export default class ApiUtils extends AxiosUtils {
 
         let response = await this.post(config.api.checkout, data, cookie)
         if (response.status != 200) {
-            throw { message: 'Cannot execute checkout', error: response.data }
+            throw {
+                message: 'Cannot execute checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -666,7 +824,10 @@ export default class ApiUtils extends AxiosUtils {
             failedAttemptOrder.code, data, cookie)
 
         if (response.status != 200) {
-            throw { message: 'Cannot execute re-checkout', error: response.data }
+            throw {
+                message: 'Cannot execute re-checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -697,7 +858,10 @@ export default class ApiUtils extends AxiosUtils {
 
         let response = await this.post(config.api.checkout, data, cookie)
         if (response.status != 200) {
-            throw { message: 'Cannot execute checkout', error: response.data }
+            throw {
+                message: 'Cannot execute checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -724,7 +888,10 @@ export default class ApiUtils extends AxiosUtils {
 
         let response = await this.post(config.api.checkout, data, cookie)
         if (response.status != 200) {
-            throw { message: 'Cannot execute checkout', error: response.data }
+            throw {
+                message: 'Cannot execute checkout',
+                error: JSON.stringify(response.data, null, '\t')
+            }
         }
         return response.data
     }
@@ -750,7 +917,7 @@ export default class ApiUtils extends AxiosUtils {
         let parse = await this.parsePayDollarRes(result.data)
 
         if (parse.successcode != '1') {
-            throw new Error('Transaction is not failed. Cannot create failed-attempt order!')
+            throw 'Transaction is not failed. Cannot create failed-attempt order!'
         }
 
         let failedAttempt = await this.failedAttempt(parse.Ref, cookie)

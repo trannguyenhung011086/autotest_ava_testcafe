@@ -231,7 +231,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
         account = await request.getAccountInfo(cookie)
 
         if (account.cart.length < 9) {
-            throw new Error('Cart does not have more than 8 unique products for this test!')
+            throw 'Cart does not have more than 8 unique products!'
         }
 
         let response = await request.post(config.api.checkout, {
@@ -251,7 +251,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     // validate availability
 
     test('POST / cannot checkout with sold out product', async () => {
-        let soldOut = await request.getSoldOutProduct(config.api.featuredSales)
+        let soldOut = await request.getSoldOutProduct(config.api.todaySales)
         await request.addToCart(soldOut.products[0].id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -306,10 +306,6 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             numberOfItems: { $gte: 2 }
         })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         item = await request.getInStockProduct(config.api.featuredSales, 1)
 
         await request.addToCart(item.id, cookie)
@@ -342,10 +338,6 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             'specificDays.0': { $exists: true, $ne: today }
         })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         item = await request.getInStockProduct(config.api.featuredSales, 1)
 
         await request.addToCart(item.id, cookie)
@@ -376,10 +368,6 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             binRange: { $exists: false },
             minimumPurchase: { $gte: 500000 }
         })
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
@@ -422,7 +410,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
         }
 
         if (!matchedVoucher) {
-            throw new Error('No voucher found for this test!')
+            throw 'No voucher found for this test!'
         }
 
         let response = await request.post(config.api.checkout, {
@@ -452,10 +440,6 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             used: false
         })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         let response = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -482,10 +466,6 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             binRange: { $exists: false },
             used: true
         })
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -515,10 +495,6 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             minimumPurchase: { $lte: item.salePrice }
         })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
         let response = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -546,10 +522,6 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             used: false,
             minimumPurchase: { $lte: item.salePrice }
         })
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         const stripeData = {
             "type": "card",
@@ -585,7 +557,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with already used voucher', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.currentSales, 1, 500000)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -593,12 +565,9 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             expiry: { $gte: new Date() },
             binRange: { $exists: false },
             used: false,
-            oncePerAccount: true
+            oncePerAccount: true,
+            minimumPurchase: { $gte: 500000 }
         }, customer)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -626,10 +595,6 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             used: false,
             customer: { $exists: true, $ne: customer._id }
         })
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         let response = await request.post(config.api.checkout, {
             "address": {

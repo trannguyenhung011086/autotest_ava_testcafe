@@ -78,17 +78,12 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
     test('POST / checkout with COD - voucher (amount) + credit', async () => {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
-            multipleUser: true,
-            numberOfUsage: { $gte: 1 },
             used: false,
             discountType: 'amount',
             minimumPurchase: 0,
-            numberOfItems: 0
+            numberOfItems: 0,
+            oncePerAccount: true
         }, customer)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         item = await request.getInStockProduct(config.api.featuredSales, 1)
 
@@ -112,39 +107,6 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
         expect(Math.abs(order.paymentSummary.accountCredit)).toEqual(credit)
     })
 
-    test('POST / checkout with COD - voucher (percentage)', async () => {
-        let voucher = await access.getNotUsedVoucher({
-            expiry: { $gte: new Date() },
-            used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 500000 },
-            binRange: { $exists: false },
-            discountType: 'percentage',
-            maximumDiscountAmount: null,
-            specificDays: []
-        }, customer)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
-        item = await request.getInStockProduct(config.api.todaySales, 1, 500000)
-
-        let checkout = await request.createCodOrder(cookie, [item], voucher._id)
-        expect(checkout.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
-        expect(order.code).toInclude(checkout.code)
-        expect(order.status).toEqual('placed')
-        expect(order.isCrossBorder).toBeFalse()
-        expect(order.paymentSummary.method).toEqual('COD')
-        expect(order.paymentSummary.shipping).toEqual(25000)
-
-        let discount = (order.paymentSummary.subtotal + order.paymentSummary.shipping +
-            order.paymentSummary.accountCredit) * voucher.amount
-        expect(order.paymentSummary.voucherAmount).toEqual(discount)
-    })
-
     test('POST / checkout with COD - voucher (percentage + max discount)', async () => {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
@@ -156,10 +118,6 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
             maximumDiscountAmount: { $gt: 0 },
             specificDays: []
         }, customer)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
 
         item = await request.getInStockProduct(config.api.todaySales, 1, 500000)
 

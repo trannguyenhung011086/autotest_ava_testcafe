@@ -28,8 +28,8 @@ describe('Update info API ' + config.baseUrl + config.api.account, () => {
         expect(signIn.accountCredit).toBeNumber()
         expect(signIn.provider).toEqual('local')
         expect(signIn.state).toEqual('confirmed')
-        expect(signIn.nsId).toBeString()
         expect(signIn.gender).toBeString()
+        expect(signIn.nsId).toBeUndefined() // fix after Netsuite release
     })
 
     test.skip('PUT / cannot change email', async () => {

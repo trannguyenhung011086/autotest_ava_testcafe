@@ -96,12 +96,8 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
     test('GET / product with sizes', async () => {
         product = await request.getProductWithSizes(config.api.currentSales)
+        expect(product.sizes.length).toBeGreaterThan(1)
 
-        if (!product) {
-            product = await request.getProductWithSizes(config.api.todaySales)
-        }
-
-        expect(product.sizes.length).toBeGreaterThanOrEqual(1)
         for (let size of product.sizes) {
             expect(size.availableColors).toBeArray()
             expect(size.name).not.toBeEmpty()
@@ -112,12 +108,8 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
     test('GET / product with colors', async () => {
         product = await request.getProductWithColors(config.api.currentSales)
+        expect(product.colors.length).toBeGreaterThan(1)
 
-        if (!product) {
-            product = await request.getProductWithColors(config.api.todaySales)
-        }
-        
-        expect(product.colors.length).toBeGreaterThanOrEqual(2)
         for (let color of product.colors) {
             expect(color.availableSizes).toBeArray()
             expect(color.hex).toBeString()

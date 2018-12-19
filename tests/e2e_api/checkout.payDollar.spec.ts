@@ -161,20 +161,14 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
     })
 
     test('POST / checkout with new CC (not save card) - VISA - voucher (amount) + credit', async () => {
-        let voucher = await access.getNotUsedVoucher({
+        let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: null,
-            binRange: { $exists: false },
+            binRange: '433590,542288,555555,400000',
             discountType: 'amount',
             amount: { $gt: 0 },
             specificDays: []
-        }, customer)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
+        })
 
         item = await request.getInStockProduct(config.api.todaySales, 1)
 
@@ -216,74 +210,17 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
         expect(order.status).toEqual('placed')
     })
 
-    test('POST / checkout with new CC (save card) - MASTER - voucher (percentage)', async () => {
-        let voucher = await access.getNotUsedVoucher({
-            expiry: { $gte: new Date() },
-            used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 1500000 },
-            binRange: { $exists: false },
-            discountType: 'percentage',
-            maximumDiscountAmount: null,
-            specificDays: []
-        }, customer)
-
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
-        item = await request.getInStockProduct(config.api.todaySales, 1, 500000)
-
-        let checkout = await request.createPayDollarOrder(cookie, [item], true, voucher._id)
-        expect(checkout.orderId).not.toBeEmpty()
-
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
-        expect(checkout.creditCard.orderRef).toInclude(order.code)
-        expect(order.status).toEqual('pending')
-        expect(order.isCrossBorder).toBeFalse()
-        expect(order.paymentSummary.method).toEqual('CC')
-        expect(order.paymentSummary.shipping).toEqual(0)
-
-        let discount = (order.paymentSummary.subtotal + order.paymentSummary.shipping +
-            order.paymentSummary.accountCredit) * voucher.amount
-        expect(order.paymentSummary.voucherAmount).toEqual(discount)
-
-        payDollarCreditCard = checkout.creditCard
-        payDollarCreditCard.cardHolder = 'testing card'
-        payDollarCreditCard.cardNo = '5422882800700007'
-        payDollarCreditCard.pMethod = 'Master'
-        payDollarCreditCard.epMonth = 7
-        payDollarCreditCard.epYear = 2020
-        payDollarCreditCard.securityCode = '123'
-
-        let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi, payDollarCreditCard)
-        let parse = await request.parsePayDollarRes(result.data)
-
-        expect(parse.successcode).toEqual('0')
-        expect(parse.Ref).toEqual(checkout.creditCard.orderRef)
-        expect(parse.errMsg).toMatch(/Transaction completed/)
-
-        order = await request.getOrderInfo(checkout.orderId, cookie)
-        expect(order.status).toEqual('placed')
-    })
-
     test('POST / checkout with saved CC - voucher (percentage + max discount)', async () => {
-        let voucher = await access.getNotUsedVoucher({
+        let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 500000 },
-            binRange: { $exists: false },
+            binRange: '433590,542288,555555,400000',
             discountType: 'percentage',
             maximumDiscountAmount: { $gt: 0 },
             specificDays: []
-        }, customer)
+        })
 
-        if (!voucher) {
-            throw new Error('No voucher found for this test!')
-        }
-
-        item = await request.getInStockProduct(config.api.todaySales, 1, 500000)
+        item = await request.getInStockProduct(config.api.currentSales, 1, 500000)
         let matchedCard = await request.getCard('PayDollar', cookie)
 
         let checkout = await request.createSavedPayDollarOrder(cookie, [item], matchedCard, voucher._id)

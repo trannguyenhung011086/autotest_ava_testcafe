@@ -47,31 +47,59 @@ export default class MongoUtils {
     }
 
     public async getCustomerInfo(query: Object) {
-        return await this.getDbData('customers', query)
+        let info = await this.getDbData('customers', query)
+        if (!info) {
+            throw 'Cannot get customer info!'
+        }
+        return info
     }
 
     public async getVoucher(query: Object): Promise<Model.VoucherModel> {
-        return await this.getDbData('vouchers', query)
+        let voucher = await this.getDbData('vouchers', query)
+        if (!voucher) {
+            throw 'Cannot get voucher!'
+        }
+        return voucher
     }
 
     public async getVoucherList(query: Object): Promise<Model.VoucherModel[]> {
-        return await this.getDbDataList('vouchers', query)
+        let vouchers = await this.getDbDataList('vouchers', query)
+        if (!vouchers) {
+            throw 'Cannot get voucher list!'
+        }
+        return vouchers
     }
 
     public async getGiftCard(query: Object): Promise<Model.GiftcardModel> {
-        return await this.getDbData('giftcards', query)
+        let card = await this.getDbData('giftcards', query)
+        if (!card) {
+            throw 'Cannot get gift card!'
+        }
+        return card
     }
 
     public async getSale(query: Object): Promise<Model.SaleInfoModel> {
-        return await this.getDbData('sales', query)
+        let sale = await this.getDbData('sales', query)
+        if (!sale) {
+            throw 'Cannot get sale!'
+        }
+        return sale
     }
 
     public async getSaleList(query: Object): Promise<Model.SaleInfoModel[]> {
-        return await this.getDbDataList('sales', query)
+        let sales = await this.getDbDataList('sales', query)
+        if (!sales) {
+            throw 'Cannot get sale list!'
+        }
+        return sales
     }
 
     public async getProduct(query: Object): Promise<Model.ProductInfoModel> {
-        return await this.getDbData('products', query)
+        let product = await this.getDbData('products', query)
+        if (!product) {
+            throw 'Cannot get product!'
+        }
+        return product
     }
 
     public async countUsedVoucher(voucherId: Object): Promise<number> {
@@ -106,21 +134,37 @@ export default class MongoUtils {
 
     public async getUsedVoucher(query: Object, customer: Model.Customer): Promise<Model.VoucherModel> {
         let vouchers = await this.getVoucherList(query)
+
+        let result: Model.VoucherModel
         for (let voucher of vouchers) {
             const checkUsed = await this.checkUsedVoucher(voucher._id, customer._id)
             if (checkUsed) {
-                return voucher
+                result = voucher
+                break
             }
         }
+
+        if (!result) {
+            throw 'Cannot get voucher!'
+        }
+        return result
     }
 
     public async getNotUsedVoucher(query: Object, customer: Model.Customer): Promise<Model.VoucherModel> {
         let vouchers = await this.getVoucherList(query)
+
+        let result: Model.VoucherModel
         for (let voucher of vouchers) {
             const checkUsed = await this.checkUsedVoucher(voucher._id, customer._id)
             if (!checkUsed) {
-                return voucher
+                result = voucher
+                break
             }
         }
+
+        if (!result) {
+            throw 'Cannot get voucher!'
+        }
+        return result
     }
 }
