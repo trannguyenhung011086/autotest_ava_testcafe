@@ -156,7 +156,7 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
         })
 
         let matchedCard = await request.getCard('Stripe', cookie)
-        item = await request.getInStockProduct(config.api.internationalSales, 1, 500000)
+        item = await request.getInStockProduct(config.api.internationalSales, 1)
 
         let checkout = await request.createSavedStripeOrder(cookie, [item], matchedCard, voucher._id)
         expect(checkout.orderId).not.toBeEmpty()

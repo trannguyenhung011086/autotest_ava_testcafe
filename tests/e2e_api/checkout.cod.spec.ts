@@ -43,7 +43,7 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
 
     test('POST / cannot checkout with COD - domestic + international product', async () => {
         let item1 = await request.getInStockProduct(config.api.internationalSales, 1)
-        let item2 = await request.getInStockProduct(config.api.featuredSales, 1)
+        let item2 = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item1.id, cookie)
         await request.addToCart(item2.id, cookie)
         account = await request.getAccountInfo(cookie)
@@ -62,7 +62,7 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
     })
 
     test('POST / checkout with COD', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         let checkout = await request.createCodOrder(cookie, [item])
         expect(checkout.orderId).not.toBeEmpty()
@@ -85,7 +85,7 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
             oncePerAccount: true
         }, customer)
 
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         let credit: number
         if (account.accountCredit < (item.salePrice + 25000 - voucher.amount)) {

@@ -28,7 +28,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     // validate required data
 
     test('POST / cannot checkout with invalid email', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
@@ -79,7 +79,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with invalid phone and tax code', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -107,7 +107,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout without payment method', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -130,7 +130,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     // validate cart
 
     test('POST / cannot checkout with mismatched cart', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -157,7 +157,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with mismatched quantity', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -179,7 +179,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with mismatched price', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -201,7 +201,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with invalid product', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
         cart = response.data
 
@@ -223,14 +223,14 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with more than 8 unique products', async () => {
-        let items = await request.getInStockProducts(config.api.currentSales, 1)
+        let items = await request.getInStockProducts(config.api.todaySales, 1)
 
         for (let item of items) {
             await request.addToCart(item.id, cookie, false)
         }
         account = await request.getAccountInfo(cookie)
 
-        if (account.cart.length < 9) {
+        if (account.cart.length <= 8) {
             throw 'Cart does not have more than 8 unique products!'
         }
 
@@ -306,7 +306,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             numberOfItems: { $gte: 2 }
         })
 
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
@@ -338,7 +338,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             'specificDays.0': { $exists: true, $ne: today }
         })
 
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
@@ -389,7 +389,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with voucher exceeding number of usage', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -430,7 +430,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with expired voucher', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -457,7 +457,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with redeemed voucher', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -484,7 +484,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with COD using voucher for CC', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -586,7 +586,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with voucher only used for other customer', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -615,7 +615,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     // validate account credit
 
     test('POST / cannot checkout with more than available credit', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 

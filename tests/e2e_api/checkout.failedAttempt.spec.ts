@@ -27,7 +27,7 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
     })
 
     test('POST / create failed-attempt order', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
         addresses = await request.getAddresses(cookie)
@@ -61,7 +61,7 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
     })
 
     test('POST / recheckout with COD', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         failedAttemptOrder = await request.createFailedAttemptOrder(cookie, [item])
         let reCheckout = await request.reCheckoutCod(failedAttemptOrder, addresses, cookie)
 
@@ -74,7 +74,7 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
     })
 
     test('POST / recheckout with new CC (not save card) - VISA', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         failedAttemptOrder = await request.createFailedAttemptOrder(cookie, [item])
         let reCheckout = await request.reCheckoutPayDollar(failedAttemptOrder, addresses, cookie, false)
 
@@ -105,7 +105,7 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
     })
 
     test('POST / recheckout with new CC (save card) - MASTER', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         failedAttemptOrder = await request.createFailedAttemptOrder(cookie, [item])
         let reCheckout = await request.reCheckoutPayDollar(failedAttemptOrder, addresses, cookie, true)
 
@@ -136,7 +136,7 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
     })
 
     test('POST / recheckout with saved CC', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let matchedCard = await request.getCard('PayDollar', cookie)
 
         failedAttemptOrder = await request.createFailedAttemptOrder(cookie, [item])
@@ -173,7 +173,7 @@ describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.
             specificDays: []
         }, customer)
 
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         let credit: number
         if (account.accountCredit < (item.salePrice + 25000 - voucher.amount)) {

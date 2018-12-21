@@ -47,7 +47,7 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
 
     test.each([['3566002020360505', 'JCB'], ['378282246310005', 'AMEX']])
         ('POST / cannot checkout with non-supported CC - %s %s', async (cardNumber, provider) => {
-            item = await request.getInStockProduct(config.api.featuredSales, 1)
+            item = await request.getInStockProduct(config.api.todaySales, 1)
             await request.addToCart(item.id, cookie)
             account = await request.getAccountInfo(cookie)
             addresses = await request.getAddresses(cookie)
@@ -71,7 +71,7 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
         })
 
     test('POST / checkout with new CC (not save card) - VISA', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         let checkout = await request.createPayDollarOrder(cookie, [item], false)
         expect(checkout.orderId).not.toBeEmpty()
@@ -103,7 +103,7 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
     })
 
     test('POST / checkout with new CC (save card) - MASTER', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
 
         let checkout = await request.createPayDollarOrder(cookie, [item], true)
         expect(checkout.orderId).not.toBeEmpty()
@@ -135,7 +135,7 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
     })
 
     test('POST / checkout with saved CC', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let matchedCard = await request.getCard('PayDollar', cookie)
 
         let checkout = await request.createSavedPayDollarOrder(cookie, [item], matchedCard)
@@ -220,7 +220,7 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
             specificDays: []
         })
 
-        item = await request.getInStockProduct(config.api.currentSales, 1, 500000)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
         let matchedCard = await request.getCard('PayDollar', cookie)
 
         let checkout = await request.createSavedPayDollarOrder(cookie, [item], matchedCard, voucher._id)

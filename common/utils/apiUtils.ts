@@ -286,7 +286,7 @@ export default class ApiUtils extends AxiosUtils {
             }
         }
 
-        if (!result) {
+        if (result.length == 0) {
             throw 'There is no product with stock from ' + saleType
         }
         return result
