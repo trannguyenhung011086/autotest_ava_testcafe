@@ -62,49 +62,57 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
         expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
-            let response = await request.getSaleInfo(sale.id)
-            expect(response.id).toEqual(sale.id)
-            expect(response.title).not.toBeEmpty()
-            expect(response.endTime).toEqual(sale.endTime)
-            expect(new Date(response.startTime)).toBeBefore(new Date())
+            try {
+                let response = await request.getSaleInfo(sale.id)
+                expect(response.id).toEqual(sale.id)
+                expect(response.title).not.toBeEmpty()
+                expect(response.endTime).toEqual(sale.endTime)
+                expect(new Date(response.startTime)).toBeBefore(new Date())
 
-            expect(response.products).toBeArray()
-            for (let product of response.products) {
-                expect(product.id).not.toBeEmpty()
-                expect(product.title).not.toBeEmpty()
-                expect(product.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                expect(product.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
-                expect(product.soldOut).toBeBoolean()
-                expect(product.category).not.toBeEmpty()
-                expect(product.brand).not.toBeEmpty()
-                expect(product.slug).toInclude(product.id)
-                expect(product.quantity).toBeNumber()
-                expect(product.numberOfVariations).toBeGreaterThanOrEqual(0)
+                expect(response.products).toBeArray()
+                for (let product of response.products) {
+                    try {
+                        expect(product.id).not.toBeEmpty()
+                        expect(product.title).not.toBeEmpty()
+                        expect(product.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                        expect(product.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                        expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
+                        expect(product.soldOut).toBeBoolean()
+                        expect(product.category).not.toBeEmpty()
+                        expect(product.brand).not.toBeEmpty()
+                        expect(product.slug).toInclude(product.id)
+                        expect(product.quantity).toBeNumber()
+                        expect(product.numberOfVariations).toBeGreaterThanOrEqual(0)
+                    } catch (error) {
+                        throw { failed_product: product, failed_sale: sale.id, error: error }
+                    }
+                }
+
+                expect(response.filter.gender).toBeArray()
+                expect(response.filter.type).toBeArray()
+                expect(response.filter.color).toBeArray()
+                expect(response.filter.size).toBeArray()
+                expect(response.filter.brand).toBeArray()
+                expect(response.filter.category).toBeArray()
+
+                expect(response.sort).toContainAllValues(['RECOMMENDED',
+                    'HIGHEST_DISCOUNT',
+                    'LOW_PRICE',
+                    'HIGH_PRICE'])
+
+                expect(response.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                expect(response.campaign).toBeFalse()
+                expect(response.slug).toInclude(response.id)
+            } catch (error) {
+                throw { failed_sale: sale, error: error }
             }
-
-            expect(response.filter.gender).toBeArray()
-            expect(response.filter.type).toBeArray()
-            expect(response.filter.color).toBeArray()
-            expect(response.filter.size).toBeArray()
-            expect(response.filter.brand).toBeArray()
-            expect(response.filter.category).toBeArray()
-
-            expect(response.sort).toContainAllValues(['RECOMMENDED',
-                'HIGHEST_DISCOUNT',
-                'LOW_PRICE',
-                'HIGH_PRICE'])
-
-            expect(response.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-            expect(response.campaign).toBeFalse()
-            expect(response.slug).toInclude(response.id)
         }
     })
 
     test('GET / valid ongoing sale ID with filter', async () => {
         let sales = await request.getSales(config.api.featuredSales)
         let sale = await request.getSaleInfo(sales[0].id)
-        
+
         for (let filter of Object.keys(sale.filter)) {
             if (sale.filter[filter].length > 0) {
                 let filterValue = sale.filter[filter][0]['value']
@@ -117,7 +125,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
     test('GET / valid ongoing sale ID with multiple filters', async () => {
         let sales = await request.getSales(config.api.featuredSales)
         let sale = await request.getSaleInfo(sales[0].id)
-        
+
         let filterList = []
         for (let filter of Object.keys(sale.filter)) {
             if (sale.filter[filter].length > 0) {
@@ -137,25 +145,29 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
     test('GET / valid upcoming sale ID', async () => {
         let dates = await request.getUpcomingSales()
         expect(dates.length).toBeGreaterThan(1)
-        
+
         for (let date of dates) {
             for (let sale of date.sales) {
-                expect(date.sales.length).toBeGreaterThanOrEqual(1)
+                try {
+                    expect(date.sales.length).toBeGreaterThanOrEqual(1)
 
-                let response = await request.get(config.api.upcomingSale + sale.id)
-                let upcoming: model.UpcomingInfo
-                upcoming = response.data
+                    let response = await request.get(config.api.upcomingSale + sale.id)
+                    let upcoming: model.UpcomingInfo
+                    upcoming = response.data
 
-                expect(response.status).toEqual(200)
-                expect(upcoming.id).toEqual(sale.id)
+                    expect(response.status).toEqual(200)
+                    expect(upcoming.id).toEqual(sale.id)
 
-                if (upcoming.description) {
-                    expect(upcoming.description).not.toBeEmpty()
+                    if (upcoming.description) {
+                        expect(upcoming.description).not.toBeEmpty()
+                    }
+
+                    expect(upcoming.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                    expect(upcoming.title).not.toBeEmpty()
+                    expect(new Date(upcoming.startTime)).toBeAfter(new Date())
+                } catch (error) {
+                    throw { failed_sale: sale, error: error }
                 }
-
-                expect(upcoming.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                expect(upcoming.title).not.toBeEmpty()
-                expect(new Date(upcoming.startTime)).toBeAfter(new Date())
             }
         }
     })

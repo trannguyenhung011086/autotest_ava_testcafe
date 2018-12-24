@@ -72,7 +72,10 @@ const config = {
         cateHealthBeauty: '/api/menus/items/5b56d3448f0dd7c0480acd32',
         cateHomeLifeStyle: '/api/menus/items/5b62d1008f0dd7c0480acd5b',
         cart: '/api/v2/cart-items/',
-        checkout: '/api/v2/checkout'
+        checkout: '/api/v2/checkout',
+        feedFacebook: '/api/v1/fb-product-feeds',
+        feedGoogle: '/api/v1/google-product-feeds',
+        feedGoogleDynamic: '/api/v1/google-dynamic-product-feeds'
     },
     stripeKey: 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy',
     payDollarBase: payDollarBase || 'https://test.paydollar.com',

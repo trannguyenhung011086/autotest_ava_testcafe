@@ -26,17 +26,22 @@ describe('Secret sale API ' + config.baseUrl + config.api.secretSale, () => {
 
         let response = await request.get(config.api.secretSale)
         expect(response.status).toEqual(200)
-        expect(response.data).toBeArrayOfSize(1)
 
-        let sale: model.SalesModel = response.data[0]
-        expect(sale.title).not.toBeEmpty()
-        expect(sale.endTime).not.toBeEmpty()
-        expect(sale.potd).toBeBoolean()
-        expect(sale.slug).toInclude(sale.id)
-        expect(sale.categories).toBeArray()
+        let sales: model.SalesModel[] = response.data
+        for (let sale of sales) {
+            try {
+                expect(sale.title).not.toBeEmpty()
+                expect(sale.endTime).not.toBeEmpty()
+                expect(sale.potd).toBeBoolean()
+                expect(sale.slug).toInclude(sale.id)
+                expect(sale.categories).toBeArray()
 
-        let saleInfo = await request.getSaleInfo(sale.id)
-        expect(saleInfo.campaign).toBeTrue()
+                let saleInfo = await request.getSaleInfo(sale.id)
+                expect(saleInfo.campaign).toBeTrue()
+            } catch (error) {
+                throw { failed_sale: sale, error: error }
+            }
+        }
     })
 
     test('GET / check secret sale when call campaign API', async () => {

@@ -36,42 +36,50 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
         expect(products.length).toBeGreaterThanOrEqual(1)
 
         for (let product of products) {
-            let response = await request.getProductInfo(product.id)
-            expect(response.id).toEqual(product.id)
+            try {
+                let response = await request.getProductInfo(product.id)
+                expect(response.id).toEqual(product.id)
 
-            expect(response.sale.slug).not.toBeEmpty()
-            expect(new Date(response.sale.startTime)).toBeBefore(new Date(response.sale.endTime))
-            expect(response.sale.categories.length).toBeGreaterThanOrEqual(1)
-            expect(response.sale.potd).toBeBoolean()
+                expect(response.sale.slug).not.toBeEmpty()
+                expect(new Date(response.sale.startTime)).toBeBefore(new Date(response.sale.endTime))
+                expect(response.sale.categories.length).toBeGreaterThanOrEqual(1)
+                expect(response.sale.potd).toBeBoolean()
 
-            expect(response.brand.logo.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
-            expect(response.brand.name).not.toBeEmpty()
-            expect(response.brand.description).not.toBeEmpty()
+                expect(response.brand.logo.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
+                expect(response.brand.name).not.toBeEmpty()
+                expect(response.brand.description).not.toBeEmpty()
 
-            expect(response.title).not.toBeEmpty()
-            expect(response.returnable).toBeBoolean()
-            expect(response.returnDays).toBeNumber()
+                expect(response.title).not.toBeEmpty()
+                expect(response.returnable).toBeBoolean()
+                expect(response.returnDays).toBeNumber()
 
-            expect(response.description.heading).not.toBeEmpty()
-            expect(response.description.secondary).toBeArray()
+                expect(response.description.heading).not.toBeEmpty()
+                expect(response.description.secondary).toBeArray()
 
-            expect(response.images).toBeObject()
+                expect(response.images).toBeObject()
 
-            expect(response.products).toBeArray()
+                expect(response.products).toBeArray()
 
-            for (let product of response.products) {
-                expect(product.id).not.toBeEmpty()
-                expect(product.saleId).not.toBeEmpty()
-                expect(product.retailPrice).toBeGreaterThan(product.salePrice)
-                expect(product.inStock).toBeBoolean()
-                expect(product.quantity).toBeGreaterThanOrEqual(0)
-                expect(Object.keys(response.images)).toContainEqual(product.imageKey)
-                expect(product.isVirtual).toBeBoolean()
-                expect(product.isBulky).toBeBoolean()
+                for (let product of response.products) {
+                    try {
+                        expect(product.id).not.toBeEmpty()
+                        expect(product.saleId).not.toBeEmpty()
+                        expect(product.retailPrice).toBeGreaterThan(product.salePrice)
+                        expect(product.inStock).toBeBoolean()
+                        expect(product.quantity).toBeGreaterThanOrEqual(0)
+                        expect(Object.keys(response.images)).toContainEqual(product.imageKey)
+                        expect(product.isVirtual).toBeBoolean()
+                        expect(product.isBulky).toBeBoolean()
+                    } catch (error) {
+                        throw { failed_product_content: product, error: error }
+                    }
+                }
+
+                expect(response.sizes).toBeArray()
+                expect(response.colors).toBeArray()
+            } catch (error) {
+                throw { failed_product: product, error: error }
             }
-
-            expect(response.sizes).toBeArray()
-            expect(response.colors).toBeArray()
         }
     })
 
@@ -96,7 +104,6 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
     test('GET / product with sizes', async () => {
         product = await request.getProductWithSizes(config.api.currentSales)
-        expect(product.sizes.length).toBeGreaterThan(1)
 
         for (let size of product.sizes) {
             expect(size.availableColors).toBeArray()
@@ -108,7 +115,6 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
 
     test('GET / product with colors', async () => {
         product = await request.getProductWithColors(config.api.currentSales)
-        expect(product.colors.length).toBeGreaterThan(1)
 
         for (let color of product.colors) {
             expect(color.availableSizes).toBeArray()

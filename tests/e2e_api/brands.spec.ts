@@ -14,9 +14,13 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         for (let item of Object.keys(brands)) {
             let brand: model.BrandItem
             for (brand of brands[item]) {
-                expect(brand.id).not.toBeEmpty()
-                expect(brand.name).not.toBeEmpty()
-                expect(brand.slug).toInclude(brand.id)
+                try {
+                    expect(brand.id).not.toBeEmpty()
+                    expect(brand.name).not.toBeEmpty()
+                    expect(brand.slug).toInclude(brand.id)
+                } catch (error) {
+                    throw { failed_brand: brand, error: error }
+                }
             }
         }
     })
@@ -53,17 +57,21 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         }
 
         for (let product of brand.products) {
-            expect(product.id).not.toBeEmpty()
-            expect(product.brand).toEqual(brand.name)
-            expect(product.image.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
-            expect(product.image2.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
-            expect(product.numberOfVariations).toBeNumber()
-            expect(product.quantity).toBeNumber()
-            expect(product.queryParams).toInclude('?')
-            expect(product.retailPrice).toBeGreaterThan(product.salePrice)
-            expect(product.slug).toInclude(product.id)
-            expect(product.soldOut).toBeBoolean()
-            expect(product.title).not.toBeEmpty()
+            try {
+                expect(product.id).not.toBeEmpty()
+                expect(product.brand).toEqual(brand.name)
+                expect(product.image.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
+                expect(product.image2.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
+                expect(product.numberOfVariations).toBeNumber()
+                expect(product.quantity).toBeNumber()
+                expect(product.queryParams).toInclude('?')
+                expect(product.retailPrice).toBeGreaterThan(product.salePrice)
+                expect(product.slug).toInclude(product.id)
+                expect(product.soldOut).toBeBoolean()
+                expect(product.title).not.toBeEmpty()
+            } catch (error) {
+                throw { failed_product: product, error: error }
+            }
         }
     })
 })

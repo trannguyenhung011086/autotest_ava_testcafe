@@ -10,7 +10,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         let response = await request.get(config.api.home)
         home = response.data
         expect(response.status).toEqual(200)
-        
+
         expect(home).toContainAllKeys(['featured',
             'today',
             'current',
@@ -37,14 +37,18 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
-            expect(sale.id).not.toBeEmpty()
-            expect(sale.title).not.toBeEmpty()
-            expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-            expect(sale.slug).toInclude(sale.id)
-            expect(sale.categories.length).toBeGreaterThanOrEqual(1)
-            expect(sale.potd).toBeBoolean()
-            expect(sale.international).toBeBoolean()
+            try {
+                expect(sale.id).not.toBeEmpty()
+                expect(sale.title).not.toBeEmpty()
+                expect(sale.endTime).not.toBeEmpty()
+                expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                expect(sale.slug).toInclude(sale.id)
+                expect(sale.categories.length).toBeGreaterThanOrEqual(1)
+                expect(sale.potd).toBeBoolean()
+                expect(sale.international).toBeBoolean()
+            } catch (error) {
+                throw { failed_sale: sale, error: error }
+            }
         }
     })
 
@@ -53,14 +57,18 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
-            expect(sale.id).not.toBeEmpty()
-            expect(sale.title).not.toBeEmpty()
-            expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-            expect(sale.slug).toInclude(sale.id)
-            expect(sale.categories.length).toBeGreaterThanOrEqual(1)
-            expect(sale.potd).toBeBoolean()
-            expect(sale.international).toBeBoolean()
+            try {
+                expect(sale.id).not.toBeEmpty()
+                expect(sale.title).not.toBeEmpty()
+                expect(sale.endTime).not.toBeEmpty()
+                expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                expect(sale.slug).toInclude(sale.id)
+                expect(sale.categories.length).toBeGreaterThanOrEqual(1)
+                expect(sale.potd).toBeBoolean()
+                expect(sale.international).toBeBoolean()
+            } catch (error) {
+                throw { failed_sale: sale, error: error }
+            }
         }
     })
 
@@ -69,14 +77,18 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
-            expect(sale.id).not.toBeEmpty()
-            expect(sale.title).not.toBeEmpty()
-            expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-            expect(sale.slug).toInclude(sale.id)
-            expect(sale.categories.length).toBeGreaterThanOrEqual(1)
-            expect(sale.potd).toBeBoolean()
-            expect(sale.international).toBeBoolean()
+            try {
+                expect(sale.id).not.toBeEmpty()
+                expect(sale.title).not.toBeEmpty()
+                expect(sale.endTime).not.toBeEmpty()
+                expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                expect(sale.slug).toInclude(sale.id)
+                expect(sale.categories.length).toBeGreaterThanOrEqual(1)
+                expect(sale.potd).toBeBoolean()
+                expect(sale.international).toBeBoolean()
+            } catch (error) {
+                throw { failed_sale: sale, error: error }
+            }
         }
     })
 
@@ -85,19 +97,23 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
-            expect(sale.id).not.toBeEmpty()
-            expect(sale.title).not.toBeEmpty()
-            expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+            try {
+                expect(sale.id).not.toBeEmpty()
+                expect(sale.title).not.toBeEmpty()
+                expect(sale.endTime).not.toBeEmpty()
+                expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
 
-            if (sale.potd == false) {
-                expect(sale.slug).toInclude(sale.id)  
-            } else {
-                expect(sale.slug).not.toInclude(sale.id)  
+                if (sale.potd == false) {
+                    expect(sale.slug).toInclude(sale.id)
+                } else {
+                    expect(sale.slug).not.toInclude(sale.id)
+                }
+
+                expect(sale.categories.length).toBeGreaterThanOrEqual(1)
+                expect(sale.international).toBeTrue()
+            } catch (error) {
+                throw { failed_sale: sale, error: error }
             }
-
-            expect(sale.categories.length).toBeGreaterThanOrEqual(1)
-            expect(sale.international).toBeTrue()
         }
     })
 
@@ -106,20 +122,24 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
         expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
-            expect(sale.id).not.toBeEmpty()
-            expect(sale.title).not.toBeEmpty()
-            expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-            expect(sale.categories.length).toBeGreaterThanOrEqual(1)
-            expect(sale.potd).toBeTrue()
-            expect(sale.international).toBeBoolean()
+            try {
+                expect(sale.id).not.toBeEmpty()
+                expect(sale.title).not.toBeEmpty()
+                expect(sale.endTime).not.toBeEmpty()
+                expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                expect(sale.categories.length).toBeGreaterThanOrEqual(1)
+                expect(sale.potd).toBeTrue()
+                expect(sale.international).toBeBoolean()
 
-            expect(sale.product.id).not.toBeEmpty()
-            expect(sale.product.brand).not.toBeEmpty()
-            expect(sale.product.title).not.toBeEmpty()
-            expect(sale.product.retailPrice).toBeGreaterThan(sale.product.salePrice)
-            expect(sale.product.images).toBeArray()
-            expect(sale.slug).toInclude(sale.product.id)
+                expect(sale.product.id).not.toBeEmpty()
+                expect(sale.product.brand).not.toBeEmpty()
+                expect(sale.product.title).not.toBeEmpty()
+                expect(sale.product.retailPrice).toBeGreaterThan(sale.product.salePrice)
+                expect(sale.product.images).toBeArray()
+                expect(sale.slug).toInclude(sale.product.id)
+            } catch (error) {
+                throw { failed_sale: sale, error: error }
+            }
         }
     })
 
@@ -133,13 +153,16 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             expect(date.sales).toBeArray()
             for (let sale of date.sales) {
                 expect(date.sales.length).toBeGreaterThanOrEqual(1)
-
-                expect(sale.id).not.toBeEmpty()
-                expect(sale.title).not.toBeEmpty()
-                expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                expect(sale.slug).toInclude(sale.id)
-                expect(sale.categories.length).toBeGreaterThanOrEqual(1)
-                expect(sale.international).toBeBoolean()
+                try {
+                    expect(sale.id).not.toBeEmpty()
+                    expect(sale.title).not.toBeEmpty()
+                    expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                    expect(sale.slug).toInclude(sale.id)
+                    expect(sale.categories.length).toBeGreaterThanOrEqual(1)
+                    expect(sale.international).toBeBoolean()
+                } catch (error) {
+                    throw { failed_sale: sale, error: error }
+                }
             }
         }
     })
