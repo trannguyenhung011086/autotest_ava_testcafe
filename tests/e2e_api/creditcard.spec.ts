@@ -13,7 +13,7 @@ describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => 
     })
 
     test('GET / can access creditcard info', async () => {
-        let response = await request.get(config.api.creditcard, cookie)
+        let response = await request.get(config.api.creditcard)
         creditcards = response.data
         expect(response.status).toEqual(200)
         for (let card of creditcards) {
@@ -28,7 +28,7 @@ describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => 
     })
 
     test('DELETE / can delete creditcard', async () => {
-        let response = await request.get(config.api.creditcard, cookie)
+        let response = await request.get(config.api.creditcard)
         creditcards = response.data
         if (creditcards.length > 0) {
             response = await request.delete(config.api.creditcard + '/' + creditcards[0].id, cookie)
@@ -40,9 +40,9 @@ describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => 
     })
 
     test('DELETE / cannot delete invalid creditcard', async () => {
-        let response = await request.get(config.api.creditcard, cookie)
+        let response = await request.get(config.api.creditcard)
         creditcards = response.data
-        response = await request.delete(config.api.creditcard + '/INVALID-ID', cookie)
+        response = await request.delete(config.api.creditcard + '/INVALID-ID')
         await waitForExpect(() => {
             expect(response.status).toEqual(500)
             expect(response.data.message).toEqual('INVALID_CREDIT_CARD_OR_CANNOT_DELETE')
@@ -50,12 +50,13 @@ describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => 
     })
 
     test('GET / cannot access creditcard info with invalid cookie', async () => {
-        let response = await request.get(config.api.creditcard, cookie = 'abc')
+        let response = await request.get(config.api.creditcard, 'abc')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
 
     test('GET / cannot access creditcard info without login', async () => {
+        await request.get(config.api.logout)
         let response = await request.get(config.api.creditcard)
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')

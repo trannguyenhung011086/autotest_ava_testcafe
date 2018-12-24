@@ -27,14 +27,14 @@ const stripeData = {
 describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
-        await request.addAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        await request.addAddresses()
+        account = await request.getAccountInfo()
         customer = await access.getCustomerInfo({ email: account.email })
         jest.setTimeout(150000)
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await request.emptyCart()
     })
 
     test('POST / not split SG order when total < 1,000,000', async () => {
@@ -42,9 +42,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemSG2 = await request.getProductWithPrice('SG', 400000, 500000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG1, itemSG2],
+        let checkout = await request.createStripeOrder([itemSG1, itemSG2],
             stripeSource, true)
-        let order = await request.getOrderInfo(checkout.code, cookie)
+        let order = await request.getOrderInfo(checkout.code)
 
         expect(order).not.toBeArray()
         expect(order.code).toEqual(`SGVN-${checkout.code}-1`)
@@ -66,9 +66,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemHK2 = await request.getProductWithPrice('HK', 400000, 500000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemHK1, itemHK2],
+        let checkout = await request.createStripeOrder([itemHK1, itemHK2],
             stripeSource, true)
-        let order = await request.getOrderInfo(checkout.code, cookie)
+        let order = await request.getOrderInfo(checkout.code)
 
         expect(order).not.toBeArray()
         expect(order.code).toEqual(`SGVN-${checkout.code}-1`)
@@ -90,9 +90,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemSG2 = await request.getProductWithPrice('SG', 800000, 2000000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG1, itemSG2],
+        let checkout = await request.createStripeOrder([itemSG1, itemSG2],
             stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -116,9 +116,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemHK2 = await request.getProductWithPrice('HK', 800000, 2000000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemHK1, itemHK2],
+        let checkout = await request.createStripeOrder([itemHK1, itemHK2],
             stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -142,9 +142,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG, itemVN],
+        let checkout = await request.createStripeOrder([itemSG, itemVN],
             stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -169,9 +169,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemHK, itemVN],
+        let checkout = await request.createStripeOrder([itemHK, itemVN],
             stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -198,9 +198,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG1, itemSG2, itemVN1, itemVN2],
+        let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemVN1, itemVN2],
             stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {
@@ -232,9 +232,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemHK1, itemHK2, itemVN1, itemVN2],
+        let checkout = await request.createStripeOrder([itemHK1, itemHK2, itemVN1, itemVN2],
             stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {
@@ -265,9 +265,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG, itemHK, itemVN],
+        let checkout = await request.createStripeOrder([itemSG, itemHK, itemVN],
             stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {
@@ -309,9 +309,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG, itemVN],
+        let checkout = await request.createStripeOrder([itemSG, itemVN],
             stripeSource, true, voucher._id)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -346,9 +346,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
         let itemSG3 = await request.getProductWithPrice('SG', 1000000, 2000000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
-        let checkout = await request.createStripeOrder(cookie, [itemSG1, itemSG2, itemSG3],
+        let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemSG3],
             stripeSource, true, voucher._id)
-        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {

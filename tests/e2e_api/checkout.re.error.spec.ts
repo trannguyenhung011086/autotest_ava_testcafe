@@ -20,7 +20,7 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        failedAttemptOrder = await request.createFailedAttemptOrder(cookie, [item])
+        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
         jest.setTimeout(120000)
     })
 

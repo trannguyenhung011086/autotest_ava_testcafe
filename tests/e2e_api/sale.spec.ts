@@ -58,7 +58,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
     })
 
     test('GET / valid ongoing sale ID', async () => {
-        let sales = await request.getSales(config.api.featuredSales)
+        let sales = await request.getSales(config.api.todaySales)
         expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
@@ -74,7 +74,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
                 expect(product.title).not.toBeEmpty()
                 expect(product.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
                 expect(product.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                expect(product.retailPrice).toBeGreaterThan(product.salePrice)
+                expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
                 expect(product.soldOut).toBeBoolean()
                 expect(product.category).not.toBeEmpty()
                 expect(product.brand).not.toBeEmpty()
@@ -96,7 +96,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
                 'HIGH_PRICE'])
 
             expect(response.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-            expect(response.campaign).toBeBoolean()
+            expect(response.campaign).toBeFalse()
             expect(response.slug).toInclude(response.id)
         }
     })
@@ -137,9 +137,10 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
     test('GET / valid upcoming sale ID', async () => {
         let dates = await request.getUpcomingSales()
         expect(dates.length).toBeGreaterThan(1)
+        
         for (let date of dates) {
             for (let sale of date.sales) {
-                expect(date.sales.length).toBeGreaterThan(1)
+                expect(date.sales.length).toBeGreaterThanOrEqual(1)
 
                 let response = await request.get(config.api.upcomingSale + sale.id)
                 let upcoming: model.UpcomingInfo

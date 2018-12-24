@@ -14,18 +14,18 @@ const card = ['VISA', 'Master']
 describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
-        account = await request.getAccountInfo(cookie)
+        account = await request.getAccountInfo()
         jest.setTimeout(120000)
     })
 
     test('GET / cannot see order of another customer', async () => {
-        let response = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', cookie)
+        let response = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc')
         expect(response.status).toEqual(200)
         expect(response.data).toBeEmpty()
     })
 
     test('GET / can access orders', async () => {
-        let response = await request.get(config.api.orders, cookie)
+        let response = await request.get(config.api.orders)
         orders = response.data
         expect(response.status).toEqual(200)
         for (let order of orders) {
@@ -43,10 +43,10 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
     })
 
     test('GET / can see order info using order ID', async () => {
-        orders = await request.getOrders(cookie)
+        orders = await request.getOrders()
 
         for (let order of orders) {
-            let response = await request.get(config.api.orders + '/' + order.id, cookie)
+            let response = await request.get(config.api.orders + '/' + order.id)
             orderItem = response.data
             expect(response.status).toEqual(200)
 
@@ -122,11 +122,11 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
     })
 
     test('GET / can see order info using order code', async () => {
-        orders = await request.getOrders(cookie)
+        orders = await request.getOrders()
 
         for (let order of orders) {
             let orderCode = order.code.split('-')[1]
-            let response = await request.get(config.api.orders + '/' + orderCode, cookie)
+            let response = await request.get(config.api.orders + '/' + orderCode)
             expect(response.status).toEqual(200)
             
             if (Array.isArray(response.data)) {
@@ -146,6 +146,7 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
     })
 
     test('GET / cannot access orders without login', async () => {
+        await request.get(config.api.logout)
         let response = await request.get(config.api.orders)
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')

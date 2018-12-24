@@ -13,17 +13,17 @@ let cookie: string
 describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        await request.addAddresses()
+        addresses = await request.getAddresses()
+        account = await request.getAccountInfo()
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await request.emptyCart()
     })
 
     test('GET / proceed checkout with empty cart', async () => {
-        let response = await request.get(config.api.checkout, cookie)
+        let response = await request.get(config.api.checkout)
         checkout = response.data
 
         expect(response.status).toEqual(200)
@@ -34,10 +34,10 @@ describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.che
 
     test('GET / proceed checkout with cart', async () => {
         item = await request.getInStockProduct(config.api.featuredSales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
-        response = await request.get(config.api.checkout, cookie)
+        response = await request.get(config.api.checkout)
         checkout = response.data
 
         expect(response.status).toEqual(200)

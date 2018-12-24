@@ -16,7 +16,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     })
 
     test('GET / check invalid voucher', async () => {
-        let response = await request.get(config.api.voucher + 'INVALID-ID', cookie)
+        let response = await request.get(config.api.voucher + 'INVALID-ID')
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('VOUCHER_NOT_EXISTS')
     })
@@ -27,7 +27,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
             expiry: { $lt: new Date() }
         })
 
-        let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let response = await request.get(config.api.voucher + voucherInfo.code)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('VOUCHER_CAMPAIGN_INVALID_OR_ENDED')
     })
@@ -37,7 +37,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
             startDate: { $gt: new Date() }
         })
 
-        let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let response = await request.get(config.api.voucher + voucherInfo.code)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('VOUCHER_CAMPAIGN_INVALID_OR_NOT_STARTED')
     })
@@ -49,19 +49,27 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
             used: true
         })
 
-        let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let response = await request.get(config.api.voucher + voucherInfo.code)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('VOUCHER_HAS_BEEN_REDEEMED')
     })
 
     test('GET / check already used voucher', async () => {
-        let voucher = await access.getUsedVoucher({
+        let item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart(item.id)
+
+        let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             used: false,
+            discountType: 'amount',
+            minimumPurchase: 0,
+            numberOfItems: 0,
             oncePerAccount: true
         }, customer)
 
-        let response = await request.get(config.api.voucher + voucher.code, cookie)
+        await request.createCodOrder([item], voucher._id)
+
+        let response = await request.get(config.api.voucher + voucher.code)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('YOU_ALREADY_USED_THIS_VOUCHER')
     })
@@ -72,7 +80,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
             customer: { $exists: true }
         })
 
-        let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let response = await request.get(config.api.voucher + voucherInfo.code)
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('NOT_ALLOWED_TO_USE_VOUCHER')
     })
@@ -81,10 +89,11 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
         voucherInfo = await access.getVoucher({
             startDate: { $gt: new Date('2018-11-01T14:56:59.301Z') },
             expiry: { $gte: new Date() },
+            oncePerAccount: false,
             used: false
         })
 
-        let response = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let response = await request.get(config.api.voucher + voucherInfo.code)
         voucher = response.data
         expect(response.status).toEqual(200)
         expect(voucher.amount).toBeGreaterThan(0)
@@ -98,12 +107,13 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     })
 
     test('GET / cannot check voucher with invalid cookie', async () => {
-        let response = await request.get(config.api.voucher + 'CARD-ID', cookie = 'abc')
+        let response = await request.get(config.api.voucher + 'CARD-ID', 'abc')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
 
     test('GET / cannot check voucher without login', async () => {
+        await request.get(config.api.logout)
         let response = await request.get(config.api.voucher + 'CARD-ID')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')

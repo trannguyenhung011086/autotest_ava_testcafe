@@ -1,3 +1,3 @@
 require('jest-extended')
 
-jest.setTimeout(60000)
+jest.setTimeout(90000)

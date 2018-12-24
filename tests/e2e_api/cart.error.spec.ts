@@ -26,30 +26,30 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
 
     test('PUT / cannot update quantity in cart to 0', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 3)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
-        response = await request.put(config.api.cart + cart.id, { "quantity": 0 }, cookie)
+        response = await request.put(config.api.cart + cart.id, { "quantity": 0 })
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_UPDATE_ITEM_QUANTITY')
     })
 
     test('PUT / cannot update invalid quantity in cart', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 3)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
-        response = await request.put(config.api.cart + cart.id, { "quantity": -1 }, cookie)
+        response = await request.put(config.api.cart + cart.id, { "quantity": -1 })
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_UPDATE_ITEM_QUANTITY')
     })
 
     test('PUT / cannot update more than max quantity in cart', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 3)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
-        response = await request.put(config.api.cart + cart.id, { "quantity": 6 }, cookie)
+        response = await request.put(config.api.cart + cart.id, { "quantity": 6 })
         expect(response.status).toEqual(403)
         expect(response.data.message).toEqual('ALREADY_REACHED_MAX_QUANTITY')
     })

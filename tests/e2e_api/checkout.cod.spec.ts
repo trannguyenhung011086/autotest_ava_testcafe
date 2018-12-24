@@ -13,20 +13,20 @@ let cookie: string
 describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        await request.addAddresses()
+        addresses = await request.getAddresses()
+        account = await request.getAccountInfo()
         customer = await access.getCustomerInfo({ email: account.email })
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await request.emptyCart()
     })
 
     test('POST / cannot checkout with COD - international product', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        await request.addToCart(item.id)
+        account = await request.getAccountInfo()
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -35,7 +35,7 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
             },
             "cart": account.cart,
             "method": "COD"
-        }, cookie)
+        })
 
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
@@ -44,9 +44,9 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
     test('POST / cannot checkout with COD - domestic + international product', async () => {
         let item1 = await request.getInStockProduct(config.api.internationalSales, 1)
         let item2 = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item1.id, cookie)
-        await request.addToCart(item2.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        await request.addToCart(item1.id)
+        await request.addToCart(item2.id)
+        account = await request.getAccountInfo()
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -55,7 +55,7 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
             },
             "cart": account.cart,
             "method": "COD"
-        }, cookie)
+        })
 
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
@@ -64,10 +64,10 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
     test('POST / checkout with COD', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
 
-        let checkout = await request.createCodOrder(cookie, [item])
+        let checkout = await request.createCodOrder([item])
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await request.getOrderInfo(checkout.orderId)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -94,10 +94,10 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
             credit = item.salePrice + 25000 - voucher.amount
         }
 
-        let checkout = await request.createCodOrder(cookie, [item], voucher._id, credit)
+        let checkout = await request.createCodOrder([item], voucher._id, credit)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await request.getOrderInfo(checkout.orderId)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -121,10 +121,10 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
 
         item = await request.getInStockProduct(config.api.todaySales, 1, 500000)
 
-        let checkout = await request.createCodOrder(cookie, [item], voucher._id)
+        let checkout = await request.createCodOrder([item], voucher._id)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await request.getOrderInfo(checkout.orderId)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()

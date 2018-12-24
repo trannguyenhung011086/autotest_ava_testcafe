@@ -13,12 +13,12 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await request.emptyCart()
     })
 
     test('POST / add product to cart as guest', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
         expect(response.status).toEqual(200)
@@ -46,23 +46,22 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
     })
 
     test('POST / add same product to cart', async () => {
-        await request.emptyCart(cookie)
-
         item = await request.getInStockProduct(config.api.todaySales, 3)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
 
         cart = response.data
         expect(cart.quantity).toEqual(1)
 
-        response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
         expect(cart.quantity).toEqual(2)
     })
 
     test('POST / add sold out product to cart', async () => {
         const soldOut = await request.getSoldOutProduct(config.api.todaySales)
-        let response = await request.post(config.api.cart, { "productId": soldOut.products[0].id },
-            cookie)
+        let response = await request.post(config.api.cart, {
+            "productId": soldOut.products[0].id
+        })
         cart = response.data
         expect(cart.quantity).toEqual(1)
         expect(cart.availableQuantity).toEqual(0)
@@ -70,49 +69,49 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
     test('PUT / update quantity in cart', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 3)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
-        response = await request.put(config.api.cart + cart.id, { "quantity": 3 }, cookie)
+        response = await request.put(config.api.cart + cart.id, { "quantity": 3 })
         cart = response.data
         expect(cart.quantity).toEqual(3)
     })
 
     test('DELETE / remove product from cart', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
-        response = await request.delete(config.api.cart + cart.id, cookie)
+        response = await request.delete(config.api.cart + cart.id)
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('ITEM_REMOVED_FROM_CART')
     })
 
     test('PUT / remove multiple products from cart', async () => {
         let itemA = await request.getInStockProduct(config.api.featuredSales, 1)
-        let response = await request.post(config.api.cart, { "productId": itemA.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": itemA.id })
         let cartA = response.data
 
         let itemB = await request.getInStockProduct(config.api.potdSales, 1)
-        response = await request.post(config.api.cart, { "productId": itemB.id }, cookie)
+        response = await request.post(config.api.cart, { "productId": itemB.id })
         let cartB = response.data
 
         response = await request.put(config.api.cart + 'delete-multiple',
-            { "cartItemIds": [cartA.id, cartB.id] }, cookie)
+            { "cartItemIds": [cartA.id, cartB.id] })
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('ITEM_REMOVED_FROM_CART')
     })
 
     test('POST / update cart after log in', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
+        let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
         let login = await request.post(config.api.login,
             {
                 "email": config.testAccount.email,
                 "password": config.testAccount.password
-            }, cookie)
+            })
 
         expect(login.data.cart).toContainEqual(cart)
     })
