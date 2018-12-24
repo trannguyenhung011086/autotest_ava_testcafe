@@ -393,25 +393,18 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
-        let vouchers = await access.getVoucherList({
+        let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             multipleUser: true,
-            numberOfUsage: { $gte: 1 },
+            numberOfUsage: 1,
             used: false
-        })
-        let matchedVoucher: Model.VoucherModel
+        }, customer)
+        
+        await request.createCodOrder([item], voucher._id)
 
-        for (let voucher of vouchers) {
-            const used = await access.countUsedVoucher(voucher._id)
-            if (voucher.numberOfUsage <= used) {
-                matchedVoucher = voucher
-                break
-            }
-        }
-
-        if (!matchedVoucher) {
-            throw 'No voucher found for this test!'
-        }
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -421,7 +414,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "cart": account.cart,
             "method": "COD",
             "shipping": 25000,
-            "voucher": matchedVoucher._id,
+            "voucher": voucher._id,
             "accountCredit": account.accountCredit
         }, cookie)
 
@@ -557,17 +550,24 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     test('POST / cannot checkout with already used voucher', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1, 500000)
+        item = await request.getInStockProduct(config.api.currentSales, 1)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
-        let voucher = await access.getUsedVoucher({
+        let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
-            binRange: { $exists: false },
             used: false,
-            oncePerAccount: true,
-            minimumPurchase: { $gte: 500000 }
+            discountType: 'amount',
+            minimumPurchase: 0,
+            numberOfItems: 0,
+            oncePerAccount: true
         }, customer)
+
+        await request.createCodOrder([item], voucher._id)
+
+        item = await request.getInStockProduct(config.api.currentSales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
 
         let response = await request.post(config.api.checkout, {
             "address": {

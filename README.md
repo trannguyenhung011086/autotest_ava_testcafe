@@ -38,10 +38,8 @@ e.g. use `SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub npm run test_ui_chrom
 Use jest-junit reporter to export test result with Junit format to report folder
 *Notes* to use with CI, run `jest --ci --reporters=default --reporters=jest-junit`
 
-## Reporter Allure
-Use Allure Reporter to generate HTML report with jest-allure (https://github.com/zaqqaz/jest-allure)
-- Allure result XML will be generated after running test with jest
-- run `allure serve` to see report on browser
+## Reporter Jest Stare
+Use Jest Stare Reporter to export test result with HTML format to jest-stare folder
 
 ## Run with Gitlab CI
 - Refer to .gitlab-ci.yml to config run flow

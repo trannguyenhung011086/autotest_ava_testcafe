@@ -167,4 +167,12 @@ export default class MongoUtils {
         }
         return result
     }
+
+    public async getCampaign(query: Object): Promise<Model.Campaign> {
+        let campaign = await this.getDbData('campaigns', query)
+        if (!campaign) {
+            throw 'Cannot get campaign!'
+        }
+        return campaign
+    }
 }

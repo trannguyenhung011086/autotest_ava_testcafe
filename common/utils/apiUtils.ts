@@ -34,7 +34,7 @@ export default class ApiUtils extends AxiosUtils {
         return cookie
     }
 
-    public async getAccountInfo(cookie: string): Promise<Model.Account> {
+    public async getAccountInfo(cookie?: string): Promise<Model.Account> {
         let response = await this.get(config.api.account, cookie)
         if (response.status != 200) {
             throw {
@@ -45,7 +45,7 @@ export default class ApiUtils extends AxiosUtils {
         return response.data
     }
 
-    public async emptyCart(cookie: string) {
+    public async emptyCart(cookie?: string) {
         let account = await this.getAccountInfo(cookie)
         let deletedList = []
 
@@ -67,7 +67,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async addToCart(productId: string, cookie: string, check = true): Promise<Model.Cart> {
+    public async addToCart(productId: string, cookie?: string, check?: boolean): Promise<Model.Cart> {
         let response = await this.post(config.api.cart, { "productId": productId }, cookie)
         if (check && response.status != 200) {
             throw {
@@ -78,7 +78,7 @@ export default class ApiUtils extends AxiosUtils {
         return response.data
     }
 
-    public async updateQuantityCart(cartId: string, quantity: number, cookie: string): Promise<Model.Cart> {
+    public async updateQuantityCart(cartId: string, quantity: number, cookie?: string): Promise<Model.Cart> {
         let response = await this.put(config.api.cart + cartId, { "quantity": quantity }, cookie)
         if (response.status != 200) {
             throw {
@@ -358,7 +358,7 @@ export default class ApiUtils extends AxiosUtils {
         return result
     }
 
-    public async getAddresses(cookie: string): Promise<Model.Addresses> {
+    public async getAddresses(cookie?: string): Promise<Model.Addresses> {
         try {
             let response = await this.get(config.api.addresses, cookie)
             return response.data
@@ -415,7 +415,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async deleteAddresses(cookie: string): Promise<void> {
+    public async deleteAddresses(cookie?: string): Promise<void> {
         let addresses = await this.getAddresses(cookie)
         try {
             if (addresses.billing.length > 0) {
@@ -436,7 +436,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async addAddresses(cookie: string) {
+    public async addAddresses(cookie?: string) {
         let cities = await this.getCities()
         let shipping = await this.generateAddress('shipping', cities)
         shipping.duplicateBilling = true
@@ -527,7 +527,7 @@ export default class ApiUtils extends AxiosUtils {
         return result
     }
 
-    public async getOrders(cookie: string): Promise<Model.OrderSummary[]> {
+    public async getOrders(cookie?: string): Promise<Model.OrderSummary[]> {
         try {
             let response = await this.get(config.api.orders, cookie)
             return response.data
@@ -539,7 +539,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async getOrderInfo(orderId: string, cookie: string): Promise<Model.Order> {
+    public async getOrderInfo(orderId: string, cookie?: string): Promise<Model.Order> {
         try {
             let response = await this.get(config.api.orders + '/' + orderId, cookie)
             return response.data
@@ -551,7 +551,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async getSplitOrderInfo(orderCode: string, cookie: string): Promise<Model.Order[]> {
+    public async getSplitOrderInfo(orderCode: string, cookie?: string): Promise<Model.Order[]> {
         try {
             let response = await this.get(config.api.orders + '/' + orderCode, cookie)
             return response.data
@@ -563,7 +563,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async getCards(cookie: string): Promise<Model.CreditCard[]> {
+    public async getCards(cookie?: string): Promise<Model.CreditCard[]> {
         try {
             let response = await this.get(config.api.creditcard, cookie)
             return response.data
@@ -575,7 +575,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async getCard(provider: string, cookie: string): Promise<string> {
+    public async getCard(provider: string, cookie?: string): Promise<string> {
         let creditCards = await this.getCards(cookie)
         let matchedCard: string
 
@@ -608,7 +608,7 @@ export default class ApiUtils extends AxiosUtils {
         }
     }
 
-    public async failedAttempt(orderCode: string, cookie: string): Promise<Model.FailedAttempt> {
+    public async failedAttempt(orderCode: string, cookie?: string): Promise<Model.FailedAttempt> {
         let response = await this.post(config.api.checkout + '/order/failed-attempt', {
             "errorMsg": "invalid card",
             "orderCode": orderCode
@@ -624,7 +624,8 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async checkoutPayDollar(account: Model.Account, addresses: Model.Addresses,
-        cookie: string, saveNewCard?: boolean, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+        saveNewCard?: boolean, voucherId?: string, credit?: number,
+        cookie?: string): Promise<Model.CheckoutOrder> {
 
         let data = {
             "address": {
@@ -656,8 +657,8 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async reCheckoutPayDollar(failedAttemptOrder: Model.FailedAttempt,
-        addresses: Model.Addresses, cookie: string, saveNewCard?: boolean,
-        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+        addresses: Model.Addresses, saveNewCard?: boolean, voucherId?: string,
+        credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
 
         let data = {
             "address": {
@@ -697,7 +698,7 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async checkoutSavedPayDollar(account: Model.Account, addresses: Model.Addresses,
-        cookie: string, cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+        cardId: string, voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
 
         let data = {
             "address": {
@@ -727,8 +728,8 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async reCheckoutSavedPayDollar(failedAttemptOrder: Model.FailedAttempt,
-        addresses: Model.Addresses, cookie: string, cardId: string,
-        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+        addresses: Model.Addresses, cardId: string, voucherId?: string, credit?: number,
+        cookie?: string): Promise<Model.CheckoutOrder> {
 
         let data = {
             "address": {
@@ -766,7 +767,7 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async checkoutCod(account: Model.Account, addresses: Model.Addresses,
-        cookie: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
 
         let data = {
             "address": {
@@ -795,8 +796,8 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async reCheckoutCod(failedAttemptOrder: Model.FailedAttempt,
-        addresses: Model.Addresses, cookie: string,
-        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+        addresses: Model.Addresses, voucherId?: string, credit?: number,
+        cookie?: string): Promise<Model.CheckoutOrder> {
 
         let data = {
             "address": {
@@ -833,8 +834,8 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async checkoutStripe(account: Model.Account, addresses: Model.Addresses,
-        cookie: string, stripeSource: any, saveNewCard?: boolean,
-        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+        stripeSource: any, saveNewCard?: boolean, voucherId?: string, credit?: number,
+        cookie?: string): Promise<Model.CheckoutOrder> {
 
         let data = {
             "address": {
@@ -867,7 +868,7 @@ export default class ApiUtils extends AxiosUtils {
     }
 
     public async checkoutSavedStripe(account: Model.Account, addresses: Model.Addresses,
-        cookie: string, cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+        cardId: string, voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
 
         let data = {
             "address": {
@@ -896,14 +897,14 @@ export default class ApiUtils extends AxiosUtils {
         return response.data
     }
 
-    public async createFailedAttemptOrder(cookie: string, items: Model.Product[]): Promise<Model.FailedAttempt> {
+    public async createFailedAttemptOrder(items: Model.Product[], cookie?: string): Promise<Model.FailedAttempt> {
         for (let item of items) {
             await this.addToCart(item.id, cookie)
         }
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
-        let checkout = await this.checkoutPayDollar(account, addresses, cookie)
+        let checkout = await this.checkoutPayDollar(account, addresses, null, null, null, cookie)
 
         let payDollarCreditCard = checkout.creditCard
         payDollarCreditCard.cardHolder = 'testing card'
@@ -924,8 +925,8 @@ export default class ApiUtils extends AxiosUtils {
         return failedAttempt
     }
 
-    public async createCodOrder(cookie: string, items: Model.Product[], voucherId?: string,
-        credit?: number): Promise<Model.CheckoutOrder> {
+    public async createCodOrder(items: Model.Product[], voucherId?: string, credit?: number,
+        cookie?: string): Promise<Model.CheckoutOrder> {
 
         for (let item of items) {
             await this.addToCart(item.id, cookie)
@@ -933,11 +934,11 @@ export default class ApiUtils extends AxiosUtils {
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
-        return await this.checkoutCod(account, addresses, cookie, voucherId, credit)
+        return await this.checkoutCod(account, addresses, voucherId, credit, cookie)
     }
 
-    public async createPayDollarOrder(cookie: string, items: Model.Product[], saveNewCard?: boolean,
-        voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+    public async createPayDollarOrder(items: Model.Product[], saveNewCard?: boolean,
+        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
 
         for (let item of items) {
             await this.addToCart(item.id, cookie)
@@ -945,11 +946,12 @@ export default class ApiUtils extends AxiosUtils {
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
-        return await this.checkoutPayDollar(account, addresses, cookie, saveNewCard, voucherId, credit)
+        return await this.checkoutPayDollar(account, addresses, saveNewCard, voucherId,
+            credit, cookie)
     }
 
-    public async createSavedPayDollarOrder(cookie: string, items: Model.Product[],
-        cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+    public async createSavedPayDollarOrder(items: Model.Product[], cardId: string,
+        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
 
         for (let item of items) {
             await this.addToCart(item.id, cookie)
@@ -957,11 +959,12 @@ export default class ApiUtils extends AxiosUtils {
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
-        return await this.checkoutSavedPayDollar(account, addresses, cookie, cardId, voucherId, credit)
+        return await this.checkoutSavedPayDollar(account, addresses, cardId, voucherId,
+            credit, cookie)
     }
 
-    public async createStripeOrder(cookie: string, items: Model.Product[], stripeSource: any,
-        saveNewCard?: boolean, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+    public async createStripeOrder(items: Model.Product[], stripeSource: any, saveNewCard?: boolean,
+        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
 
         for (let item of items) {
             await this.addToCart(item.id, cookie)
@@ -969,11 +972,12 @@ export default class ApiUtils extends AxiosUtils {
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
-        return await this.checkoutStripe(account, addresses, cookie, stripeSource, saveNewCard, voucherId, credit)
+        return await this.checkoutStripe(account, addresses, stripeSource, saveNewCard,
+            voucherId, credit, cookie)
     }
 
-    public async createSavedStripeOrder(cookie: string, items: Model.Product[],
-        cardId: string, voucherId?: string, credit?: number): Promise<Model.CheckoutOrder> {
+    public async createSavedStripeOrder(items: Model.Product[], cardId: string,
+        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
 
         for (let item of items) {
             await this.addToCart(item.id, cookie)
@@ -981,6 +985,7 @@ export default class ApiUtils extends AxiosUtils {
         let account = await this.getAccountInfo(cookie)
         let addresses = await this.getAddresses(cookie)
 
-        return await this.checkoutSavedStripe(account, addresses, cookie, cardId, voucherId, credit)
+        return await this.checkoutSavedStripe(account, addresses, cardId, voucherId,
+            credit, cookie)
     }
 }

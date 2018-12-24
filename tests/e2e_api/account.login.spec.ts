@@ -6,7 +6,7 @@ import * as faker from "faker/locale/vi"
 import * as model from '../../common/interface'
 let signIn: model.SignIn
 
-describe('Login API '  + config.baseUrl + config.api.login, () => {
+describe('Login API ' + config.baseUrl + config.api.login, () => {
     test('POST / wrong email', async () => {
         let response = await request.post(config.api.login,
             {
@@ -28,7 +28,7 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
     test('POST / use Facebook email', async () => {
         let response = await request.post(config.api.login,
             {
-                "email": config.testAccount.facebook, 
+                "email": config.testAccount.facebook,
                 "password": config.testAccount.passwordFacebook
             })
         expect(response.status).toEqual(401)
@@ -62,10 +62,10 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
-    test('POST / correct email and password', async () => {
+    test('POST / correct email and password - external email', async () => {
         let response = await request.post(config.api.login,
             {
-                "email": config.testAccount.email, 
+                "email": config.testAccount.email,
                 "password": config.testAccount.password
             })
         signIn = response.data
@@ -84,14 +84,7 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         expect(signIn.nsId).toBeUndefined() // fix after Netsuite release
     })
 
-    test('GET / log out', async () => {
-        let cookie = await request.getLogInCookie()
-        let response = await request.get(config.api.logout, cookie)
-        expect(response.status).toEqual(200)
-        expect(response.data.message).toEqual('SIGNED_OUT_SUCCESSFUL')
-    })
-
-    test('POST / internal Leflair email', async () => {
+    test('POST / correct email and password - internal email', async () => {
         let response = await request.post(config.api.login,
             {
                 "email": "qa_tech@leflair.vn", "password": "leflairqa"
@@ -99,5 +92,11 @@ describe('Login API '  + config.baseUrl + config.api.login, () => {
         signIn = response.data
         expect(response.status).toEqual(200)
         expect(signIn.preview).toBeTrue()
+    })
+
+    test('GET / log out', async () => {
+        let response = await request.get(config.api.logout)
+        expect(response.status).toEqual(200)
+        expect(response.data.message).toEqual('SIGNED_OUT_SUCCESSFUL')
     })
 })

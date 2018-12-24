@@ -14,21 +14,21 @@ describe('Giftcard API ' + config.baseUrl + config.api.giftcard, () => {
     })
 
     test('GET / check invalid giftcard', async () => {
-        let response = await request.get(config.api.giftcard + 'INVALID-ID', cookie)
+        let response = await request.get(config.api.giftcard + 'INVALID-ID')
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
     })
 
     test('GET / check redeemed giftcard', async () => {
         giftcardInfo = await access.getGiftCard({ redeemed: true })
-        let response = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
+        let response = await request.get(config.api.giftcard + giftcardInfo.code)
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
     })
 
     test('GET / check not redeemed giftcard', async () => {
         giftcardInfo = await access.getGiftCard({ redeemed: false })
-        let response = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
+        let response = await request.get(config.api.giftcard + giftcardInfo.code)
         giftCard = response.data
         expect(response.status).toEqual(200)
         expect(giftCard.code).toEqual(giftcardInfo.code)
@@ -37,12 +37,13 @@ describe('Giftcard API ' + config.baseUrl + config.api.giftcard, () => {
     })
 
     test('GET / cannot check giftcard with invalid cookie', async () => {
-        let response = await request.get(config.api.giftcard + 'CARD-ID', cookie='abc')
+        let response = await request.get(config.api.giftcard + 'CARD-ID', 'abc')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
 
     test('GET / cannot check giftcard without login', async () => {
+        await request.get(config.api.logout)
         let response = await request.get(config.api.giftcard + 'CARD-ID')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')

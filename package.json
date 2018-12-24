@@ -43,6 +43,7 @@
     "@types/selenium-webdriver": "^3.0.14",
     "@types/stripe": "^6.0.4",
     "axios": "^0.18.0",
+    "axios-cookiejar-support": "^0.4.2",
     "chromedriver": "^2.45.0",
     "faker": "^4.1.0",
     "geckodriver": "^1.14.1",
@@ -53,6 +54,7 @@
     "selenium-standalone": "^6.15.4",
     "selenium-webdriver": "^4.0.0-alpha.1",
     "stripe": "^6.17.0",
+    "tough-cookie": "^2.5.0",
     "ts-jest": "^23.10.5",
     "ts-node": "^7.0.1",
     "typescript": "^3.2.2"
