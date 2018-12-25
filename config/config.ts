@@ -75,7 +75,10 @@ const config = {
         checkout: '/api/v2/checkout',
         feedFacebook: '/api/v1/fb-product-feeds',
         feedGoogle: '/api/v1/google-product-feeds',
-        feedGoogleDynamic: '/api/v1/google-dynamic-product-feeds'
+        feedGoogleDynamic: '/api/v1/google-dynamic-product-feeds',
+        feedCriteo: '/api/v1/criteo',
+        feedInsider: '/api/v1/insider',
+        feedGoogleMerchant: '/api/v1/google-merchant'
     },
     stripeKey: 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy',
     payDollarBase: payDollarBase || 'https://test.paydollar.com',
