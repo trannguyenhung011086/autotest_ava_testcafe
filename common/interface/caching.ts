@@ -33,7 +33,8 @@ export type EventItem = {
 
 export type Category = {
     name: string,
-    id: string
+    id: string,
+    nsId: string
 }
 
 export type EventType = {
