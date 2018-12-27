@@ -12,6 +12,8 @@ let googleDynamicFeeds: model.GoogleDynamicFeeds[]
 let criteoFeeds: model.CriteoFeeds[]
 let googleMerchantFeeds: model.GoogleMerchantFeeds
 let insiderFeeds: model.InsiderFeeds
+let secretSales = []
+let secretSaleProducts = []
 import convert from 'xml-js'
 
 describe('Create caching data API', async () => {
@@ -41,6 +43,7 @@ describe('Create caching data API', async () => {
                 expect(cache.event.featured).toBeBoolean()
                 expect(cache.event.categories).toBeArray()
                 expect(cache.event).toContainKey('campaignId')
+
                 expect(cache.event.potd).toBeBoolean()
                 expect(cache.event).toContainKey('potdId')
                 // if (cache.event.potd) {
@@ -52,6 +55,7 @@ describe('Create caching data API', async () => {
                 if (cache.category) {
                     expect(cache.category.id).not.toBeEmpty()
                     expect(cache.category.name).not.toBeEmpty()
+                    expect(cache.category.nsId).not.toBeEmpty()
                 }
 
                 for (let variation of cache.variations) {
@@ -105,6 +109,17 @@ describe('Product feeds API', () => {
         let response = await request.get(config.api.subscriberNs + '/events/caching',
             null, config.apiNs)
         expect(response.status).toEqual(200)
+        eventsCache = response.data
+        for (let cache of eventsCache) {
+            if (cache.event.campaignId) {
+                secretSales.push(cache)
+            }
+        }
+        for (let sale of secretSales) {
+            for (let item of sale.variations) {
+                secretSaleProducts.push(item)
+            }
+        }
 
         response = await request.get(config.api.subscriberNs + '/items/caching',
             null, config.apiNs)
@@ -153,6 +168,10 @@ describe('Product feeds API', () => {
                 if (feed.google_product_category.indexOf('>') != -1) {
                     expect(feed.google_product_category.split('>').length).toBeGreaterThan(1)
                 }
+
+                for (let item of secretSaleProducts) {
+                    expect(feedId).not.toEqual(item.id)
+                }
             } catch (error) {
                 throw { failed_feed: feed, error: error }
             }
@@ -185,6 +204,10 @@ describe('Product feeds API', () => {
                 expect(feed["Custom label"]).not.toBeEmpty()
                 expect(feed["Page URL"]).toInclude('https://www.leflair.vn/vn/products/')
                 expect(feed["Page URL"]).not.toEndWith('?')
+
+                for (let item of secretSaleProducts) {
+                    expect(feed["Page URL"]).not.toInclude(item.id)
+                }
             } catch (error) {
                 throw { failed_feed: feed, error: error }
             }
@@ -223,6 +246,10 @@ describe('Product feeds API', () => {
                 let retail_price = parseInt(feed.Price.split(' ')[0])
                 let sale_price = parseInt(feed["Sale price"].split(' ')[0])
                 expect(retail_price).toBeGreaterThanOrEqual(sale_price)
+
+                for (let item of secretSaleProducts) {
+                    expect(feedId).not.toEqual(item.id)
+                }
             } catch (error) {
                 throw { failed_feed: feed, error: error }
             }
@@ -271,6 +298,10 @@ describe('Product feeds API', () => {
                 }
                 if (feed.producturl.match(/(\?|&)size/)) {
                     expect(feed.producturl).toInclude(feed.extra_size)
+                }
+
+                for (let item of secretSaleProducts) {
+                    expect(feedId).not.toEqual(item.id)
                 }
             } catch (error) {
                 throw { failed_feed: feed, error: error }
@@ -351,6 +382,10 @@ describe('Product feeds API', () => {
                     'g:size',
                     'g:item_group_id',
                     'g:shipping'])
+
+                for (let item of secretSaleProducts) {
+                    expect(feedId).not.toEqual(item.id)
+                }
             } catch (error) {
                 throw { failed_feed: entry, error: error }
             }
@@ -389,41 +424,22 @@ describe('Product feeds API', () => {
                 let retail_price = parseInt(product.price._text)
                 let sale_price = parseInt(product.sale_price._text)
                 expect(retail_price).toBeGreaterThanOrEqual(sale_price)
+
+                for (let item of secretSaleProducts) {
+                    expect(feedId).not.toEqual(item.id)
+                }
             } catch (error) {
                 throw { failed_feed: product, error: error }
             }
         }
     })
 
-    test('Verify total feeds sent to each service', async () => {
-        let response = await request.get(config.api.feedFacebook)
-        let parsed = Papa.parse(response.data, { header: true })
-        facebookFeeds = parsed.data
-
-        response = await request.get(config.api.feedGoogle)
-        parsed = Papa.parse(response.data, { header: true })
-        googleFeeds = parsed.data
-
-        response = await request.get(config.api.feedGoogleDynamic)
-        parsed = Papa.parse(response.data, { header: true })
-        googleDynamicFeeds = parsed.data
-
-        response = await request.get(config.api.feedCriteo)
-        parsed = Papa.parse(response.data, { header: true })
-        criteoFeeds = parsed.data
-
-        response = await request.get(config.api.feedGoogleMerchant)
-        let result: any = convert.xml2js(response.data, { compact: true })
-        googleMerchantFeeds = result
-
-        response = await request.get(config.api.feedInsider)
-        result = convert.xml2js(response.data, { compact: true })
-        insiderFeeds = result
-
-        expect(facebookFeeds.length).toEqual(googleFeeds.length)
-        expect(googleFeeds.length).toEqual(googleDynamicFeeds.length)
-        expect(googleDynamicFeeds.length).toEqual(criteoFeeds.length)
-        expect(criteoFeeds.length).toEqual(googleMerchantFeeds.feed.entry.length)
-        expect(googleMerchantFeeds.feed.entry.length).toEqual(insiderFeeds.products.product.length)
+    test('Verify total feeds sent to each service ' + config.baseUrl, async () => {
+        let totalFeeds = facebookFeeds.length
+        expect(totalFeeds).toEqual(googleFeeds.length)
+        expect(totalFeeds).toEqual(googleDynamicFeeds.length)
+        expect(totalFeeds).toEqual(criteoFeeds.length)
+        expect(totalFeeds).toEqual(googleMerchantFeeds.feed.entry.length)
+        expect(totalFeeds).toEqual(insiderFeeds.products.product.length)
     })
 })
