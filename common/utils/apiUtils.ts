@@ -3,7 +3,6 @@ import * as Model from '../interface'
 import AxiosUtils from './axiosUtils'
 import MongoUtils from './mongoUtils'
 import * as faker from "faker/locale/vi"
-import { doesNotReject } from 'assert';
 
 export default class ApiUtils extends AxiosUtils {
     constructor() {

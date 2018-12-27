@@ -10,6 +10,7 @@ export interface FacebookFeeds {
     sale_price: string
     sale_price_effective_date: string
     title: string
+    google_product_category: string
 }
 
 export interface GoogleFeeds {
@@ -104,11 +105,11 @@ export interface InsiderFeeds {
         _attributes: {
             xmlns: string
         }
-        product: Product[]
+        product: ProductEntry[]
     }
 }
 
-export type Product = {
+export type ProductEntry = {
     id: Text,
     title: Text,
     link: Text,
