@@ -11,7 +11,7 @@ export default class AxiosUtils {
 
     public cookieJar = new tough.CookieJar()
 
-    public async post(api: string, data: Object, cookie?: string): Promise<AxiosResponse> {
+    public async post(api: string, data: Object, cookie?: string, base?: string): Promise<AxiosResponse> {
         let options = {
             baseURL: config.baseUrl,
             withCredentials: true,
@@ -26,11 +26,14 @@ export default class AxiosUtils {
         if (cookie) {
             options.headers['Cookie'] = cookie
             options.withCredentials = false
+        }
+        if (base) {
+            options.baseURL = base
         }
         return await axios.post(encodeURI(api), data, options)
     }
 
-    public async put(api: string, data: Object, cookie?: string): Promise<AxiosResponse> {
+    public async put(api: string, data: Object, cookie?: string, base?: string): Promise<AxiosResponse> {
         let options = {
             baseURL: config.baseUrl,
             withCredentials: true,
@@ -45,11 +48,14 @@ export default class AxiosUtils {
         if (cookie) {
             options.headers['Cookie'] = cookie
             options.withCredentials = false
+        }
+        if (base) {
+            options.baseURL = base
         }
         return await axios.put(encodeURI(api), data, options)
     }
 
-    public async delete(api: string, cookie?: string): Promise<AxiosResponse> {
+    public async delete(api: string, cookie?: string, base?: string): Promise<AxiosResponse> {
         let options = {
             baseURL: config.baseUrl,
             withCredentials: true,
@@ -64,11 +70,14 @@ export default class AxiosUtils {
         if (cookie) {
             options.headers['Cookie'] = cookie
             options.withCredentials = false
+        }
+        if (base) {
+            options.baseURL = base
         }
         return await axios.delete(encodeURI(api), options)
     }
 
-    public async get(api: string, cookie?: string): Promise<AxiosResponse> {
+    public async get(api: string, cookie?: string, base?: string): Promise<AxiosResponse> {
         let options = {
             baseURL: config.baseUrl,
             withCredentials: true,
@@ -83,6 +92,9 @@ export default class AxiosUtils {
         if (cookie) {
             options.headers['Cookie'] = cookie
             options.withCredentials = false
+        }
+        if (base) {
+            options.baseURL = base
         }
         return await axios.get(encodeURI(api), options)
     }

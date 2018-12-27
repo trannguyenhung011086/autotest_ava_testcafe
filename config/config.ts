@@ -1,4 +1,5 @@
 let baseUrl: string
+let apiNs: string
 let cookieEma: string[]
 let payDollarBase: string
 let payDollarApi: string
@@ -30,6 +31,9 @@ if (process.env.NODE_ENV == 'testing') {
     ]
     payDollarBase = 'https://paydollar.com'
     payDollarApi = '/b2c/eng/directPay/payComp.jsp'
+} else if (process.env.NODE_ENV == 'staging-ns') {
+    baseUrl = 'https://www.staging-ns.leflair.io'
+    apiNs = 'https://api.staging-ns.leflair.io'
 }
 
 const config = {
@@ -38,6 +42,7 @@ const config = {
         name: 'admin-leflair'
     },
     baseUrl: baseUrl || 'https://www.staging.leflair.io',
+    apiNs: apiNs || 'https://api.staging-ns.leflair.io',
     signin: '/auth/signin',
     register: '/auth/register',
     api: {
@@ -72,7 +77,14 @@ const config = {
         cateHealthBeauty: '/api/menus/items/5b56d3448f0dd7c0480acd32',
         cateHomeLifeStyle: '/api/menus/items/5b62d1008f0dd7c0480acd5b',
         cart: '/api/v2/cart-items/',
-        checkout: '/api/v2/checkout'
+        checkout: '/api/v2/checkout',
+        feedFacebook: '/api/v1/fb-product-feeds',
+        feedGoogle: '/api/v1/google-product-feeds',
+        feedGoogleDynamic: '/api/v1/google-dynamic-product-feeds',
+        feedCriteo: '/api/v1/criteo',
+        feedInsider: '/api/v1/insider',
+        feedGoogleMerchant: '/api/v1/google-merchant',
+        subscriberNs: '/v1/subscriber-ns-cache-system-item-management'
     },
     stripeKey: 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy',
     payDollarBase: payDollarBase || 'https://test.paydollar.com',
