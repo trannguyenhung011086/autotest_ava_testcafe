@@ -59,6 +59,18 @@ test_ui_mobile:
   except:
     - schedules
 
+test_pp:
+  stage: test
+  script:
+    - docker run -e NODE_ENV=staging -v `pwd`/:/app/report/ testapp npm run test_pp_ci
+
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: junit_pp.xml
+  except:
+    - schedules
+
 test_api_prod:on-schedule:
   stage: test_prod
   script:
@@ -100,6 +112,17 @@ test_ui_mobile_prod:on-schedule:
     expire_in: 1 week
     reports:
       junit: junit_ui_mobile.xml
+  only:
+    - schedules
+
+test_pp_prod:on-schedule:
+  stage: test_prod
+  script:
+    - docker run -e NODE_ENV=production -v `pwd`/:/app/report/ testapp npm run test_pp_ci
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: junit_pp.xml
   only:
     - schedules
 
