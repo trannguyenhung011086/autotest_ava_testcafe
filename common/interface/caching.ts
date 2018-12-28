@@ -17,7 +17,10 @@ export type Variation = {
     barcode?: string,
     image: string,
     image2: string,
-    color?: string
+    color?: string,
+    salePrice?: number,
+    retailPrice?: number,
+    quantity?: number
 }
 
 export type EventItem = {
