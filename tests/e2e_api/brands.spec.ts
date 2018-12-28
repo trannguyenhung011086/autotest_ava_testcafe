@@ -43,7 +43,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
     })
 
     test('GET / get brand with products', async () => {
-        let brand = await request.getBrandWithProducts()
+        let brand = await request.getBrandWithProducts(config.api.potdSales)
         expect(brand.id).not.toBeEmpty()
         expect(brand.name).not.toBeEmpty()
         expect(brand.description).not.toBeEmpty()
@@ -65,7 +65,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
                 expect(product.numberOfVariations).toBeNumber()
                 expect(product.quantity).toBeNumber()
                 expect(product.queryParams).toInclude('?')
-                expect(product.retailPrice).toBeGreaterThan(product.salePrice)
+                expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
                 expect(product.slug).toInclude(product.id)
                 expect(product.soldOut).toBeBoolean()
                 expect(product.title).not.toBeEmpty()

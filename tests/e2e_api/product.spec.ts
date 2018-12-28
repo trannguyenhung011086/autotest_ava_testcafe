@@ -64,7 +64,7 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
                     try {
                         expect(product.id).not.toBeEmpty()
                         expect(product.saleId).not.toBeEmpty()
-                        expect(product.retailPrice).toBeGreaterThan(product.salePrice)
+                        expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
                         expect(product.inStock).toBeBoolean()
                         expect(product.quantity).toBeGreaterThanOrEqual(0)
                         expect(Object.keys(response.images)).toContainEqual(product.imageKey)

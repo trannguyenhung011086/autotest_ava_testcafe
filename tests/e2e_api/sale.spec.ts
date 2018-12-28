@@ -58,7 +58,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
     })
 
     test('GET / valid ongoing sale ID', async () => {
-        let sales = await request.getSales(config.api.todaySales)
+        let sales = await request.getSales(config.api.currentSales)
         expect(sales.length).toBeGreaterThanOrEqual(1)
 
         for (let sale of sales) {
@@ -104,7 +104,7 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
                 expect(response.campaign).toBeFalse()
                 expect(response.slug).toInclude(response.id)
             } catch (error) {
-                throw { failed_sale: sale, error: error }
+                throw { failed_sale: sale.id, error: error }
             }
         }
     })

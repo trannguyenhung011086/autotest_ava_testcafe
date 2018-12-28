@@ -61,14 +61,12 @@ describe('Create caching data API', async () => {
                 for (let variation of cache.variations) {
                     expect(variation.id).not.toBeEmpty()
                     expect(variation.nsId).not.toBeEmpty()
+                    expect(variation.barcode).not.toBeEmpty()
                     expect(variation.image.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
                     expect(variation.image2.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
 
                     if (variation.color) {
                         expect(variation.color).not.toBeEmpty()
-                    }
-                    if (variation.barcode) {
-                        expect(variation.barcode).not.toBeEmpty()
                     }
                 }
             } catch (error) {
@@ -124,6 +122,7 @@ describe('Product feeds API', () => {
         response = await request.get(config.api.subscriberNs + '/items/caching',
             null, config.apiNs)
         expect(response.status).toEqual(200)
+        itemsCache = response.data
 
         response = await request.get(config.api.subscriberNs + '/product-feeds/caching',
             null, config.apiNs)

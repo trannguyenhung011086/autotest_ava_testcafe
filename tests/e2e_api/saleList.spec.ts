@@ -134,7 +134,7 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
                 expect(sale.product.id).not.toBeEmpty()
                 expect(sale.product.brand).not.toBeEmpty()
                 expect(sale.product.title).not.toBeEmpty()
-                expect(sale.product.retailPrice).toBeGreaterThan(sale.product.salePrice)
+                // expect(sale.product.retailPrice).toBeGreaterThan(sale.product.salePrice)
                 expect(sale.product.images).toBeArray()
                 expect(sale.slug).toInclude(sale.product.id)
             } catch (error) {

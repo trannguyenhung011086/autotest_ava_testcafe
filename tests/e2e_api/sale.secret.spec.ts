@@ -28,6 +28,8 @@ describe('Secret sale API ' + config.baseUrl + config.api.secretSale, () => {
         expect(response.status).toEqual(200)
 
         let sales: model.SalesModel[] = response.data
+        expect(sales.length).toBeGreaterThan(0)
+
         for (let sale of sales) {
             try {
                 expect(sale.title).not.toBeEmpty()
