@@ -89,7 +89,7 @@ let testData = {
 describe('Intercept requests at product page - API return error ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = await Puppeteer.launch({
-            args: ['--no-sandbox'],
+            args: ['--no-sandbox', '--disable-dev-shm-usage'],
             executablePath: '/usr/bin/chromium-browser',
             headless: false,
             defaultViewport: { width: 1280, height: 800 }
@@ -122,7 +122,7 @@ describe('Intercept requests at product page - API return error ' + config.baseU
 describe('Intercept requests at product page - missing description field ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = await Puppeteer.launch({
-            args: ['--no-sandbox'],
+            args: ['--no-sandbox', '--disable-dev-shm-usage'],
             executablePath: '/usr/bin/chromium-browser',
             headless: false,
             defaultViewport: { width: 1280, height: 800 }
@@ -158,7 +158,7 @@ describe('Intercept requests at product page - missing description field ' + con
 describe('Intercept requests at product page - empty description ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = await Puppeteer.launch({
-            args: ['--no-sandbox'],
+            args: ['--no-sandbox', '--disable-dev-shm-usage'],
             executablePath: '/usr/bin/chromium-browser',
             headless: false,
             defaultViewport: { width: 1280, height: 800 }

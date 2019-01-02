@@ -7,7 +7,7 @@ let page: Puppeteer.Page
 describe('Intercept requests at home page - API return error ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = await Puppeteer.launch({
-            args: ['--no-sandbox'],
+            args: ['--no-sandbox', '--disable-dev-shm-usage'],
             executablePath: '/usr/bin/chromium-browser',
             headless: false,
             defaultViewport: { width: 1280, height: 800 }
@@ -51,7 +51,7 @@ describe('Intercept requests at home page - API return error ' + config.baseUrl,
 describe('Intercept requests at home page - API return empty ' + config.baseUrl, () => {
     beforeAll(async () => {
         browser = await Puppeteer.launch({
-            args: ['--no-sandbox'],
+            args: ['--no-sandbox', '--disable-dev-shm-usage'],
             executablePath: '/usr/bin/chromium-browser',
             headless: false,
             defaultViewport: { width: 1280, height: 800 }
