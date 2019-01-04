@@ -29,7 +29,7 @@ e2e_tests:
   before_script:
     - npm install
   script:
-    - node_modules/.bin/testcafe 'chromium --no-sandbox' /app/tests/testcafe/e2e_ui/desktop/signIn.spec.ts
+    - node_modules/.bin/testcafe 'chromium --no-sandbox' tests/testcafe/e2e_ui/desktop/signIn.spec.ts
 
 # test_api:
 #   stage: test
