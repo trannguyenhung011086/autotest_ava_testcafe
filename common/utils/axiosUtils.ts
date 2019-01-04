@@ -1,8 +1,8 @@
 import config from '../../config/config'
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import querystring from 'querystring'
+import axios, { AxiosResponse } from 'axios'
+import * as querystring from 'querystring'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
-import tough from 'tough-cookie'
+import * as tough from 'tough-cookie'
 
 export default class AxiosUtils {
     constructor() {

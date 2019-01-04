@@ -10,7 +10,7 @@ describe('Log in via email on ' + config.device + ' - ' + config.baseUrl, () => 
     beforeAll(async () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
-        await browser.navigate(config.baseUrl + config.signin)
+        await browser.navigate(config.baseUrl + config.signIn)
     })
 
     test('Use empty email and password', async () => {

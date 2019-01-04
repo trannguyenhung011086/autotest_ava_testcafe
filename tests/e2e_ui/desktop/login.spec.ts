@@ -10,7 +10,7 @@ describe('Log in via email on ' + config.browser + ' - ' + config.baseUrl, () =>
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
-        await browser.navigate(config.baseUrl + config.signin)
+        await browser.navigate(config.baseUrl + config.signIn)
         await pages.popup.closePopup()
     })
 

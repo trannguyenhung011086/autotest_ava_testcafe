@@ -107,7 +107,7 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
         let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
-        let login = await request.post(config.api.login,
+        let login = await request.post(config.api.signIn,
             {
                 "email": config.testAccount.email,
                 "password": config.testAccount.password

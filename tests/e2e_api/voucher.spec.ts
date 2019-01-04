@@ -113,7 +113,7 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
     })
 
     test('GET / cannot check voucher without login', async () => {
-        await request.get(config.api.logout)
+        await request.get(config.api.signOut)
         let response = await request.get(config.api.voucher + 'CARD-ID')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')

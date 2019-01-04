@@ -5,30 +5,30 @@ let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../common/interface'
 
-describe('Campaign API ' + config.baseUrl + config.api.campaign + '<campaignName>', () => {
+describe('Campaign API ' + config.baseUrl + config.api.campaigns + '<campaignName>', () => {
     
     test('GET / valid campaign name', async () => {
         let campaign: model.Campaign = await access.getCampaign({
             endDate: { $gt: new Date() }
         })
 
-        let response = await request.get(config.api.campaign + campaign.name)
+        let response = await request.get(config.api.campaigns + campaign.name)
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('SET')
 
-        response = await request.get(config.api.campaign + campaign.name)
+        response = await request.get(config.api.campaigns + campaign.name)
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('NO_CHANGE')
     })
 
     test('GET / invalid campaign name', async () => {
-        let response = await request.get(config.api.campaign + 'INVALID-CAMPAIGN')
+        let response = await request.get(config.api.campaigns + 'INVALID-CAMPAIGN')
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('NOT_FOUND')
     })
 
     test('GET / missing campaign name', async () => {
-        let response = await request.get(config.api.campaign)
+        let response = await request.get(config.api.campaigns)
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('Not found')
     })

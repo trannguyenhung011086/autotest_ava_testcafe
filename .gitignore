@@ -3,6 +3,8 @@
 /allure-report
 /allure-results
 junit.xml
+xunit.xml
+report.html
 /selenoid_logs
 /logs
 /.vscode

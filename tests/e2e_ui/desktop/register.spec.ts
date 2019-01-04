@@ -10,7 +10,7 @@ describe('Register via email on ' + config.browser + ' - ' + config.baseUrl, () 
     beforeAll(async () => {
         browser = new Browser(config.browser)
         pages = new AllPages(browser)
-        await browser.navigate(config.baseUrl + config.register)
+        await browser.navigate(config.baseUrl + config.signUp)
         await pages.popup.closePopup()
     })
 

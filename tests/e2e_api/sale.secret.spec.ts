@@ -5,15 +5,15 @@ let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../common/interface'
 
-describe('Secret sale API ' + config.baseUrl + config.api.secretSale, () => {
+describe('Secret sale API ' + config.baseUrl + config.api.secretSales, () => {
     test('GET / cannot get secret sale when not call campaign API', async () => {
-        let response = await request.get(config.api.secretSale)
+        let response = await request.get(config.api.secretSales)
         expect(response.status).toEqual(200)
         expect(response.data).toBeArrayOfSize(0)
     })
 
     test('GET / check secret sale when not call campaign API', async () => {
-        let response = await request.get(config.api.secretSale + '/check')
+        let response = await request.get(config.api.secretSales + '/check')
         expect(response.status).toEqual(200)
         expect(response.data).toBeFalse()
     })
@@ -22,9 +22,9 @@ describe('Secret sale API ' + config.baseUrl + config.api.secretSale, () => {
         let campaign: model.Campaign = await access.getCampaign({
             endDate: { $gt: new Date() }
         })
-        await request.get(config.api.campaign + campaign.name)
+        await request.get(config.api.campaigns + campaign.name)
 
-        let response = await request.get(config.api.secretSale)
+        let response = await request.get(config.api.secretSales)
         expect(response.status).toEqual(200)
 
         let sales: model.SalesModel[] = response.data
@@ -50,9 +50,9 @@ describe('Secret sale API ' + config.baseUrl + config.api.secretSale, () => {
         let campaign: model.Campaign = await access.getCampaign({
             endDate: { $gt: new Date() }
         })
-        await request.get(config.api.campaign + campaign.name)
+        await request.get(config.api.campaigns + campaign.name)
 
-        let response = await request.get(config.api.secretSale + '/check')
+        let response = await request.get(config.api.secretSales + '/check')
         expect(response.status).toEqual(200)
         expect(response.data).toBeTrue()
     })

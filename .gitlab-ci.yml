@@ -1,134 +1,144 @@
 stages:
-  - start
   - test
-  - test_prod
-  - cleanup
 
-start:
-  stage: start
+test:
+  image:
+    name: testcafe/testcafe
+    entrypoint: ["/bin/sh", "-c"]
   script:
-    - docker pull selenoid/chrome
-    - docker pull selenoid/firefox
-    - docker build -t testapp .
-    - docker run -d --name selenoid -p 4444:4444 -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`/config/:/etc/selenoid/:ro aerokube/selenoid:latest-release
-    - docker run -d --name selenoid-ui --link selenoid -p 8080:8080 aerokube/selenoid-ui --selenoid-uri=http://selenoid:4444
-    - echo $(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid)
+    - /opt/testcafe/docker/testcafe-docker.sh chromium tests/testcafe/e2e_ui/desktop/
 
-test_api:
-  stage: test
-  script:
-    - docker run -e NODE_ENV=staging -v `pwd`/:/app/report/ testapp npm run test_api_ci
+# stages:
+#   - start
+#   - test
+#   - test_prod
+#   - cleanup
 
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_api.xml
-  except:
-    - schedules
+# start:
+#   stage: start
+#   script:
+#     - docker pull selenoid/chrome
+#     - docker pull selenoid/firefox
+#     - docker build -t testapp .
+#     - docker run -d --name selenoid -p 4444:4444 -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`/config/:/etc/selenoid/:ro aerokube/selenoid:latest-release
+#     - docker run -d --name selenoid-ui --link selenoid -p 8080:8080 aerokube/selenoid-ui --selenoid-uri=http://selenoid:4444
+#     - echo $(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid)
 
-test_ui_chrome:  
-  stage: test
-  script:
-    - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_ui_chrome.xml
-  except:
-    - schedules
+# test_api:
+#   stage: test
+#   script:
+#     - docker run -e NODE_ENV=staging -v `pwd`/:/app/report/ testapp npm run test_api_ci
 
-test_ui_firefox:  
-  stage: test
-  script:
-    - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_ui_firefox.xml
-  except:
-    - schedules
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_api.xml
+#   except:
+#     - schedules
 
-test_ui_mobile:  
-  stage: test
-  script:
-    - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_ui_mobile.xml
-  except:
-    - schedules
+# test_ui_chrome:  
+#   stage: test
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_chrome.xml
+#   except:
+#     - schedules
 
-test_pp:
-  stage: test
-  script:
-    - docker run -e NODE_ENV=staging -v `pwd`/:/app/report/ testapp npm run test_pp_ci
+# test_ui_firefox:  
+#   stage: test
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_firefox.xml
+#   except:
+#     - schedules
 
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_pp.xml
-  except:
-    - schedules
+# test_ui_mobile:  
+#   stage: test
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_mobile.xml
+#   except:
+#     - schedules
 
-test_api_prod:on-schedule:
-  stage: test_prod
-  script:
-    - docker run -e NODE_ENV=production -v `pwd`/:/app/report/ testapp npm run test_api_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_api.xml
-  only:
-    - schedules
+# test_pp:
+#   stage: test
+#   script:
+#     - docker run -e NODE_ENV=staging -v `pwd`/:/app/report/ testapp npm run test_pp_ci
 
-test_ui_chrome_prod:on-schedule:
-  stage: test_prod
-  script:
-    - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_ui_chrome.xml
-  only:
-    - schedules
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_pp.xml
+#   except:
+#     - schedules
 
-test_ui_firefox_prod:on-schedule:
-  stage: test_prod
-  script:
-    - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_ui_firefox.xml
-  only:
-    - schedules
+# test_api_prod:on-schedule:
+#   stage: test_prod
+#   script:
+#     - docker run -e NODE_ENV=production -v `pwd`/:/app/report/ testapp npm run test_api_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_api.xml
+#   only:
+#     - schedules
 
-test_ui_mobile_prod:on-schedule: 
-  stage: test_prod
-  script:
-      - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_ui_mobile.xml
-  only:
-    - schedules
+# test_ui_chrome_prod:on-schedule:
+#   stage: test_prod
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_chrome.xml
+#   only:
+#     - schedules
 
-test_pp_prod:on-schedule:
-  stage: test_prod
-  script:
-    - docker run -e NODE_ENV=production -v `pwd`/:/app/report/ testapp npm run test_pp_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_pp.xml
-  only:
-    - schedules
+# test_ui_firefox_prod:on-schedule:
+#   stage: test_prod
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_firefox.xml
+#   only:
+#     - schedules
 
-cleanup:
-  stage: cleanup
-  script:
-  - docker stop $(docker ps -a -q)
-  - docker rm $(docker ps -a -q)
-  when: always
+# test_ui_mobile_prod:on-schedule: 
+#   stage: test_prod
+#   script:
+#       - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_mobile.xml
+#   only:
+#     - schedules
+
+# test_pp_prod:on-schedule:
+#   stage: test_prod
+#   script:
+#     - docker run -e NODE_ENV=production -v `pwd`/:/app/report/ testapp npm run test_pp_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_pp.xml
+#   only:
+#     - schedules
+
+# cleanup:
+#   stage: cleanup
+#   script:
+#   - docker stop $(docker ps -a -q)
+#   - docker rm $(docker ps -a -q)
+#   when: always

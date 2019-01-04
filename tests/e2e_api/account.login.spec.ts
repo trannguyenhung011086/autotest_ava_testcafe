@@ -6,9 +6,9 @@ import * as faker from "faker/locale/vi"
 import * as model from '../../common/interface'
 let signIn: model.SignIn
 
-describe('Login API ' + config.baseUrl + config.api.login, () => {
+describe('Login API ' + config.baseUrl + config.api.signIn, () => {
     test('POST / wrong email', async () => {
-        let response = await request.post(config.api.login,
+        let response = await request.post(config.api.signIn,
             {
                 "email": faker.internet.email(), "password": faker.internet.password()
             })
@@ -17,7 +17,7 @@ describe('Login API ' + config.baseUrl + config.api.login, () => {
     })
 
     test('POST / wrong password', async () => {
-        let response = await request.post(config.api.login,
+        let response = await request.post(config.api.signIn,
             {
                 "email": config.testAccount.email, "password": faker.internet.password()
             })
@@ -26,7 +26,7 @@ describe('Login API ' + config.baseUrl + config.api.login, () => {
     })
 
     test('POST / use Facebook email', async () => {
-        let response = await request.post(config.api.login,
+        let response = await request.post(config.api.signIn,
             {
                 "email": config.testAccount.facebook,
                 "password": config.testAccount.passwordFacebook
@@ -36,7 +36,7 @@ describe('Login API ' + config.baseUrl + config.api.login, () => {
     })
 
     test('POST / missing email field', async () => {
-        let response = await request.post(config.api.login,
+        let response = await request.post(config.api.signIn,
             {
                 "password": faker.internet.password()
             })
@@ -45,7 +45,7 @@ describe('Login API ' + config.baseUrl + config.api.login, () => {
     })
 
     test('POST / missing password field', async () => {
-        let response = await request.post(config.api.login,
+        let response = await request.post(config.api.signIn,
             {
                 "email": faker.internet.email()
             })
@@ -54,7 +54,7 @@ describe('Login API ' + config.baseUrl + config.api.login, () => {
     })
 
     test('POST / empty email and password', async () => {
-        let response = await request.post(config.api.login,
+        let response = await request.post(config.api.signIn,
             {
                 "email": "", "password": ""
             })
@@ -63,7 +63,7 @@ describe('Login API ' + config.baseUrl + config.api.login, () => {
     })
 
     test('POST / correct email and password - external email', async () => {
-        let response = await request.post(config.api.login,
+        let response = await request.post(config.api.signIn,
             {
                 "email": config.testAccount.email,
                 "password": config.testAccount.password
@@ -85,7 +85,7 @@ describe('Login API ' + config.baseUrl + config.api.login, () => {
     })
 
     test('POST / correct email and password - internal email', async () => {
-        let response = await request.post(config.api.login,
+        let response = await request.post(config.api.signIn,
             {
                 "email": "qa_tech@leflair.vn", "password": "leflairqa"
             })
@@ -95,7 +95,7 @@ describe('Login API ' + config.baseUrl + config.api.login, () => {
     })
 
     test('GET / log out', async () => {
-        let response = await request.get(config.api.logout)
+        let response = await request.get(config.api.signOut)
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('SIGNED_OUT_SUCCESSFUL')
     })

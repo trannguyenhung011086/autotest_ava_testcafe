@@ -43,7 +43,7 @@ describe('Giftcard API ' + config.baseUrl + config.api.giftcard, () => {
     })
 
     test('GET / cannot check giftcard without login', async () => {
-        await request.get(config.api.logout)
+        await request.get(config.api.signOut)
         let response = await request.get(config.api.giftcard + 'CARD-ID')
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')

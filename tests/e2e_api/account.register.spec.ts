@@ -6,9 +6,9 @@ import * as faker from "faker/locale/vi"
 import * as model from '../../common/interface'
 let signUp: model.SignIn
 
-describe('Register API ' + config.baseUrl + config.api.register, () => {
+describe('Register API ' + config.baseUrl + config.api.signUp, () => {
     test('POST / empty email and password', async () => {
-        let response = await request.post(config.api.register,
+        let response = await request.post(config.api.signUp,
             {
                 "email": "", "password": "",
                 "language": "vn", "gender": "M"
@@ -18,7 +18,7 @@ describe('Register API ' + config.baseUrl + config.api.register, () => {
     })
 
     test('POST / wrong format email', async () => {
-        let response = await request.post(config.api.register,
+        let response = await request.post(config.api.signUp,
             {
                 "email": "test%!@#$%^&*()_+<>?", "password": config.testAccount.password,
                 "language": "vn", "gender": "M"
@@ -28,7 +28,7 @@ describe('Register API ' + config.baseUrl + config.api.register, () => {
     })
 
     test('POST / length < 7 password', async () => {
-        let response = await request.post(config.api.register,
+        let response = await request.post(config.api.signUp,
             {
                 "email": faker.internet.email(), "password": "123",
                 "language": "vn", "gender": "M"
@@ -38,7 +38,7 @@ describe('Register API ' + config.baseUrl + config.api.register, () => {
     })
 
     test('POST / existing account', async () => {
-        let response = await request.post(config.api.register,
+        let response = await request.post(config.api.signUp,
             {
                 "email": config.testAccount.email, "password": config.testAccount.password,
                 "language": "vn", "gender": "M"
@@ -48,7 +48,7 @@ describe('Register API ' + config.baseUrl + config.api.register, () => {
     })
 
     test('POST / missing email field', async () => {
-        let response = await request.post(config.api.register,
+        let response = await request.post(config.api.signUp,
             {
                 "password": faker.internet.password()
             })
@@ -57,7 +57,7 @@ describe('Register API ' + config.baseUrl + config.api.register, () => {
     })
 
     test('POST / missing password field', async () => {
-        let response = await request.post(config.api.register,
+        let response = await request.post(config.api.signUp,
             {
                 "email": faker.internet.email()
             })
@@ -67,7 +67,7 @@ describe('Register API ' + config.baseUrl + config.api.register, () => {
 
     test('POST / successful', async () => {
         const email = faker.internet.email()
-        let response = await request.post(config.api.register,
+        let response = await request.post(config.api.signUp,
             {
                 "email": email, "password": faker.internet.password(),
                 "language": "vn", "gender": "M"

@@ -14,7 +14,7 @@ export default class ApiUtils extends AxiosUtils {
             email: email,
             password: password
         }
-        let cookie = await this.post(config.api.login, data)
+        let cookie = await this.post(config.api.signIn, data)
             .then(response => response.headers['set-cookie'][0])
 
         if (!cookie) {

@@ -10,7 +10,7 @@ describe('Register via email on ' + config.device + ' - ' + config.baseUrl, () =
     beforeAll(async () => {
         browser = new Browser('chrome', config.device)
         pages = new AllPages(browser)
-        await browser.navigate(config.baseUrl + config.register)
+        await browser.navigate(config.baseUrl + config.signUp)
     })
 
     test('Register with empty email and password', async () => {

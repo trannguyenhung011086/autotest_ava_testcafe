@@ -56,7 +56,7 @@ describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => 
     })
 
     test('GET / cannot access creditcard info without login', async () => {
-        await request.get(config.api.logout)
+        await request.get(config.api.signOut)
         let response = await request.get(config.api.creditcard)
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
