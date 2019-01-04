@@ -6,7 +6,7 @@ test:
     name: testcafe/testcafe
     entrypoint: ["/bin/sh", "-c"]
   script:
-    - /opt/testcafe/docker/testcafe-docker.sh chromium tests/testcafe/e2e_ui/desktop/
+    - /opt/testcafe/docker/testcafe-docker.sh "chromium --no-sandbox" tests/testcafe/e2e_ui/desktop/
 
 # stages:
 #   - start
