@@ -30,7 +30,7 @@ e2e_tests:
   # Replace '10.14' with the latest Node.js LTS version
   # available on Docker Hub
   stage: test
-  image: circleci/node:10.14-browsers
+  image: testcafe/testcafe
   before_script:
     - npm install
   script:
