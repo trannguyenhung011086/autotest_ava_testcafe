@@ -14,6 +14,7 @@ start:
     # - docker run -d --name selenoid-ui --link selenoid -p 8080:8080 aerokube/selenoid-ui --selenoid-uri=http://selenoid:4444
     # - echo $(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid)
     - docker pull testcafe/testcafe
+    - npm install
 
 testcafe:
   stage: test
