@@ -1,3 +1,8 @@
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+  - node_modules/
+
 stages:
   # - start
   - test
@@ -29,7 +34,7 @@ e2e_tests:
   before_script:
     - npm install
   script:
-    - node_modules/.bin/testcafe 'chromium --no-sandbox' tests/testcafe/e2e_ui/desktop/signIn.spec.ts
+    - node_modules/.bin/testcafe chromium tests/testcafe/e2e_ui/desktop/signIn.spec.ts
 
 # test_api:
 #   stage: test
