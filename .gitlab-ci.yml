@@ -1,28 +1,24 @@
 stages:
+  - start
   - test
+  # - test_prod
+  - cleanup
 
-test:
-  image:
-    name: testcafe/testcafe
-    entrypoint: ["/bin/sh", "-c"]
+start:
+  stage: start
   script:
-    - /opt/testcafe/docker/testcafe-docker.sh "chromium --no-sandbox" tests/testcafe/e2e_ui/desktop/
+    # - docker pull selenoid/chrome
+    # - docker pull selenoid/firefox
+    # - docker build -t testapp .
+    # - docker run -d --name selenoid -p 4444:4444 -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`/config/:/etc/selenoid/:ro aerokube/selenoid:latest-release
+    # - docker run -d --name selenoid-ui --link selenoid -p 8080:8080 aerokube/selenoid-ui --selenoid-uri=http://selenoid:4444
+    # - echo $(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid)
+    - docker pull testcafe/testcafe
 
-# stages:
-#   - start
-#   - test
-#   - test_prod
-#   - cleanup
-
-# start:
-#   stage: start
-#   script:
-#     - docker pull selenoid/chrome
-#     - docker pull selenoid/firefox
-#     - docker build -t testapp .
-#     - docker run -d --name selenoid -p 4444:4444 -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`/config/:/etc/selenoid/:ro aerokube/selenoid:latest-release
-#     - docker run -d --name selenoid-ui --link selenoid -p 8080:8080 aerokube/selenoid-ui --selenoid-uri=http://selenoid:4444
-#     - echo $(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid)
+testcafe:
+  stage: test
+  script:
+    - docker run -v `pwd`:/app -i testcafe/testcafe chromium /app/tests/testcafe/e2e_ui/desktop/
 
 # test_api:
 #   stage: test
@@ -136,9 +132,9 @@ test:
 #   only:
 #     - schedules
 
-# cleanup:
-#   stage: cleanup
-#   script:
-#   - docker stop $(docker ps -a -q)
-#   - docker rm $(docker ps -a -q)
-#   when: always
+cleanup:
+  stage: cleanup
+  script:
+  - docker stop $(docker ps -a -q)
+  - docker rm $(docker ps -a -q)
+  when: always
