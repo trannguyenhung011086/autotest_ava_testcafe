@@ -1,4 +1,4 @@
-import config from '../../config/config'
+import config from '../../config'
 import * as Model from '../interface'
 import AxiosUtils from './axiosUtils'
 import MongoUtils from './mongoUtils'

@@ -1,117 +1,151 @@
-image: docker:edge-git
-
-services:
-- docker:dind
-
-before_script:
-  - apk add --no-cache py2-pip && pip install docker-compose
-  - docker info
-  - docker-compose --version
-
 stages:
   - start
   - test
   - test_prod
   - cleanup
 
-start:
-  stage: start
-  script:
-    - docker-compose build --pull
-    - docker-compose up
+# start:
+#   stage: start
+#   script:
+    # - docker pull selenoid/chrome
+    # - docker pull selenoid/firefox
+    # - docker build -t testapp .
+    # - docker run -d --name selenoid -p 4444:4444 -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`/config/:/etc/selenoid/:ro aerokube/selenoid:latest-release
+    # - docker run -d --name selenoid-ui --link selenoid -p 8080:8080 aerokube/selenoid-ui --selenoid-uri=http://selenoid:4444
+    # - echo $(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid)
+    # - docker pull testcafe/testcafe
+    # - npm install
 
-test_api:
+# testcafe:
+#   stage: test
+#   script:
+#     - docker run -e NODE_ENV=staging -v `pwd`:/app testcafe/testcafe chromium /app/tests/testcafe/e2e_ui/desktop/
+
+e2e_tests:
+  # Replace '10.14' with the latest Node.js LTS version
+  # available on Docker Hub
   stage: test
+  image: testcafe/testcafe
+  before_script:
+    - npm install
   script:
-    - docker-compose run -e NODE_ENV=testing testapp npm run test_api_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_api.xml
-  except:
-    - schedules
+    - node_modules/.bin/testcafe chromium tests/testcafe/e2e_ui/desktop/signIn.spec.ts
 
-test_ui_chrome:  
-  stage: test
-  script:
-    - docker-compose run -e NODE_ENV=testing testapp npm run test_ui_chrome_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_ui_chrome.xml
-  except:
-    - schedules
+# test_api:
+#   stage: test
+#   script:
+#     - docker run -e NODE_ENV=staging -v `pwd`/:/app/report/ testapp npm run test_api_ci
 
-test_ui_firefox:  
-  stage: test
-  script:
-    - docker-compose run -e NODE_ENV=testing testapp npm run test_ui_firefox_ci
-  artifacts:
-    paths:
-    - report/junit_ui_firefox.xml
-    expire_in: 1 week
-    reports:
-      junit: report/junit_ui_firefox.xml
-  except:
-    - schedules
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_api.xml
+#   except:
+#     - schedules
 
-test_ui_mobile:  
-  stage: test
-  script:
-    - docker-compose run -e NODE_ENV=testing testapp npm run test_ui_mobile_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_ui_mobile.xml
-  except:
-    - schedules
+# test_ui_chrome:  
+#   stage: test
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_chrome.xml
+#   except:
+#     - schedules
 
-test_api_prod:on-schedule:
-  stage: test_prod
-  script:
-    - docker-compose run -e NODE_ENV=production testapp npm run test_api_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_api.xml
-  only:
-    - schedules
+# test_ui_firefox:  
+#   stage: test
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_firefox.xml
+#   except:
+#     - schedules
 
-test_ui_chrome_prod:on-schedule:
-  stage: test_prod
-  script:
-    - docker-compose run -e NODE_ENV=production testapp npm run test_ui_chrome_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_ui_chrome.xml
-  only:
-    - schedules
+# test_ui_mobile:  
+#   stage: test
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=staging -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_mobile.xml
+#   except:
+#     - schedules
 
-test_ui_firefox_prod:on-schedule:
-  stage: test_prod
-  script:
-    - docker-compose run -e NODE_ENV=production testapp npm run test_ui_firefox_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_ui_firefox.xml
-  only:
-    - schedules
+# test_pp:
+#   stage: test
+#   script:
+#     - docker run -e NODE_ENV=staging -v `pwd`/:/app/report/ testapp npm run test_pp_ci
 
-test_ui_mobile_prod:on-schedule: 
-  stage: test_prod
-  script:
-    - docker-compose run -e NODE_ENV=production testapp npm run test_ui_mobile_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_ui_mobile.xml
-  only:
-    - schedules
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_pp.xml
+#   except:
+#     - schedules
+
+# test_api_prod:on-schedule:
+#   stage: test_prod
+#   script:
+#     - docker run -e NODE_ENV=production -v `pwd`/:/app/report/ testapp npm run test_api_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_api.xml
+#   only:
+#     - schedules
+
+# test_ui_chrome_prod:on-schedule:
+#   stage: test_prod
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_chrome_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_chrome.xml
+#   only:
+#     - schedules
+
+# test_ui_firefox_prod:on-schedule:
+#   stage: test_prod
+#   script:
+#     - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_firefox_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_firefox.xml
+#   only:
+#     - schedules
+
+# test_ui_mobile_prod:on-schedule: 
+#   stage: test_prod
+#   script:
+#       - docker run --link selenoid -e NODE_ENV=production -e SELENIUM_REMOTE_URL=http://$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" selenoid):4444/wd/hub -v `pwd`/:/app/report/ testapp npm run test_ui_mobile_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_ui_mobile.xml
+#   only:
+#     - schedules
+
+# test_pp_prod:on-schedule:
+#   stage: test_prod
+#   script:
+#     - docker run -e NODE_ENV=production -v `pwd`/:/app/report/ testapp npm run test_pp_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_pp.xml
+#   only:
+#     - schedules
 
 cleanup:
   stage: cleanup
   script:
-  - ddocker-compose down
+  - docker stop $(docker ps -a -q)
+  - docker rm $(docker ps -a -q)
   when: always

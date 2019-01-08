@@ -1,11 +1,12 @@
 import { t } from 'testcafe'
-import config from '../../../../config/config'
+import config from '../../../../config'
 import * as faker from 'faker/locale/vi'
-import Pages from '../../page_objects'
+import Pages from '../page_objects'
 const page = new Pages()
 
 fixture('Sign in via email ' + config.baseUrl)
     .page(config.baseUrl + config.signIn)
+    .requestHooks(page.base.blockPopup)
 
 test('Cannot sign in with empty email and password', async () => {
     await page.signIn.submitEmpty()

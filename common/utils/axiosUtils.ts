@@ -1,4 +1,4 @@
-import config from '../../config/config'
+import config from '../../config'
 import axios, { AxiosResponse } from 'axios'
 import * as querystring from 'querystring'
 import axiosCookieJarSupport from 'axios-cookiejar-support'

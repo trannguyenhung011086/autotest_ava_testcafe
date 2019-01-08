@@ -1,20 +1,17 @@
 import { t } from 'testcafe'
-import config from '../../../../config/config'
+import config from '../../../../config'
 import * as faker from 'faker/locale/vi'
-import Pages from '../../page_objects'
+import Pages from '../page_objects'
 const page = new Pages()
 
 fixture('Sign up via email ' + config.baseUrl)
     .page(config.baseUrl + config.signUp)
-    .beforeEach(async () => {
-        await page.base.closePopup()
-    })
+    .requestHooks(page.base.blockPopup)
 
 test('Cannot sign up with empty email and password', async () => {
     await page.signUp.submitEmpty()
-    await t
-        .expect(await page.signUp.getEmailError()).eql('Vui lòng nhập email.')
-        .expect(await page.signUp.getPasswordError()).eql('Vui lòng nhập password.')
+    await t.expect(await page.signUp.getEmailError()).eql('Vui lòng nhập email.')
+    await t.expect(await page.signUp.getPasswordError()).eql('Vui lòng nhập password.')
 })
 
 test('Cannot sign up with wrong format email', async () => {

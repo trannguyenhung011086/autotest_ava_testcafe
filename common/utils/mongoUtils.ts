@@ -1,4 +1,4 @@
-import config from '../../config/config'
+import config from '../../config'
 import * as Model from '../interface'
 import { MongoClient } from 'mongodb'
 

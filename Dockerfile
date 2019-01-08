@@ -1,19 +1,40 @@
-# dockerize all test script to use latest node version
+FROM ubuntu:18.04
 
-FROM node:alpine
+# Install prerequisites
+RUN apt-get update \
+    && apt-get install -y xvfb chromium-browser firefox curl gnupg \
+    && curl -sL https://deb.nodesource.com/setup_8.x | bash \
+    && apt-get install -y nodejs
 
-# RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ add \
-#     nodejs \
-#     nodejs-npm \
-#     chromium \
-#     firefox \
-#     xwininfo \
-#     xvfb \
-#     dbus \
-#     eudev \
-#     ttf-freefont \
-#     fluxbox
+# Clean up
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get autoremove -y
 
-ADD . /app
-WORKDIR /app
-RUN npm i && npm cache clean --force && rm -rf /tmp/*
+# RUN mkdir /testcafe
+# COPY package.json /testcafe
+# COPY jest.setup.js /testcafe
+# WORKDIR /testcafe
+
+# create non-root user
+RUN useradd -ms /bin/bash tester
+USER tester
+WORKDIR /home/tester
+COPY package.json /home/tester
+COPY jest.setup.js /home/tester
+
+# Install test packages
+RUN npm install \
+    && npm cache clean --force \
+    && rm -rf /tmp/*
+
+# Set path
+ENV NODE_PATH=/testcafe/node_modules
+ENV PATH=$PATH:/testcafe/node_modules/.bin
+
+# USER root
+# COPY docker-entrypoint.sh /
+# RUN chmod +x /docker-entrypoint.sh
+
+# Set volume
+# VOLUME [ "/dockertests" ]

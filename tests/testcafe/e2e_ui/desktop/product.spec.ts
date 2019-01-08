@@ -1,13 +1,11 @@
 import { t, RequestMock } from 'testcafe'
-import config from '../../../../config/config'
+import config from '../../../../config'
 import * as Utils from '../../../../common/utils'
 let api = new Utils.ApiUtils()
 import * as model from '../../../../common/interface'
 let sales: model.SalesModel[]
-import Pages from '../../page_objects'
+import Pages from '../page_objects'
 const page = new Pages()
-
-// import * as got from 'got'
 
 const mockRedirect = RequestMock()
     .onRequestTo(/\/api\/v2\/product\/(?!view-product)/)
