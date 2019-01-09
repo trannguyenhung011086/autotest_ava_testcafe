@@ -25,16 +25,16 @@ test_api_staging:
   except:
     - schedules
 
-test_chromium_staging:
-  stage: test
-  script:
-    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: /dockertests/report/junit_chromium.xml
-  except:
-    - schedules
+# test_chromium_staging:
+#   stage: test
+#   script:
+#     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: /dockertests/report/junit_chromium.xml
+#   except:
+#     - schedules
 
 # test_firefox_staging:
 #   stage: test
@@ -107,5 +107,4 @@ cleanup:
   script:
     - docker stop $(docker ps -a -q)
     - docker rm $(docker ps -a -q)
-  when:
-    - always
+  when: always
