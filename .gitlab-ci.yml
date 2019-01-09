@@ -16,7 +16,7 @@ build:
 # test_api_staging:
 #   stage: test
 #   script:
-#     - docker run --rm -i -e USER=$USER -e USERID=$UID -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_api_ci
+#     - docker run --rm -i -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_api_ci
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
@@ -27,7 +27,7 @@ build:
 test_chromium_staging:
   stage: test
   script:
-    - docker run --rm -i -e USER=$USER -e USERID=$UID -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_chromium_ci
+    - docker run --rm -i -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_chromium_ci
   artifacts:
     expire_in: 1 week
     reports:
@@ -38,7 +38,7 @@ test_chromium_staging:
 test_firefox_staging:
   stage: test
   script:
-    - docker run --rm -i -e USER=$USER -e USERID=$UID -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_firefox_ci
+    - docker run --rm -i -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_firefox_ci
   artifacts:
     expire_in: 1 week
     reports:
@@ -49,7 +49,7 @@ test_firefox_staging:
 # test_mobile_emu_staging:
 #   stage: test
 #   script:
-#     - docker run --rm -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_mobile_emu_ci
+#     - docker run --rm -i -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_mobile_emu_ci
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
@@ -60,7 +60,7 @@ test_firefox_staging:
 test_api_prod:
   stage: test_prod
   script:
-    - docker run --rm -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_api_ci
+    - docker run --rm -i -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_api_ci
   artifacts:
     expire_in: 1 week
     reports:
@@ -71,7 +71,7 @@ test_api_prod:
 test_chromium_prod:
   stage: test_prod
   script:
-    - docker run --rm -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_chromium_ci
+    - docker run --rm -i -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_chromium_ci
   artifacts:
     expire_in: 1 week
     reports:
@@ -82,7 +82,7 @@ test_chromium_prod:
 test_firefox_prod:
   stage: test_prod
   script:
-    - docker run --rm -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_firefox_ci
+    - docker run --rm -i -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_firefox_ci
   artifacts:
     expire_in: 1 week
     reports:
@@ -93,7 +93,7 @@ test_firefox_prod:
 # test_mobile_emu_prod:
 #   stage: test_prod
 #   script:
-#     - docker run --rm -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_mobile_emu_ci
+#     - docker run --rm -i -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_mobile_emu_ci
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
