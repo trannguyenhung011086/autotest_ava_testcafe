@@ -20,8 +20,9 @@ RUN apt-get update \
 RUN useradd -ms /bin/bash tester
 USER tester
 WORKDIR /home/tester
-COPY package.json /home/tester
-COPY jest.setup.js /home/tester
+COPY . /home/tester
+# COPY package.json /home/tester
+# COPY jest.setup.js /home/tester
 
 # Install test packages
 RUN npm install \
