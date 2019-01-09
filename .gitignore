@@ -4,6 +4,7 @@ xunit.xml
 report.html
 /.vscode
 /report/jest-stare
+/report/*.xml
 /.cache
 /.config
 /.mozilla
