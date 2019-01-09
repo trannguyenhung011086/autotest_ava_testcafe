@@ -29,12 +29,12 @@ RUN npm install \
     && rm -rf /tmp/*
 
 # Set path
-# ENV NODE_PATH=/testcafe/node_modules
-# ENV PATH=$PATH:/testcafe/node_modules/.bin
+ENV NODE_PATH=/testcafe/node_modules
+ENV PATH=$PATH:/testcafe/node_modules/.bin
 
 # USER root
 # COPY docker-entrypoint.sh /
 # RUN chmod +x /docker-entrypoint.sh
 
 # Set volume
-# VOLUME [ "/dockertests" ]
+VOLUME [ "/dockertests" ]
