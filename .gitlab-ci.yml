@@ -28,7 +28,7 @@ build:
 test_chromium_staging:
   stage: test
   script:
-    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
+    - docker run --privileged=true -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
     - cd report
     - ls
   artifacts:
