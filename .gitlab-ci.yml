@@ -18,10 +18,11 @@ test_api_staging:
   stage: test
   script:
     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
+    - cat 
   artifacts:
     expire_in: 1 week
     reports:
-      junit: /dockertests/report/junit_api.xml
+      junit: "*/report/junit_api.xml"
   except:
     - schedules
 
