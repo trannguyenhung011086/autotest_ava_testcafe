@@ -2,14 +2,13 @@ stages:
   - build
   - test
   - test_prod
-  - cleanup
 
 build:
   stage: build
   script:
     - docker build -t hung/testcafe .
 
-test_api:
+test_api_staging:
   stage: test
   script:
     - docker run --rm -it -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_api_ci
@@ -20,7 +19,7 @@ test_api:
   except:
     - schedules
 
-test_chromium:
+test_chromium_staging:
   stage: test
   script:
     - docker run --rm -it -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_chromium_ci
@@ -31,7 +30,7 @@ test_chromium:
   except:
     - schedules
 
-test_firefox:
+test_firefox_staging:
   stage: test
   script:
     - docker run --rm -it -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_firefox_ci
@@ -42,7 +41,7 @@ test_firefox:
   except:
     - schedules
 
-# test_mobile_emu:
+# test_mobile_emu_staging:
 #   stage: test
 #   script:
 #     - docker run --rm -it -e NODE_ENV=staging -v `pwd`/:/home/tester hung/testcafe npm run test_mobile_emu_ci
@@ -53,7 +52,7 @@ test_firefox:
 #   except:
 #     - schedules
 
-test_api:
+test_api_prod:
   stage: test_prod
   script:
     - docker run --rm -it -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_api_ci
@@ -64,7 +63,7 @@ test_api:
   only:
     - schedules
 
-test_chromium:
+test_chromium_prod:
   stage: test_prod
   script:
     - docker run --rm -it -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_chromium_ci
@@ -75,7 +74,7 @@ test_chromium:
   only:
     - schedules
 
-test_firefox:
+test_firefox_prod:
   stage: test_prod
   script:
     - docker run --rm -it -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_firefox_ci
@@ -86,7 +85,7 @@ test_firefox:
   only:
     - schedules
 
-# test_mobile_emu:
+# test_mobile_emu_prod:
 #   stage: test_prod
 #   script:
 #     - docker run --rm -it -e NODE_ENV=production -v `pwd`/:/home/tester hung/testcafe npm run test_mobile_emu_ci
@@ -96,10 +95,3 @@ test_firefox:
 #       junit: report/junit_mobile_emu.xml
 #   only:
 #     - schedules    
-
-cleanup:
-  stage: cleanup
-  script:
-  - docker stop $(docker ps -a -q)
-  - docker rm $(docker ps -a -q)
-  when: always
