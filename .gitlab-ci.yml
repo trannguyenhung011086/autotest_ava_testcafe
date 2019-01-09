@@ -11,7 +11,7 @@ build:
   stage: build
   script:
     - docker build -t hung/testcafe .
-    - npm install && npm cache clean --force && rm -rf /tmp/*
+    - npm install && npm cache clean --force
 
 test_api_staging:
   stage: test
