@@ -18,7 +18,7 @@ test_api_staging:
   stage: test
   script:
     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
-    - cd dockertests
+    - cd report
     - ls 
   artifacts:
     expire_in: 1 week
