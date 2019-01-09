@@ -12,7 +12,6 @@ build:
   script:
     - docker build -t hung/testcafe .
     - npm install
-    - npm cache clean
 
 test_api_staging:
   stage: test
