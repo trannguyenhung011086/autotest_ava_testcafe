@@ -1,6 +1,6 @@
-cache:
-  paths:
-    - node_modules/
+# cache:
+#   paths:
+#     - node_modules/
 
 stages:
   - build
@@ -9,12 +9,19 @@ stages:
   - cleanup
 
 build:
+  cache:
+    paths:
+      - node_modules/
+
   stage: build
   script:
     - docker build -t hung/testcafe .
     - npm install jest-junit
 
 test_api_staging:
+  cache:
+    paths:
+      - node_modules/
   stage: test
   script:
     - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
