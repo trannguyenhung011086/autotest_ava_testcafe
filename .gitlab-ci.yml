@@ -6,6 +6,7 @@ stages:
   - build
   - test
   - test_prod
+  - report
   - cleanup
 
 build:
@@ -37,9 +38,9 @@ test_chromium_staging:
     - schedules
 
 upload_report:
-  stage: test
+  stage: report
   script:
-    - docker cp report/junit_chromium.xml /dockertests/report/
+    - docker cp $(docker ps -a -q):report/junit_chromium.xml /dockertests/report/
   artifacts:
     expire_in: 1 week
     reports:
