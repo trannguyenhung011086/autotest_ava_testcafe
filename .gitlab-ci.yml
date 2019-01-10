@@ -23,7 +23,6 @@ test_api_staging:
   after_script:
     - docker start api
     - docker exec --privileged api cat report/junit_api.xml
-    - docker cp api:/report/junit_api.xml report/
     - docker cp api:/dockertests/home/tester/report/junit_api.xml report/
   except:
     - schedules
