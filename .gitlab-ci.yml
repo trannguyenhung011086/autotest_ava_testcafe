@@ -45,8 +45,7 @@ upload_report:
     expire_in: 1 week
     reports:
       junit: report/junit_chromium.xml
-  except:
-    - schedules
+  when: always
 
 # test_firefox_staging:
 #   stage: test
