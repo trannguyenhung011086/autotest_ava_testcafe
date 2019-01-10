@@ -14,23 +14,22 @@ build:
     - docker build -t hung/testcafe .
     - npm install
 
-test_api_staging:
-  stage: test
-  script:
-    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_api.xml
-  except:
-    - schedules
+# test_api_staging:
+#   stage: test
+#   script:
+#     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: report/junit_api.xml
+#   except:
+#     - schedules
 
 test_chromium_staging:
   stage: test
   script:
     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
-    - cd report
-    - ls
+    - docker cp report/junit_chromium.xml /dockertests/report/
   artifacts:
     expire_in: 1 week
     reports:
@@ -38,16 +37,16 @@ test_chromium_staging:
   except:
     - schedules
 
-test_firefox_staging:
-  stage: test
-  script:
-    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: report/junit_firefox.xml
-  except:
-    - schedules
+# test_firefox_staging:
+#   stage: test
+#   script:
+#     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: report/junit_firefox.xml
+#   except:
+#     - schedules
 
 # test_mobile_emu_staging:
 #   stage: test
