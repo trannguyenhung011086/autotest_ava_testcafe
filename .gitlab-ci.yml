@@ -29,15 +29,24 @@ test_chromium_staging:
   except:
     - schedules
 
-upload_report:
+upload_report_api:
   stage: report
   script:
-    - docker cp $(docker ps -qf "name=api"):home/tester/report/*.xml report/
-    - docker cp $(docker ps -qf "name=chromium"):home/tester/report/*.xml report/
+    - docker cp $(docker ps -qf "name=api"):/home/tester/report/junit_api.xml report/
   artifacts:
     expire_in: 1 week
     reports:
-      junit: report/*.xml
+      junit: report/junit_api.xml
+  when: always
+
+upload_report_chromium:
+  stage: report
+  script:
+    - docker cp $(docker ps -qf "name=chromium"):/home/tester/report/junit_chromium.xml report/
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_chromium.xml
   when: always
 
 # test_firefox_staging:
