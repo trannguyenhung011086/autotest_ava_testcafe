@@ -18,14 +18,14 @@ build:
 test_api_staging:
   stage: test
   script:
-    - docker run --name=api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
+    - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
   except:
     - schedules
 
 test_chromium_staging:
   stage: test
   script:
-    - docker run --name=chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
+    - docker run --name chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
   except:
     - schedules
 
