@@ -29,6 +29,16 @@ test_chromium_staging:
   stage: test
   script:
     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
+  # artifacts:
+  #   expire_in: 1 week
+  #   reports:
+  #     junit: report/junit_chromium.xml
+  except:
+    - schedules
+
+upload_report:
+  stage: test
+  script:
     - docker cp report/junit_chromium.xml /dockertests/report/
   artifacts:
     expire_in: 1 week
