@@ -23,13 +23,13 @@ test_api_staging:
   after_script:
     - docker start api
     - docker exec --privileged api cat report/junit_api.xml
-    - docker cp api:/home/tester/report report/
+    - docker cp api:/home/tester/report/junit_api.xml junit_api.xml
   except:
     - schedules
   artifacts:
     expire_in: 1 week
     reports:
-      junit: report/report/junit_api.xml
+      junit: junit_api.xml
 
 # test_chromium_staging:
 #   stage: test
