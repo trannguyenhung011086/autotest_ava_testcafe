@@ -40,7 +40,7 @@ test_chromium_staging:
 upload_report:
   stage: report
   script:
-    - docker cp $(docker ps -a -q):report/junit_chromium.xml /dockertests/report/
+    - docker cp $(docker ps -a -q):home/tester/report/junit_chromium.xml report/
   artifacts:
     expire_in: 1 week
     reports:
