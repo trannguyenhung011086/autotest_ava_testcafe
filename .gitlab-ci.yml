@@ -23,7 +23,8 @@ test_api_staging:
   after_script:
     - docker start api
     - docker exec --privileged api cat report/junit_api.xml
-    - docker cp api:report/junit_api.xml report/
+    - docker cp api:/report/junit_api.xml report/
+    - docker cp api:/dockertests/home/tester/report/junit_api.xml report/
   except:
     - schedules
   artifacts:
@@ -36,7 +37,7 @@ test_api_staging:
 #   script:
 #     - docker run --name chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
 #   after_script:
-#     - docker cp $(docker ps -qf "name=chromium"):/home/tester/report/junit_chromium.xml report/
+#     - docker cp chromium:/home/tester/report/junit_chromium.xml report/
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
@@ -49,7 +50,7 @@ test_api_staging:
 #   script:
 #     - docker run --name firefox -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
 #   after_script:
-#     - docker cp $(docker ps -qf "name=firefox"):/home/tester/report/junit_firefox.xml report/
+#     - docker cp firefox:/home/tester/report/junit_firefox.xml report/
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
@@ -62,7 +63,7 @@ test_api_staging:
 #   script:
 #     - docker run --name mobile_emu -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
 #   after_script:
-#     - docker cp $(docker ps -qf "name=mobile_emu"):/home/tester/report/junit_mobile_emu.xml report/
+#     - docker cp mobile_emu:/home/tester/report/junit_mobile_emu.xml report/
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
@@ -91,7 +92,7 @@ test_chromium_prod:
   script:
     - docker run --name chromium -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
   after_script:
-    - docker cp $(docker ps -qf "name=chromium"):/home/tester/report/junit_chromium.xml report/
+    - docker cp chromium:/home/tester/report/junit_chromium.xml report/
   artifacts:
     expire_in: 1 week
     reports:
@@ -104,7 +105,7 @@ test_chromium_prod:
 #   script:
 #     - docker run --name firefox -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
 #   after_script:
-#     - docker cp $(docker ps -qf "name=firefox"):/home/tester/report/junit_firefox.xml report/
+#     - docker cp firefox:/home/tester/report/junit_firefox.xml report/
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
@@ -117,7 +118,7 @@ test_chromium_prod:
 #   script:
 #     - docker run --name mobile_emu -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
 #   after_script:
-#     - docker cp $(docker ps -qf "name=mobile_emu"):/home/tester/report/junit_mobile_emu.xml report/
+#     - docker cp mobile_emu:/home/tester/report/junit_mobile_emu.xml report/
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
