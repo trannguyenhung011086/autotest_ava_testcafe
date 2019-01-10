@@ -6,7 +6,6 @@ stages:
   - build
   - test
   - test_prod
-  - report
   - cleanup
 
 build:
@@ -18,26 +17,24 @@ build:
 test_api_staging:
   stage: test
   script:
-    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
+    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci ; docker cp $(docker ps -a -q):home/tester/report/junit_api.xml report/
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: report/junit_api.xml
   except:
     - schedules
 
 test_chromium_staging:
   stage: test
   script:
-    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
-  except:
-    - schedules
-
-upload_report:
-  stage: report
-  script:
-    - docker cp $(docker ps -a -q):home/tester/report/*.xml report/
+    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci ; docker cp $(docker ps -a -q):home/tester/report/junit_chromium.xml report/
   artifacts:
     expire_in: 1 week
     reports:
-      junit: report/*.xml
-  when: always
+      junit: report/junit_chromium.xml
+  except:
+    - schedules
 
 # test_firefox_staging:
 #   stage: test
