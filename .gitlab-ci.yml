@@ -22,8 +22,7 @@ test_api_staging:
     - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
   after_script:
     - docker ps -a
-    - echo $(docker ps -qf "name=api")
-    - docker cp $(docker ps -qf "name=api"):/home/tester/report/junit_api.xml report/
+    - docker cp api:/home/tester/report/junit_api.xml report/
   except:
     - schedules
   artifacts:
