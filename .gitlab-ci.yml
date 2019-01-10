@@ -15,36 +15,28 @@ build:
     - docker build -t hung/testcafe .
     - npm install
 
-# test_api_staging:
-#   stage: test
-#   script:
-#     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
-#   artifacts:
-#     expire_in: 1 week
-#     reports:
-#       junit: report/junit_api.xml
-#   except:
-#     - schedules
+test_api_staging:
+  stage: test
+  script:
+    - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
+  except:
+    - schedules
 
 test_chromium_staging:
   stage: test
   script:
     - docker run -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
-  # artifacts:
-  #   expire_in: 1 week
-  #   reports:
-  #     junit: report/junit_chromium.xml
   except:
     - schedules
 
 upload_report:
   stage: report
   script:
-    - docker cp $(docker ps -a -q):home/tester/report/junit_chromium.xml report/
+    - docker cp $(docker ps -a -q):home/tester/report/*.xml report/
   artifacts:
     expire_in: 1 week
     reports:
-      junit: report/junit_chromium.xml
+      junit: report/*.xml
   when: always
 
 # test_firefox_staging:
