@@ -21,7 +21,8 @@ test_api_staging:
   script:
     - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
   after_script:
-    - docker ps -a
+    - docker start api
+    - docker exec --privileged api cat report/junit_api.xml
     - docker cp api:/home/tester/report/junit_api.xml report/
   except:
     - schedules
