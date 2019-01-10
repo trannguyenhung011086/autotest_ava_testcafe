@@ -17,7 +17,7 @@ build:
 test_api_staging:
   stage: test
   script:
-    - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe /bin/bash -c "npm run test_api_ci ; cp report/junit_api.xml /dockertests/report/"
+    - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe /bin/bash -c "npm run test_api_ci ; cp report/junit_api.xml /dockertests/report/junit_api.xml"
   artifacts:
     expire_in: 1 week
     reports:
@@ -28,7 +28,7 @@ test_api_staging:
 test_chromium_staging:
   stage: test
   script:
-    - docker run --name chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe /bin/bash -c "npm run test_chromium_ci ; cp report/junit_chromium.xml /dockertests/report/"
+    - docker run --name chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe /bin/bash -c "npm run test_chromium_ci ; cp report/junit_chromium.xml /dockertests/report/junit_chromium.xml"
   artifacts:
     expire_in: 1 week
     reports:
