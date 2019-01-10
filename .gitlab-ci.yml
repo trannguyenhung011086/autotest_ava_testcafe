@@ -31,42 +31,42 @@ test_api_staging:
     reports:
       junit: junit_api.xml
 
-# test_chromium_staging:
-#   stage: test
-#   script:
-#     - docker run --name chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
-#   after_script:
-#     - docker cp chromium:/home/tester/report/junit_chromium.xml report/
-#   artifacts:
-#     expire_in: 1 week
-#     reports:
-#       junit: report/junit_chromium.xml
-#   except:
-#     - schedules
+test_chromium_staging:
+  stage: test
+  script:
+    - docker run --name chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
+  after_script:
+    - docker cp chromium:/home/tester/report/junit_chromium.xml junit_chromium.xml
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: junit_chromium.xml
+  except:
+    - schedules
 
-# test_firefox_staging:
-#   stage: test
-#   script:
-#     - docker run --name firefox -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
-#   after_script:
-#     - docker cp firefox:/home/tester/report/junit_firefox.xml report/
-#   artifacts:
-#     expire_in: 1 week
-#     reports:
-#       junit: report/junit_firefox.xml
-#   except:
-#     - schedules
+test_firefox_staging:
+  stage: test
+  script:
+    - docker run --name firefox -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
+  after_script:
+    - docker cp firefox:/home/tester/report/junit_firefox.xml junit_firefox.xml
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: junit_firefox.xml
+  except:
+    - schedules
 
 # test_mobile_emu_staging:
 #   stage: test
 #   script:
 #     - docker run --name mobile_emu -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
 #   after_script:
-#     - docker cp mobile_emu:/home/tester/report/junit_mobile_emu.xml report/
+#     - docker cp mobile_emu:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
-#       junit: report/junit_mobile_emu.xml
+#       junit: junit_mobile_emu.xml
 #   except:
 #     - schedules
 
@@ -78,11 +78,11 @@ test_api_prod:
   script:
     - docker run --name api -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
   after_script:
-    - docker cp $(docker ps -qf "name=api"):/home/tester/report/junit_api.xml report/
+    - docker cp $(docker ps -qf "name=api"):/home/tester/report/junit_api.xml junit_api.xml
   artifacts:
     expire_in: 1 week
     reports:
-      junit: report/junit_api.xml
+      junit: junit_api.xml
   only:
     - schedules
 
@@ -91,37 +91,37 @@ test_chromium_prod:
   script:
     - docker run --name chromium -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
   after_script:
-    - docker cp chromium:/home/tester/report/junit_chromium.xml report/
+    - docker cp chromium:/home/tester/report/junit_chromium.xml junit_chromium.xml
   artifacts:
     expire_in: 1 week
     reports:
-      junit: report/junit_chromium.xml
+      junit: junit_chromium.xml
   only:
     - schedules
 
-# test_firefox_prod:
-#   stage: test_prod
-#   script:
-#     - docker run --name firefox -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
-#   after_script:
-#     - docker cp firefox:/home/tester/report/junit_firefox.xml report/
-#   artifacts:
-#     expire_in: 1 week
-#     reports:
-#       junit: report/junit_firefox.xml
-#   only:
-#     - schedules
+test_firefox_prod:
+  stage: test_prod
+  script:
+    - docker run --name firefox -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
+  after_script:
+    - docker cp firefox:/home/tester/report/junit_firefox.xml junit_firefox.xml
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: junit_firefox.xml
+  only:
+    - schedules
 
 # test_mobile_emu_prod:
 #   stage: test_prod
 #   script:
 #     - docker run --name mobile_emu -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
 #   after_script:
-#     - docker cp mobile_emu:/home/tester/report/junit_mobile_emu.xml report/
+#     - docker cp mobile_emu:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
 #   artifacts:
 #     expire_in: 1 week
 #     reports:
-#       junit: report/junit_mobile_emu.xml
+#       junit: junit_mobile_emu.xml
 #   only:
 #     - schedules    
 
