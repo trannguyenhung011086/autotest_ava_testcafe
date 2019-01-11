@@ -1,3 +1,7 @@
+cache:
+  paths:
+    - node_modules/
+
 stages:
   - build
   - test_stg
@@ -5,18 +9,12 @@ stages:
   - cleanup
 
 build:
-  cache:
-    paths:
-      - node_modules/
   stage: build
   script:
     - docker build -t hung/testcafe .
-    - npm install jest-junit
+    - npm install
 
 # test_api_staging:
-#   cache:
-#     paths:
-#       - node_modules/
 #   stage: test_stg
 #   script:
 #     - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
@@ -71,9 +69,6 @@ test_firefox_staging:
 #     - schedules
 
 test_api_prod:
-  cache:
-    paths:
-      - node_modules/
   stage: test_prod
   script:
     - docker run --name api -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
