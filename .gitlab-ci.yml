@@ -1,6 +1,6 @@
 stages:
   - build
-  - test
+  - test_stg
   - test_prod
   - cleanup
 
@@ -17,7 +17,7 @@ test_api_staging:
   cache:
     paths:
       - node_modules/
-  stage: test
+  stage: test_stg
   script:
     - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
   after_script:
@@ -32,7 +32,7 @@ test_api_staging:
       junit: junit_api.xml
 
 test_chromium_staging:
-  stage: test
+  stage: test_stg
   script:
     - docker run --name chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
   after_script:
@@ -45,7 +45,7 @@ test_chromium_staging:
     - schedules
 
 test_firefox_staging:
-  stage: test
+  stage: test_stg
   script:
     - docker run --name firefox -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
   after_script:
@@ -58,7 +58,7 @@ test_firefox_staging:
     - schedules
 
 # test_mobile_emu_staging:
-#   stage: test
+#   stage: test_stg
 #   script:
 #     - docker run --name mobile_emu -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
 #   after_script:

@@ -3,25 +3,25 @@ let apiNs: string
 let payDollarBase: string
 let payDollarApi: string
 
-if (process.env.NODE_ENV == 'testing') {
+if (process.env.NODE_ENV == 'test') {
     baseUrl = 'https://www.testing.leflair.io'
     payDollarBase = 'https://test.paydollar.com'
     payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
-} else if (process.env.NODE_ENV == 'staging') {
+} else if (process.env.NODE_ENV == 'stg') {
     baseUrl = 'https://www.staging.leflair.io'
     payDollarBase = 'https://test.paydollar.com'
     payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
-} else if (process.env.NODE_ENV == 'production') {
+} else if (process.env.NODE_ENV == 'prod') {
     baseUrl = 'https://www.leflair.vn'
     payDollarBase = 'https://paydollar.com'
     payDollarApi = '/b2c/eng/directPay/payComp.jsp'
-} else if (process.env.NODE_ENV == 'staging-ns') {
+} else if (process.env.NODE_ENV == 'stg-ns') {
     baseUrl = 'https://www.staging-ns.leflair.io'
     apiNs = 'https://api.staging-ns.leflair.io'
 }
 
 const config = {
-    stagingDb: {
+    stgDb: {
         uri: 'mongodb://104.199.151.20',
         name: 'admin-leflair'
     },

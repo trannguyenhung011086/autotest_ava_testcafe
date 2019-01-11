@@ -6,8 +6,8 @@ export default class MongoUtils {
     public async getDbData(collectionName: string, query: Object): Promise<any> {
         let client: MongoClient
         try {
-            client = await MongoClient.connect(config.stagingDb.uri, { useNewUrlParser: true })
-            const db = client.db(config.stagingDb.name)
+            client = await MongoClient.connect(config.stgDb.uri, { useNewUrlParser: true })
+            const db = client.db(config.stgDb.name)
             const collection = db.collection(collectionName)
             return await collection.findOne(query)
         } catch (err) {
@@ -20,8 +20,8 @@ export default class MongoUtils {
     public async getDbDataList(collectionName: string, query: Object): Promise<any[]> {
         let client: MongoClient
         try {
-            client = await MongoClient.connect(config.stagingDb.uri, { useNewUrlParser: true })
-            const db = client.db(config.stagingDb.name)
+            client = await MongoClient.connect(config.stgDb.uri, { useNewUrlParser: true })
+            const db = client.db(config.stgDb.name)
             const collection = db.collection(collectionName)
             const result = await collection.find(query).limit(20)
             return result.toArray()
@@ -35,8 +35,8 @@ export default class MongoUtils {
     public async countDbData(collectionName: string, query: Object): Promise<number> {
         let client: MongoClient
         try {
-            client = await MongoClient.connect(config.stagingDb.uri, { useNewUrlParser: true })
-            const db = client.db(config.stagingDb.name)
+            client = await MongoClient.connect(config.stgDb.uri, { useNewUrlParser: true })
+            const db = client.db(config.stgDb.name)
             const collection = db.collection(collectionName)
             return await collection.countDocuments(query)
         } catch (err) {
