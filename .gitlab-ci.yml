@@ -14,20 +14,20 @@ build:
     - docker build -t hung/testcafe .
     - npm install
 
-# test_api_staging:
-#   stage: test_stg
-#   script:
-#     - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
-#   after_script:
-#     - docker start api
-#     - docker exec --privileged api cat report/junit_api.xml
-#     - docker cp api:/home/tester/report/junit_api.xml junit_api.xml
-#   except:
-#     - schedules
-#   artifacts:
-#     expire_in: 1 week
-#     reports:
-#       junit: junit_api.xml
+test_api_staging:
+  stage: test_stg
+  script:
+    - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
+  after_script:
+    - docker start api
+    - docker exec --privileged api cat report/junit_api.xml
+    - docker cp api:/home/tester/report/junit_api.xml junit_api.xml
+  except:
+    - schedules
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: junit_api.xml
 
 test_chromium_staging:
   stage: test_stg
@@ -55,7 +55,7 @@ test_firefox_staging:
   except:
     - schedules
 
-# test_mobile_emu_staging:
+# test_mobile_emu_staging: # bug with testcafe mobile emulation and xvfb https://github.com/DevExpress/testcafe/issues/3284
 #   stage: test_stg
 #   script:
 #     - docker run --name mobile_emu -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
@@ -107,7 +107,7 @@ test_firefox_prod:
   only:
     - schedules
 
-# test_mobile_emu_prod:
+# test_mobile_emu_prod: # bug with testcafe mobile emulation and xvfb https://github.com/DevExpress/testcafe/issues/3284
 #   stage: test_prod
 #   script:
 #     - docker run --name mobile_emu -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
