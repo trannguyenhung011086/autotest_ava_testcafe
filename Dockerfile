@@ -1,11 +1,20 @@
-FROM alpine:latest
+FROM alpine:edge
 
 # Install prerequisites
-RUN apk --no-cache add nodejs nodejs-npm chromium firefox
+RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ add \
+    nodejs \
+    nodejs-npm \
+    chromium \
+    firefox
+
+# RUN mkdir /testcafe
+# COPY package.json /testcafe
+# COPY jest.setup.js /testcafe
+# WORKDIR /testcafe
 
 # create non-root user
-RUN addgroup -g 1000 -S tester \
-    && adduser -u 1000 -S tester -G tester
+RUN addgroup -g 1000 -S tester && \
+    adduser -u 1000 -S tester -G tester
 USER tester
 WORKDIR /home/tester
 COPY package.json /home/tester
