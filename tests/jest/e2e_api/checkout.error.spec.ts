@@ -10,7 +10,6 @@ let addresses: Model.Addresses
 let item: Model.Product
 let cart: Model.Cart
 let cookie: string
-const stripe = require('stripe')(config.stripeKey)
 
 describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
@@ -522,15 +521,9 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "card[cvc]": "222",
             "card[exp_month]": "02",
             "card[exp_year]": "22",
-            "guid": "d7954ec1-b754-4de9-aff1-47f65a90f988",
-            "muid": "4f81e594-2a7c-4ddb-b966-db9db589e63f",
-            "sid": "4f81e594-2a7c-4ddb-b966-db9db589e63f",
-            "pasted_fields": "number",
-            "payment_user_agent": "stripe.js/596ce0d0; stripe-js-v3/596ce0d0",
-            "referrer": "https://secure.staging.leflair.io/checkout?language=vn",
             "key": config.stripeKey
         }
-        const stripeSource = await stripe.sources.create(stripeData)
+        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -539,7 +532,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             },
             "cart": account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource,
+            "methodData": stripeSource.data,
             "shipping": 0,
             "voucher": voucher._id,
             "accountCredit": account.accountCredit
