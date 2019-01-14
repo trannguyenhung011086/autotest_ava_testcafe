@@ -2,11 +2,11 @@ import config from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
-import * as faker from "faker/locale/vi"
+import faker from "faker/locale/vi"
 import * as model from '../../../common/interface'
 let signIn: model.SignIn
 
-describe('Login API ' + config.baseUrl + config.api.signIn, () => {
+describe('Sign in API ' + config.baseUrl + config.api.signIn, () => {
     it('POST / wrong email', async () => {
         let response = await request.post(config.api.signIn,
             {
@@ -94,7 +94,7 @@ describe('Login API ' + config.baseUrl + config.api.signIn, () => {
         expect(signIn.preview).toBeTrue()
     })
 
-    it('GET / log out', async () => {
+    it('GET / sign out', async () => {
         let response = await request.get(config.api.signOut)
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('SIGNED_OUT_SUCCESSFUL')

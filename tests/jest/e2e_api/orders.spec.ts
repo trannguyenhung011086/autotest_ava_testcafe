@@ -7,7 +7,7 @@ let cookie: string
 let account: model.Account
 let orders: model.OrderSummary[]
 let orderItem: model.Order
-const orderStatus = ['placed', 'confirmed', 'cancelled', 'shipped', 'delivered']
+const orderStatus = ['pending', 'placed', 'confirmed', 'cancelled', 'shipped', 'delivered', 'return request', 'returned']
 const paymentMethod = ['COD', 'STRIPE', 'CC', 'FREE']
 const card = ['VISA', 'Master']
 

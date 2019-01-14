@@ -16,6 +16,7 @@ const mockNonRedirect = RequestMock()
     .respond(null, 500, { 'access-control-allow-origin': '*' })
 
 fixture('Check product detail page ' + config.baseUrl)
+    .meta({ type: 'regression' })
 
 test.requestHooks(mockRedirect)
     ('Redirect to homepage when product API returns error', async () => {

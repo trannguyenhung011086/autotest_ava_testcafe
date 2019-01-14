@@ -10,7 +10,11 @@ Structure:
 - common/utils: store GET/POST/PUT/DELETE class
 - tests/jest/e2e_api: API test cases
 
-Example test command: jest tests/jest/e2e_api/account
+Example test command: `jest tests/jest/e2e_api`
+
+Note: 
+- to run certain test based on name, use: `jest -t <testName> tests/jest/e2e_api`
+- to exclude certain tests on production, use: `jest -t '^((?!skip-prod).)*$' tests/jest/e2e_api`
 
 ## E2E UI testing
 Use Testcafe framework to test web application
@@ -20,7 +24,7 @@ Use Testcafe framework to test web application
 - tests/testcafe/e2e_ui/desktop: test cases for desktop theme
 - tests/testcafe/e2e_ui/mobile: test cases for mobile theme (emulated)
 
-Example test command: testcafe chromium tests/testcafe/desktop/
+Example test command: `testcafe chromium tests/testcafe/desktop/ --fixture-meta type=regression --test-meta function=signin`
 
 ## Run with Gitlab CI
 - Refer to .gitlab-ci.yml to config run flow

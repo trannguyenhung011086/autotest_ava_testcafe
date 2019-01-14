@@ -2,7 +2,7 @@ import config from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
-import * as faker from "faker/locale/vi"
+import faker from "faker/locale/vi"
 import * as model from '../../../common/interface'
 let signUp: model.SignIn
 

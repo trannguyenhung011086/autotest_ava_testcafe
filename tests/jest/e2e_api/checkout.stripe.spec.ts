@@ -5,46 +5,37 @@ let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as Model from '../../../common/interface'
 let account: Model.Account
-let customer: Model.Customer
 let item: Model.Product
 let addresses: Model.Addresses
 let cookie: string
-const stripe = require('stripe')(config.stripeKey)
 
 const stripeData = {
     "type": "card",
     "card[cvc]": "222",
     "card[exp_month]": "02",
     "card[exp_year]": "22",
-    "guid": "4f3cf4ad-6d10-4ec1-8eaf-7ef50bb46c16",
-    "muid": "a12e310c-5dab-4ac0-a582-6c19685db4fe",
-    "sid": "d2039514-f249-4a07-9a6a-9a6de9d7f28c",
-    "pasted_fields": "number",
-    "payment_user_agent": "stripe.js/f59e6fc3; stripe-js-v3/f59e6fc3",
-    "referrer": "https://secure.staging.leflair.io/checkout?language=vn",
     "key": config.stripeKey
 }
 
-describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.checkout, () => {
+describe('Checkout API - Logged in - Stripe (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()
         addresses = await request.getAddresses()
         account = await request.getAccountInfo()
-        customer = await access.getCustomerInfo({ email: account.email })
     })
 
     afterEach(async () => {
         await request.emptyCart()
     })
 
-    it('POST / cannot checkout with insufficient Stripe', async () => {
+    it('POST / cannot checkout with invalid Stripe', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
         await request.addToCart(item.id)
         account = await request.getAccountInfo()
 
-        stripeData['card[number]'] = '4000000000009995'
-        const stripeSource = await stripe.sources.create(stripeData)
+        stripeData['card[number]'] = '123456789'
+        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -53,7 +44,32 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
             },
             "cart": account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource
+            "methodData": stripeSource.data
+        })
+
+        expect(response.status).toEqual(500)
+        expect(response.data.message).toEqual('STRIPE_CUSTOMER_ERROR')
+        expect(response.data.error.type).toEqual('StripeInvalidRequestError')
+        expect(response.data.error.code).toEqual('parameter_missing')
+        expect(response.data.error.message).toEqual('Missing required param: source.')
+    })
+
+    it('POST / cannot checkout with insufficient fund Stripe', async () => {
+        item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart(item.id)
+        account = await request.getAccountInfo()
+
+        stripeData['card[number]'] = '4000000000009995'
+        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "STRIPE",
+            "methodData": stripeSource.data
         })
 
         expect(response.status).toEqual(500)
@@ -63,12 +79,37 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
         expect(response.data.error.message).toEqual('Your card has insufficient funds.')
     })
 
+    it('POST / cannot checkout with unsupported Stripe', async () => {
+        item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart(item.id)
+        account = await request.getAccountInfo()
+
+        stripeData['card[number]'] = '3566002020360505'
+        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+
+        let response = await request.post(config.api.checkout, {
+            "address": {
+                "shipping": addresses.shipping[0],
+                "billing": addresses.billing[0]
+            },
+            "cart": account.cart,
+            "method": "STRIPE",
+            "methodData": stripeSource.data
+        })
+
+        expect(response.status).toEqual(500)
+        expect(response.data.message).toEqual('STRIPE_CUSTOMER_ERROR')
+        expect(response.data.error.type).toEqual('StripeInvalidRequestError')
+        expect(response.data.error.code).toEqual('parameter_missing')
+        expect(response.data.error.message).toEqual('Missing required param: source.')
+    })
+
     it('POST / checkout with new Stripe (not save card) - VISA', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
         stripeData['card[number]'] = '4000000000000077'
-        const stripeSource = await stripe.sources.create(stripeData)
+        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
 
-        let checkout = await request.createStripeOrder([item], stripeSource, false)
+        let checkout = await request.createStripeOrder([item], stripeSource.data, false)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId)
@@ -82,9 +123,9 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
     it('POST / checkout with new Stripe (save card) - MASTER', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
         stripeData['card[number]'] = '5555555555554444'
-        const stripeSource = await stripe.sources.create(stripeData)
+        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
 
-        let checkout = await request.createStripeOrder([item], stripeSource, true)
+        let checkout = await request.createStripeOrder([item], stripeSource.data, true)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId)
@@ -120,7 +161,7 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
             specificDays: []
         })
 
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
+        item = await request.getInStockProduct(config.api.internationalSales, 2)
 
         let credit: number
         if (account.accountCredit < (item.salePrice - voucher.amount)) {
@@ -130,9 +171,9 @@ describe('Checkout API - Logged in - Stripe ' + config.baseUrl + config.api.chec
         }
 
         stripeData['card[number]'] = '5555555555554444'
-        const stripeSource = await stripe.sources.create(stripeData)
+        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
 
-        let checkout = await request.createStripeOrder([item], stripeSource, true,
+        let checkout = await request.createStripeOrder([item, item], stripeSource.data, true,
             voucher._id, credit)
         expect(checkout.orderId).not.toBeEmpty()
 

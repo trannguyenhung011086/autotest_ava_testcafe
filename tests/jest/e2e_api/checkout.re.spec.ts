@@ -12,7 +12,7 @@ let payDollarCreditCard: Model.PayDollarCreditCard
 let failedAttemptOrder: Model.FailedAttempt
 let cookie: string
 
-describe('Checkout API - Logged in - Failed Attempt ' + config.baseUrl + config.api.checkout, () => {
+describe('Checkout API - Logged in - Failed Attempt (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()

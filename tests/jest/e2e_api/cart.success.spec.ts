@@ -67,16 +67,6 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
         expect(cart.availableQuantity).toEqual(0)
     })
 
-    it('PUT / update quantity in cart', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 3)
-        let response = await request.post(config.api.cart, { "productId": item.id })
-        cart = response.data
-
-        response = await request.put(config.api.cart + cart.id, { "quantity": 3 })
-        cart = response.data
-        expect(cart.quantity).toEqual(3)
-    })
-
     it('DELETE / remove product from cart', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id })
@@ -102,17 +92,17 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
         expect(response.data.message).toEqual('ITEM_REMOVED_FROM_CART')
     })
 
-    it('POST / update cart after log in', async () => {
+    it('POST / update cart after sign in', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
         let response = await request.post(config.api.cart, { "productId": item.id })
         cart = response.data
 
-        let login = await request.post(config.api.signIn,
+        let signIn = await request.post(config.api.signIn,
             {
                 "email": config.testAccount.email,
                 "password": config.testAccount.password
             })
 
-        expect(login.data.cart).toContainEqual(cart)
+        expect(signIn.data.cart).toContainEqual(cart)
     })
 })

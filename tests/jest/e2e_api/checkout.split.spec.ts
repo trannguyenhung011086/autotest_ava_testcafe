@@ -15,16 +15,16 @@ const stripeData = {
     "card[cvc]": "222",
     "card[exp_month]": "02",
     "card[exp_year]": "22",
-    "guid": "4f3cf4ad-6d10-4ec1-8eaf-7ef50bb46c16",
-    "muid": "a12e310c-5dab-4ac0-a582-6c19685db4fe",
-    "sid": "d2039514-f249-4a07-9a6a-9a6de9d7f28c",
+    "guid": "48e71616-fb1d-4a97-9195-7272b9051713",
+    "muid": "8b70f8ca-a443-47c8-977d-806755e73b54",
+    "sid": "0caa240e-3765-4e10-8454-cbca8c60d961",
     "pasted_fields": "number",
-    "payment_user_agent": "stripe.js/f59e6fc3; stripe-js-v3/f59e6fc3",
+    "payment_user_agent": "stripe.js/bd1b10d1; stripe-js-v3/bd1b10d1",
     "referrer": "https://secure.staging.leflair.io/checkout?language=vn",
     "key": config.stripeKey
 }
 
-describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, () => {
+describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()
@@ -38,8 +38,8 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / not split SG order when total < 1,000,000', async () => {
-        let itemSG1 = await request.getProductWithPrice('SG', 0, 400000, 1)
-        let itemSG2 = await request.getProductWithPrice('SG', 400000, 500000, 1)
+        let itemSG1 = await request.getProductWithCountry('SG', 0, 400000, 1)
+        let itemSG2 = await request.getProductWithCountry('SG', 400000, 500000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG1, itemSG2],
@@ -62,8 +62,8 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / not split HK order when total < 1,000,000', async () => {
-        let itemHK1 = await request.getProductWithPrice('HK', 0, 400000, 1)
-        let itemHK2 = await request.getProductWithPrice('HK', 400000, 500000, 1)
+        let itemHK1 = await request.getProductWithCountry('HK', 0, 400000, 1)
+        let itemHK2 = await request.getProductWithCountry('HK', 400000, 500000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemHK1, itemHK2],
@@ -86,8 +86,8 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / split SG order when total >= 1,000,000', async () => {
-        let itemSG1 = await request.getProductWithPrice('SG', 300000, 400000, 1)
-        let itemSG2 = await request.getProductWithPrice('SG', 800000, 2000000, 1)
+        let itemSG1 = await request.getProductWithCountry('SG', 300000, 400000, 1)
+        let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG1, itemSG2],
@@ -112,8 +112,8 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / split HK order when total >= 1,000,000', async () => {
-        let itemHK1 = await request.getProductWithPrice('HK', 300000, 400000, 1)
-        let itemHK2 = await request.getProductWithPrice('HK', 800000, 2000000, 1)
+        let itemHK1 = await request.getProductWithCountry('HK', 300000, 400000, 1)
+        let itemHK2 = await request.getProductWithCountry('HK', 800000, 2000000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemHK1, itemHK2],
@@ -138,7 +138,7 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / split SG and VN order', async () => {
-        let itemSG = await request.getProductWithPrice('SG', 0, 2000000, 1)
+        let itemSG = await request.getProductWithCountry('SG', 0, 2000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
@@ -165,7 +165,7 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / split HK and VN order', async () => {
-        let itemHK = await request.getProductWithPrice('HK', 0, 2000000, 1)
+        let itemHK = await request.getProductWithCountry('HK', 0, 2000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
@@ -192,8 +192,8 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / split multiple SG and VN order', async () => {
-        let itemSG1 = await request.getProductWithPrice('SG', 300000, 400000, 1)
-        let itemSG2 = await request.getProductWithPrice('SG', 800000, 2000000, 1)
+        let itemSG1 = await request.getProductWithCountry('SG', 300000, 400000, 1)
+        let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
         let itemVN1 = await request.getInStockProduct(config.api.todaySales, 1, 300000)
         let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
 
@@ -226,8 +226,8 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / split multiple HK and VN order', async () => {
-        let itemHK1 = await request.getProductWithPrice('HK', 300000, 400000, 1)
-        let itemHK2 = await request.getProductWithPrice('HK', 800000, 2000000, 1)
+        let itemHK1 = await request.getProductWithCountry('HK', 300000, 400000, 1)
+        let itemHK2 = await request.getProductWithCountry('HK', 800000, 2000000, 1)
         let itemVN1 = await request.getInStockProduct(config.api.todaySales, 1, 300000)
         let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
 
@@ -260,8 +260,8 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
     })
 
     it('POST / split SG, HK and VN order', async () => {
-        let itemSG = await request.getProductWithPrice('SG', 0, 2000000, 1)
-        let itemHK = await request.getProductWithPrice('HK', 0, 6000000, 1)
+        let itemSG = await request.getProductWithCountry('SG', 0, 2000000, 1)
+        let itemHK = await request.getProductWithCountry('HK', 0, 6000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
@@ -305,7 +305,7 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
             specificDays: []
         }, customer)
 
-        let itemSG = await request.getProductWithPrice('SG', 0, 2000000, 1)
+        let itemSG = await request.getProductWithCountry('SG', 0, 2000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let stripeSource = await stripe.sources.create(stripeData)
@@ -341,9 +341,9 @@ describe('Checkout API - Split order ' + config.baseUrl + config.api.checkout, (
             specificDays: []
         })
 
-        let itemSG1 = await request.getProductWithPrice('SG', 500000, 2000000, 1)
-        let itemSG2 = await request.getProductWithPrice('SG', 800000, 2000000, 1)
-        let itemSG3 = await request.getProductWithPrice('SG', 1000000, 2000000, 1)
+        let itemSG1 = await request.getProductWithCountry('SG', 500000, 2000000, 1)
+        let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
+        let itemSG3 = await request.getProductWithCountry('SG', 1000000, 2000000, 1)
 
         let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemSG3],

@@ -1,23 +1,11 @@
-FROM ubuntu:18.04
+FROM alpine:latest
 
 # Install prerequisites
-RUN apt-get update \
-    && apt-get install -y xvfb chromium-browser firefox curl gnupg \
-    && curl -sL https://deb.nodesource.com/setup_8.x | bash \
-    && apt-get install -y nodejs
-
-# Clean up
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get autoremove -y
-
-# RUN mkdir /testcafe
-# COPY package.json /testcafe
-# COPY jest.setup.js /testcafe
-# WORKDIR /testcafe
+RUN apk --no-cache add nodejs nodejs-npm chromium firefox
 
 # create non-root user
-RUN useradd -ms /bin/bash tester
+RUN addgroup -g 1000 -S tester \
+    && adduser -u 1000 -S tester -G tester
 USER tester
 WORKDIR /home/tester
 COPY package.json /home/tester

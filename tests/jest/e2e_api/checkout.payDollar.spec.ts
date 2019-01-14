@@ -5,19 +5,18 @@ let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as Model from '../../../common/interface'
 let account: Model.Account
-let customer: Model.Customer
 let item: Model.Product
 let addresses: Model.Addresses
 let payDollarCreditCard: Model.PayDollarCreditCard
 let cookie: string
 
-describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.checkout, () => {
+describe('Checkout API - Logged in - PayDollar (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()
         addresses = await request.getAddresses()
         account = await request.getAccountInfo()
-        customer = await access.getCustomerInfo({ email: account.email })
+        jest.setTimeout(150000)
     })
 
     afterEach(async () => {
@@ -43,6 +42,31 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
 
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
+    })
+
+    it('POST / cannot checkout with invalid CC', async () => {
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id)
+        account = await request.getAccountInfo()
+        addresses = await request.getAddresses()
+
+        let checkout = await request.checkoutPayDollar(account, addresses)
+
+        payDollarCreditCard = checkout.creditCard
+        payDollarCreditCard.cardHolder = 'testing card'
+        payDollarCreditCard.cardNo = '123456789'
+        payDollarCreditCard.pMethod = 'VISA'
+        payDollarCreditCard.epMonth = 7
+        payDollarCreditCard.epYear = 2020
+        payDollarCreditCard.securityCode = '123'
+
+        let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi,
+            payDollarCreditCard)
+        let parse = await request.parsePayDollarRes(result.data)
+
+        expect(parse.successcode).toEqual('-1')
+        expect(parse.Ref).toBeEmpty()
+        expect(parse.errMsg).toMatch(/Parameter cardNo incorrect/)
     })
 
     it.each([['3566002020360505', 'JCB'], ['378282246310005', 'AMEX']])
@@ -174,7 +198,7 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
             specificDays: []
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 2)
 
         let credit: number
         if (account.accountCredit < (item.salePrice - voucher.amount)) {
@@ -183,7 +207,7 @@ describe('Checkout API - Logged in - PayDollar ' + config.baseUrl + config.api.c
             credit = item.salePrice - voucher.amount
         }
 
-        let checkout = await request.createPayDollarOrder([item], false, voucher._id, credit)
+        let checkout = await request.createPayDollarOrder([item, item], false, voucher._id, credit)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId)

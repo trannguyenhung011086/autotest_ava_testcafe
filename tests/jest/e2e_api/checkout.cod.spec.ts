@@ -85,7 +85,7 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
             oncePerAccount: true
         }, customer)
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await request.getInStockProduct(config.api.todaySales, 2)
 
         let credit: number
         if (account.accountCredit < (item.salePrice + 25000 - voucher.amount)) {
@@ -94,7 +94,7 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
             credit = item.salePrice + 25000 - voucher.amount
         }
 
-        let checkout = await request.createCodOrder([item], voucher._id, credit)
+        let checkout = await request.createCodOrder([item, item], voucher._id, credit)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId)

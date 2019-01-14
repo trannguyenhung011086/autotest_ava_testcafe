@@ -2,7 +2,7 @@ import config from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
-import * as faker from "faker/locale/vi"
+import faker from "faker/locale/vi"
 
 describe('Forgot password API ' + config.baseUrl + config.api.forgot, () => {
     it('POST / empty email', async () => {

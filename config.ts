@@ -3,21 +3,32 @@ let apiNs: string
 let payDollarBase: string
 let payDollarApi: string
 
-if (process.env.NODE_ENV == 'test') {
-    baseUrl = 'https://www.testing.leflair.io'
-    payDollarBase = 'https://test.paydollar.com'
-    payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
-} else if (process.env.NODE_ENV == 'stg') {
-    baseUrl = 'https://www.staging.leflair.io'
-    payDollarBase = 'https://test.paydollar.com'
-    payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
-} else if (process.env.NODE_ENV == 'prod') {
-    baseUrl = 'https://www.leflair.vn'
-    payDollarBase = 'https://paydollar.com'
-    payDollarApi = '/b2c/eng/directPay/payComp.jsp'
-} else if (process.env.NODE_ENV == 'stg-ns') {
-    baseUrl = 'https://www.staging-ns.leflair.io'
-    apiNs = 'https://api.staging-ns.leflair.io'
+switch (process.env.NODE_ENV) {
+    case 'test':
+        baseUrl = 'https://www.testing.leflair.io'
+        payDollarBase = 'https://test.paydollar.com'
+        payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
+        break
+    case 'stg':
+        baseUrl = 'https://www.staging.leflair.io'
+        payDollarBase = 'https://test.paydollar.com'
+        payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
+        break
+    case 'stg-ns':
+        baseUrl = 'https://www.staging-ns.leflair.io'
+        payDollarBase = 'https://test.paydollar.com'
+        payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
+        apiNs = 'https://api.staging-ns.leflair.io'
+        break
+    case 'prod':
+        baseUrl = 'https://www.leflair.vn'
+        payDollarBase = 'https://paydollar.com'
+        payDollarApi = '/b2c/eng/directPay/payComp.jsp'
+        break
+    default:
+        baseUrl = 'https://www.staging.leflair.io'
+        payDollarBase = 'https://test.paydollar.com'
+        payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
 }
 
 const config = {
@@ -25,8 +36,8 @@ const config = {
         uri: 'mongodb://104.199.151.20',
         name: 'admin-leflair'
     },
-    baseUrl: baseUrl || 'https://www.staging.leflair.io',
-    apiNs: apiNs || 'https://api.staging-ns.leflair.io',
+    baseUrl: baseUrl,
+    apiNs: apiNs,
     signIn: '/auth/signin',
     signUp: '/auth/register',
     api: {
@@ -71,18 +82,16 @@ const config = {
         subscriberNs: '/v1/subscriber-ns-cache-system-item-management'
     },
     stripeKey: 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy',
-    payDollarBase: payDollarBase || 'https://test.paydollar.com',
-    payDollarApi: payDollarApi || '/b2cDemo/eng/directPay/payComp.jsp',
+    stripeApi: 'https://api.stripe.com',
+    payDollarBase: payDollarBase,
+    payDollarApi: payDollarApi,
     testAccount: {
         email: 'test1234@test.com',
         password: '123456789',
         facebook: 'trannguyenhung011086@protonmail.com',
         passwordFacebook: '0944226282',
         usedVoucher: 'VCB150'
-    },
-    remote: process.env.SELENIUM_REMOTE_URL || 'http://localhost:4444/wd/hub',
-    browser: process.env.SELENIUM_BROWSER || 'chrome',
-    device: process.env.DEVICE || 'iPhone 6'
+    }
 }
 
 export default config

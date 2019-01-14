@@ -81,16 +81,17 @@ describe('Create caching data API', async () => {
         expect(response.status).toEqual(200)
 
         itemsCache = response.data
+        expect(itemsCache.total).toEqual(itemsCache.list.length)
+
         for (let item of itemsCache.list) {
             try {
                 expect(item.nsId).not.toBeEmpty()
-                expect(item.quantity).toBeGreaterThanOrEqual(0)
+                expect(item.quantity).toBeNumber()
                 expect(item.retailPrice).toBeGreaterThanOrEqual(item.salePrice)
             } catch (error) {
                 throw { failed_cache: item, error: error }
             }
         }
-        expect(itemsCache.total).toEqual(itemsCache.list.length)
     })
 
     it('GET / create product feeds ' + config.baseUrl, async () => {
@@ -441,4 +442,8 @@ describe('Product feeds API', () => {
         expect(totalFeeds).toEqual(googleMerchantFeeds.feed.entry.length)
         expect(totalFeeds).toEqual(insiderFeeds.products.product.length)
     })
+
+    // it('Verify lowest price for submitted variation ' + config.baseUrl, async () => {
+
+    // })
 })

@@ -361,7 +361,7 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
     })
 
     it('POST / cannot checkout with voucher not meeting min purchase', async () => {
-        item = await request.getProductWithPrice('VN', 0, 500000, 1)
+        item = await request.getProductWithCountry('VN', 0, 500000, 1)
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,

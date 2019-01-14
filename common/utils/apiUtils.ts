@@ -319,7 +319,7 @@ export default class ApiUtils extends AxiosUtils {
         return result
     }
 
-    public async getProductWithPrice(country: string, minPrice: number, maxPrice: number, quantity: number) {
+    public async getProductWithCountry(country: string, minPrice: number, maxPrice: number, quantity: number) {
         let sales = await new MongoUtils().getSaleList({
             country: country,
             startDate: { $lt: new Date() },
