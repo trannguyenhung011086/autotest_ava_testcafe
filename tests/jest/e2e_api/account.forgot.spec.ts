@@ -8,19 +8,25 @@ describe('Forgot password API ' + config.baseUrl + config.api.forgot, () => {
     it('POST / empty email', async () => {
         let response = await request.post(config.api.forgot, { "email": "" })
         expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('NO_EMAIL_PROVIDED')
+        expect(response.data.message).toEqual('EMAIL_ADDRESS_REQUIRED')
     })
 
     it('POST / missing email field', async () => {
         let response = await request.post(config.api.forgot, {})
         expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('NO_EMAIL_PROVIDED')
+        expect(response.data.message).toEqual('EMAIL_ADDRESS_REQUIRED')
     })
 
     it('POST / non-existing email', async () => {
         let response = await request.post(config.api.forgot, { "email": faker.internet.email() })
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('EMAIL_NOT_EXIST')
+    })
+
+    it('POST / wrong format email', async () => {
+        let response = await request.post(config.api.forgot, { "email": ".test%!@#$%^&*()_+<>?@mail.com" })
+        expect(response.status).toEqual(400)
+        expect(response.data.message).toEqual('REGISTER_INVALID_EMAIL')
     })
 
     it('POST / Facebook email', async () => {

@@ -65,7 +65,7 @@ describe('Sign in API ' + config.baseUrl + config.api.signIn, () => {
     it('POST / correct email and password - external email', async () => {
         let response = await request.post(config.api.signIn,
             {
-                "email": config.testAccount.email,
+                "email": config.testAccount.email.toUpperCase(),
                 "password": config.testAccount.password
             })
         signIn = response.data
@@ -73,7 +73,7 @@ describe('Sign in API ' + config.baseUrl + config.api.signIn, () => {
         expect(signIn.id).not.toBeEmpty()
         expect(signIn.firstName).toBeString()
         expect(signIn.lastName).toBeString()
-        expect(signIn.email).toEqual(config.testAccount.email)
+        expect(signIn.email).toEqual(config.testAccount.email.toLowerCase())
         expect(signIn.language).toMatch(/en|vn/)
         expect(signIn.accountCredit).toBeNumber()
         expect(signIn.provider).toEqual('local')
