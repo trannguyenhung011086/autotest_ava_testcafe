@@ -4,6 +4,7 @@ let request = new Utils.ApiUtils()
 import 'jest-extended'
 import * as model from '../../../common/interface'
 let menu: model.CategoryMenu
+let topMenu: model.TopMenu
 
 describe('Category menu API ' + config.baseUrl + '/api/menus/items/<cateID>', () => {
     it('GET / invalid category ID', async () => {
@@ -14,6 +15,29 @@ describe('Category menu API ' + config.baseUrl + '/api/menus/items/<cateID>', ()
         response = await request.get('/api/menus/items/5b56d3448f0dd7c0480acd1c')
         expect(response.status).toEqual(500)
         expect(response.data.error).toEqual("Cannot read property 'subitems' of undefined")
+    })
+
+    it('GET / top menu', async () => {
+        let response = await request.get(config.api.cateMenu)
+        expect(response.status).toEqual(200)
+        topMenu = response.data
+
+        expect(topMenu.id).not.toBeEmpty()
+        expect(topMenu.code).toEqual('TOP_NAV')
+        expect(topMenu.name).toEqual('Top Navigation')
+        expect(topMenu.displayName.vn).toEqual('Top Navigation')
+        expect(topMenu.displayName.en).toEqual('Top Navigation')
+        expect(topMenu.description).not.toBeEmpty()
+
+        for (let item of topMenu.items) {
+            expect(item.id).not.toBeEmpty()
+            expect(item.name).toBeString()
+            expect(item.displayName.vn).not.toBeEmpty()
+            expect(item.displayName.en).not.toBeEmpty()
+            expect(item.type).not.toBeEmpty()
+            expect(item.slug.vn).toInclude(item.id)
+            expect(item.slug.en).toInclude(item.id)
+        }
     })
 
     it.each([
@@ -100,7 +124,7 @@ describe('Category menu API ' + config.baseUrl + '/api/menus/items/<cateID>', ()
             } else {
                 expect(sale.slug).not.toInclude(sale.id)
             }
-            
+
             expect(sale.international).toBeBoolean()
         }
     })
