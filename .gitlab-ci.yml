@@ -17,7 +17,7 @@ build:
 test_api_staging:
   stage: test_stg
   script:
-    - docker run --name api -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
+    - docker run --name api -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe npm run test_api_ci
   after_script:
     - docker cp api:/home/tester/report/junit_api.xml junit_api.xml
   except:
@@ -30,7 +30,7 @@ test_api_staging:
 test_chromium_staging:
   stage: test_stg
   script:
-    - docker run --name chromium -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
+    - docker run --name chromium -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
   after_script:
     - docker cp chromium:/home/tester/report/junit_chromium.xml junit_chromium.xml
   artifacts:
@@ -43,7 +43,7 @@ test_chromium_staging:
 test_firefox_staging:
   stage: test_stg
   script:
-    - docker run --name firefox -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
+    - docker run --name firefox -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
   after_script:
     - docker cp firefox:/home/tester/report/junit_firefox.xml junit_firefox.xml
   artifacts:
@@ -56,7 +56,7 @@ test_firefox_staging:
 test_mobile_emu_staging:
   stage: test_stg
   script:
-    - docker run --name mobile_emu -i -e NODE_ENV=staging -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
+    - docker run --name mobile_emu -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
   after_script:
     - docker cp mobile_emu:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
   artifacts:
@@ -69,7 +69,7 @@ test_mobile_emu_staging:
 test_api_prod:
   stage: test_prod
   script:
-    - docker run --name api -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_api_prod_ci
+    - docker run --name api -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe npm run test_api_prod_ci
   after_script:
     - docker cp $(docker ps -qf "name=api"):/home/tester/report/junit_api.xml junit_api.xml
   artifacts:
@@ -82,7 +82,7 @@ test_api_prod:
 test_chromium_prod:
   stage: test_prod
   script:
-    - docker run --name chromium -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
+    - docker run --name chromium -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe npm run test_chromium_ci
   after_script:
     - docker cp chromium:/home/tester/report/junit_chromium.xml junit_chromium.xml
   artifacts:
@@ -95,7 +95,7 @@ test_chromium_prod:
 test_firefox_prod:
   stage: test_prod
   script:
-    - docker run --name firefox -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
+    - docker run --name firefox -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe npm run test_firefox_ci
   after_script:
     - docker cp firefox:/home/tester/report/junit_firefox.xml junit_firefox.xml
   artifacts:
@@ -108,7 +108,7 @@ test_firefox_prod:
 test_mobile_emu_prod:
   stage: test_prod
   script:
-    - docker run --name mobile_emu -i -e NODE_ENV=production -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
+    - docker run --name mobile_emu -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe npm run test_mobile_emu_ci
   after_script:
     - docker cp mobile_emu:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
   artifacts:
