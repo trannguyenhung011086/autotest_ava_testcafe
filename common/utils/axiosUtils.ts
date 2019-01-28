@@ -1,8 +1,8 @@
-import config from '../../config/config'
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import querystring from 'querystring'
+import config from '../../config'
+import axios, { AxiosResponse } from 'axios'
+import * as qs from 'qs'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
-import tough from 'tough-cookie'
+import * as tough from 'tough-cookie'
 
 export default class AxiosUtils {
     constructor() {
@@ -113,6 +113,6 @@ export default class AxiosUtils {
         if (cookie) {
             options.headers['Cookie'] = cookie
         }
-        return await axios.post(encodeURI(api), querystring.stringify(data), options)
+        return await axios.post(encodeURI(api), qs.stringify(data, { encodeValuesOnly: true }), options)
     }
 }

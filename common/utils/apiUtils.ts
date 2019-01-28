@@ -1,4 +1,4 @@
-import config from '../../config/config'
+import config from '../../config'
 import * as Model from '../interface'
 import AxiosUtils from './axiosUtils'
 import MongoUtils from './mongoUtils'
@@ -14,7 +14,7 @@ export default class ApiUtils extends AxiosUtils {
             email: email,
             password: password
         }
-        let cookie = await this.post(config.api.login, data)
+        let cookie = await this.post(config.api.signIn, data)
             .then(response => response.headers['set-cookie'][0])
 
         if (!cookie) {
@@ -319,7 +319,7 @@ export default class ApiUtils extends AxiosUtils {
         return result
     }
 
-    public async getProductWithPrice(country: string, minPrice: number, maxPrice: number, quantity: number) {
+    public async getProductWithCountry(country: string, minPrice: number, maxPrice: number, quantity: number) {
         let sales = await new MongoUtils().getSaleList({
             country: country,
             startDate: { $lt: new Date() },

@@ -13,7 +13,8 @@ export type Subitem = {
     name: string,
     displayName: DisplayName,
     salesCount: number,
-    slug: Slug
+    slug: Slug,
+    type: string
 }
 
 export interface CategoryMenu {
@@ -27,4 +28,13 @@ export interface CategoryMenu {
         displayName: DisplayName
     }
     slug: Slug
+}
+
+export interface TopMenu {
+    id: string
+    code: string
+    name: string
+    displayName: DisplayName
+    description: string
+    items: Subitem[]
 }
