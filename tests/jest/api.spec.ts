@@ -83,3 +83,5 @@ describe('Voucher Test', VoucherTest)
 describe('Gift Card Test', GiftcardTest)
 
 describe('News Subscribe Test', NewsSubscribeTest)
+
+describe('Product Feeds Test', ProductFeedsTest)
