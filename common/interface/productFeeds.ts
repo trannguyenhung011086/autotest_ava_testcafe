@@ -1,3 +1,4 @@
+// https://developers.facebook.com/docs/marketing-api/reference/product-item
 export interface FacebookFeeds {
     availability: string
     brand: string
@@ -30,6 +31,8 @@ export interface GoogleDynamicFeeds {
     'Sale price': string
 }
 
+// https://support.criteo.com/hc/en-us/articles/207571095-Criteo-Product-Feed-specification
+
 export interface CriteoFeeds {
     id: string
     producturl: string
@@ -44,7 +47,26 @@ export interface CriteoFeeds {
     extra_size: string
     category: string
 }
+export interface CriteoFeeds2 {
+    id: string
+    link: string
+    image_link: string
+    title: string
+    price: string
+    sale_price: string
+    description: string
+    availability: string
+    google_product_category: string
+    color: string
+    size: string
+    brand: string
+    product_type: string
+    adult: string
+    condition: string
+    age_group: string
+}
 
+// https://support.google.com/merchants/answer/7052112?visit_id=636843313735285289-2875708423&hl=en&rd=1
 export interface GoogleMerchantFeeds {
     _declaration: {
         _attributes: {

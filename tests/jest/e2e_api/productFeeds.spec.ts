@@ -10,10 +10,12 @@ let facebookFeeds: model.FacebookFeeds[]
 let googleFeeds: model.GoogleFeeds[]
 let googleDynamicFeeds: model.GoogleDynamicFeeds[]
 let criteoFeeds: model.CriteoFeeds[]
+let criteoFeeds2: model.CriteoFeeds2[]
 let googleMerchantFeeds: model.GoogleMerchantFeeds
 let insiderFeeds: model.InsiderFeeds
 let secretSales = []
 let secretSaleProducts = []
+let googleCategories: string[]
 import convert from 'xml-js'
 
 describe('Create caching data API', async () => {
@@ -128,6 +130,9 @@ describe('Product feeds API', () => {
         response = await request.get(config.api.subscriberNs + '/product-feeds/caching',
             null, config.apiNs)
         expect(response.status).toEqual(200)
+
+        let res = await request.get('https://www.google.com/basepages/producttype/taxonomy.en-US.txt')
+        googleCategories = res.data.split('\n')
     })
 
     it('GET / get Facebook product feeds ' + config.baseUrl + config.api.feedFacebook, async () => {
@@ -164,10 +169,8 @@ describe('Product feeds API', () => {
                 expect(feed.availability).toEqual('in stock')
                 expect(feed.condition).toEqual('new')
 
-                expect(feed.google_product_category).not.toBeEmpty()
-                if (feed.google_product_category.indexOf('>') != -1) {
-                    expect(feed.google_product_category.split('>').length).toBeGreaterThan(1)
-                }
+                // category must comply with https://www.google.com/basepages/producttype/taxonomy.en-US.txt
+                expect(googleCategories).toContain(feed.google_product_category)
 
                 for (let item of secretSaleProducts) {
                     expect(feedId).not.toEqual(item.id)
@@ -267,7 +270,7 @@ describe('Product feeds API', () => {
             'Final mobile URL'])
     })
 
-    it('GET / get Criteo product feeds ' + config.baseUrl + config.api.feedCriteo, async () => {
+    it('GET / get Criteo product feeds v1' + config.baseUrl + config.api.feedCriteo, async () => {
         let response = await request.get(config.api.feedCriteo)
         expect(response.status).toEqual(200)
 
@@ -323,6 +326,65 @@ describe('Product feeds API', () => {
             'category'])
     })
 
+    // need to improve Criteo feeds format later
+    it.skip('GET / get Criteo product feeds v2' + config.baseUrl + config.api.feedCriteo, async () => {
+        let response = await request.get(config.api.feedCriteo)
+        expect(response.status).toEqual(200)
+
+        let parsed = Papa.parse(response.data, { header: true })
+        criteoFeeds2 = parsed.data
+
+        for (let feed of criteoFeeds2) {
+            try {
+                expect(feed.id.length).toBeLessThan(240)
+                expect(feed.title).not.toBeEmpty()
+                expect(feed.description).not.toBeEmpty()
+
+                // category must comply with https://www.google.com/basepages/producttype/taxonomy.en-US.txt
+                expect(googleCategories).toContain(feed.google_product_category)
+
+                let feedId = feed.id.replace('_', ';').split(';')[0]
+                expect(feed.link).toInclude(feedId)
+                expect(feed.link).not.toEndWith('?')
+
+                let variation = feed.id.replace('_', ';').split(';')[1]
+                if (feed.link.match(/(\?|&)color/)) {
+                    expect(feed.link).toInclude(variation)
+                    expect(encodeURI(feed.color)).toEqual(variation)
+                }
+                if (feed.link.match(/(\?|&)size/)) {
+                    expect(feed.link).toInclude(feed.size)
+                }
+
+                expect(feed.image_link.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
+
+                expect(feed.availability).toEqual('in stock')
+
+                let retail_price = parseInt(feed.price)
+                let sale_price = parseInt(feed.sale_price)
+                expect(retail_price).toBeGreaterThanOrEqual(sale_price)
+
+                expect(feed.brand).not.toBeEmpty()
+
+                expect(feed.product_type).not.toBeEmpty()
+
+                expect(feed.adult).toMatch(/yes|no/)
+
+                expect(feed.condition).toEqual('new')
+
+                expect(feed.age_group).toMatch(/newborn|infant|toddler|kids|adult/)
+
+                for (let item of secretSaleProducts) {
+                    expect(feedId).not.toEqual(item.id)
+                }
+            } catch (error) {
+                throw { failed_feed: feed, error: error }
+            }
+        }
+
+        expect(parsed.errors).toBeArrayOfSize(0)
+    })
+
     it('GET / get Google Merchant product feeds ' + config.baseUrl + config.api.feedGoogleMerchant, async () => {
         let response = await request.get(config.api.feedGoogleMerchant)
         expect(response.status).toEqual(200)
@@ -337,15 +399,16 @@ describe('Product feeds API', () => {
 
         for (let entry of googleMerchantFeeds.feed.entry) {
             try {
+                expect(entry["g:id"]._text.length).toBeLessThanOrEqual(50)
+
+                expect(entry["g:title"]._text).not.toBeEmpty()
+                expect(entry["g:title"]._text.length).toBeLessThanOrEqual(150)
+
+                expect(entry["g:description"]._text).not.toBeEmpty()
+
                 let feedId = entry["g:id"]._text.replace('_', ';').split(';')[0]
                 expect(entry["g:link"]._text).toInclude(feedId)
                 expect(entry["g:link"]._text).not.toEndWith('?')
-
-                expect(entry["g:title"]._text).not.toBeEmpty()
-                expect(entry["g:description"]._text).not.toBeEmpty()
-                expect(entry["g:brand"]._text).not.toBeEmpty()
-                expect(entry["g:product_type"]._text).not.toBeEmpty()
-                expect(entry["g:image_link"]._text.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
 
                 let variation = entry["g:id"]._text.replace('_', ';').split(';')[1]
                 if (entry["g:link"]._text.match(/(\?|&)color/)) {
@@ -356,32 +419,57 @@ describe('Product feeds API', () => {
                     expect(entry["g:link"]._text).toInclude(entry["g:size"]._text.normalize())
                 }
 
+                expect(entry["g:image_link"]._text.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
+
+                expect(entry["g:availability"]._text).toEqual('in stock')
+
                 let retail_price = parseInt(entry["g:price"]._text)
                 let sale_price = parseInt(entry["g:sale_price"]._text)
                 expect(retail_price).toBeGreaterThanOrEqual(sale_price)
 
-                expect(entry["g:availability"]._text).toEqual('in stock')
-                expect(entry["g:condition"]._text).toEqual('new')
-                expect(entry["g:mpn"]._text).not.toBeEmpty()
-                expect(entry["g:adult"]._text).toMatch(/true|false/)
-                expect(parseInt(entry["g:multipack"]._text)).toBeGreaterThan(0)
-                expect(entry["g:is_bundle"]._text).toMatch(/true|false/)
-                expect(entry["g:tax"]._text).not.toBeEmpty()
+                // category must comply with https://www.google.com/basepages/producttype/taxonomy.en-US.txt
 
-                expect(entry["g:google_product_category"]._text).not.toBeEmpty()
-                if (entry["g:google_product_category"]._text.indexOf('>') != -1) {
-                    expect(entry["g:google_product_category"]._text.split('>').length).toBeGreaterThan(1)
+                expect(entry["g:google_product_category"]._text).not.toInclude(' & ')
+                expect(entry["g:google_product_category"]._text).not.toInclude(' > ')
+
+                if (entry["g:google_product_category"]._text.indexOf('&gt;') != -1) {
+                    entry["g:google_product_category"]._text.replace('&gt;', '>')
+                }
+                if (entry["g:google_product_category"]._text.indexOf('&amp;') != -1) {
+                    entry["g:google_product_category"]._text.replace('&amp;', '&')
                 }
 
+                expect(googleCategories).toContain(entry["g:google_product_category"]._text)
+
+                expect(entry["g:product_type"]._text).not.toBeEmpty()
+
+                expect(entry["g:brand"]._text).not.toBeEmpty()
+
+                expect(entry["g:mpn"]._text).not.toBeEmpty()
+
+                expect(entry["g:condition"]._text).toEqual('new')
+
+                expect(entry["g:adult"]._text).toMatch(/yes|no/)
+
+                expect(parseInt(entry["g:multipack"]._text)).toBeGreaterThan(1)
+
+                expect(entry["g:is_bundle"]._text).toMatch(/yes|no/)
+
+                if (entry["g:age_group"]._text.length > 0) {
+                    expect(entry["g:age_group"]._text).toMatch(/newborn|infant|toddler|kids|adult/)
+                }
+
+                expect(entry["g:color"]._text).not.toBeEmpty()
+
+                expect(entry["g:gender"]._text).toMatch(/male|female|unisex/)
+
                 expect(entry).toContainKeys(['g:gtin',
-                    'g:age_group',
-                    'g:gender',
                     'g:material',
                     'g:pattern',
-                    'g:color',
                     'g:size',
                     'g:item_group_id',
-                    'g:shipping'])
+                    'g:shipping',
+                    'g:tax'])
 
                 for (let item of secretSaleProducts) {
                     expect(feedId).not.toEqual(item.id)
