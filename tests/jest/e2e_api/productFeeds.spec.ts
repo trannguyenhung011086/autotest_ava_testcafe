@@ -18,7 +18,7 @@ let secretSaleProducts = []
 let googleCategories: string[]
 import convert from 'xml-js'
 
-describe('Create caching data API', async () => {
+export const CacheCreateTest = () => {
     beforeAll(async () => {
         jest.setTimeout(150000)
     })
@@ -102,9 +102,9 @@ describe('Create caching data API', async () => {
         expect(response.status).toEqual(200)
         expect(response.data).toEqual('Product Feed is ready')
     })
-})
+}
 
-describe('Product feeds API', () => {
+export const ProductFeedsTest = () => {
     beforeAll(async () => {
         jest.setTimeout(150000)
         let response = await request.get(config.api.subscriberNs + '/events/caching',
@@ -534,4 +534,7 @@ describe('Product feeds API', () => {
     // it('Verify lowest price for submitted variation ' + config.baseUrl, async () => {
 
     // })
-})
+}
+
+describe('Create caching data API', CacheCreateTest)
+describe('Product feeds API', ProductFeedsTest)

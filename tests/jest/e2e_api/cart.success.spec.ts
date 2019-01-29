@@ -7,7 +7,7 @@ let item: Model.Product
 let cart: Model.Cart
 let cookie: string
 
-describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
+export const CartSuccessTest = () => {
     beforeAll(async () => {
         cookie = await request.getGuestCookie()
     })
@@ -105,4 +105,6 @@ describe('Cart API - Success ' + config.baseUrl + config.api.cart, () => {
 
         expect(signIn.data.cart).toContainEqual(cart)
     })
-})
+}
+
+describe('Cart API - Success ' + config.baseUrl + config.api.cart, CartSuccessTest)

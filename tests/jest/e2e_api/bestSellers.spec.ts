@@ -3,7 +3,7 @@ import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
 
-describe('Best sellers info API ' + config.baseUrl + config.api.bestSellers, () => {
+export const BestSellersTest = () => {
     it('GET / best sellers list', async () => {
         let response = await request.getBestSellers()
         // expect(response.length).toEqual(16) // wait for WWW-238
@@ -26,4 +26,6 @@ describe('Best sellers info API ' + config.baseUrl + config.api.bestSellers, () 
             }
         }
     })
-})
+}
+
+describe('Best sellers info API ' + config.baseUrl + config.api.bestSellers, BestSellersTest)

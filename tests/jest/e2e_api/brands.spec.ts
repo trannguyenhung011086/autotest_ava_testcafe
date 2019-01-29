@@ -5,7 +5,7 @@ import 'jest-extended'
 import * as model from '../../../common/interface'
 let brands: model.brands
 
-describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
+export const BrandInfoTest = () => {
     it('GET / get brands directory', async () => {
         let response = await request.get(config.api.brands)
         brands = response.data
@@ -74,4 +74,6 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             }
         }
     })
-})
+}
+
+describe('Brand info API ' + config.baseUrl + '/api/v2/brands', BrandInfoTest)

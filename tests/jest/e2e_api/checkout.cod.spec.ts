@@ -10,7 +10,7 @@ let item: Model.Product
 let addresses: Model.Addresses
 let cookie: string
 
-describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkout, () => {
+export const CheckoutCodTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         await request.addAddresses()
@@ -132,4 +132,6 @@ describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkou
         expect(order.paymentSummary.shipping).toEqual(25000)
         expect(order.paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
     })
-})
+}
+
+describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkout, CheckoutCodTest)

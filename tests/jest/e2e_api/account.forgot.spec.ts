@@ -4,7 +4,7 @@ let request = new Utils.ApiUtils()
 import 'jest-extended'
 import faker from "faker/locale/vi"
 
-describe('Forgot password API ' + config.baseUrl + config.api.forgot, () => {
+export const AccountForgotTest = () => {
     it('POST / empty email', async () => {
         let response = await request.post(config.api.forgot, { "email": "" })
         expect(response.status).toEqual(400)
@@ -45,4 +45,6 @@ describe('Forgot password API ' + config.baseUrl + config.api.forgot, () => {
             expect(response.data.message).toEqual('RESET_LINK_HAS_BEEN_SENT')
         }
     })
-})
+}
+
+describe('Forgot password API ' + config.baseUrl + config.api.forgot, AccountForgotTest)

@@ -7,7 +7,7 @@ let cookie: string
 let creditcards: model.CreditCard[]
 import waitForExpect from 'wait-for-expect'
 
-describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => {
+export const CreditCardTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
     })
@@ -61,4 +61,6 @@ describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, () => 
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
-})
+}
+
+describe('Creditcard info API ' + config.baseUrl + config.api.creditcard, CreditCardTest)

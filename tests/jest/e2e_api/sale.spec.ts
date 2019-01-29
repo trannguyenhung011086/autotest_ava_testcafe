@@ -5,7 +5,7 @@ let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../../common/interface'
 
-describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () => {
+export const SaleInfoTest = () => {
     it('GET / invalid sale ID', async () => {
         let response = await request.get(config.api.sales + 'INVALID-ID')
         expect(response.status).toEqual(404)
@@ -171,4 +171,6 @@ describe('Sale info API ' + config.baseUrl + config.api.sales + '/<saleID>', () 
             }
         }
     })
-})
+}
+
+describe('Sale info API ' + config.baseUrl + config.api.sales, SaleInfoTest)

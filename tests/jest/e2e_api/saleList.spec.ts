@@ -5,7 +5,7 @@ import 'jest-extended'
 import * as model from '../../../common/interface'
 let home: model.Home
 
-describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
+export const SaleListTest = () => {
     it('GET / all home sales', async () => {
         let response = await request.get(config.api.home)
         home = response.data
@@ -166,4 +166,6 @@ describe('Sale info API ' + config.baseUrl + '/api/v2/home/<saleType>', () => {
             }
         }
     })
-})
+}
+
+describe('Sale list API ' + config.baseUrl + '/api/v2/home/<saleType>', SaleListTest)

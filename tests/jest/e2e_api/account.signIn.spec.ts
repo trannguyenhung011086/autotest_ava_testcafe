@@ -6,7 +6,7 @@ import faker from "faker/locale/vi"
 import * as model from '../../../common/interface'
 let signIn: model.SignIn
 
-describe('Sign in API ' + config.baseUrl + config.api.signIn, () => {
+export const AccountSignInTest = () => {
     it('POST / wrong email', async () => {
         let response = await request.post(config.api.signIn,
             {
@@ -99,4 +99,6 @@ describe('Sign in API ' + config.baseUrl + config.api.signIn, () => {
         expect(response.status).toEqual(200)
         expect(response.data.message).toEqual('SIGNED_OUT_SUCCESSFUL')
     })
-})
+}
+
+describe('Sign in API ' + config.baseUrl + config.api.signIn, AccountSignInTest)

@@ -17,7 +17,7 @@ const stripeData = {
     "key": config.stripeKey
 }
 
-describe('Checkout API - Logged in - Stripe (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
+export const CheckoutStripeTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()
@@ -211,4 +211,7 @@ describe('Checkout API - Logged in - Stripe (skip-prod) ' + config.baseUrl + con
         expect(order.paymentSummary.shipping).toEqual(0)
         expect(order.paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
     })
-})
+}
+
+describe('Checkout API - Logged in - Stripe (skip-prod) ' + config.baseUrl +
+    config.api.checkout, CheckoutStripeTest)

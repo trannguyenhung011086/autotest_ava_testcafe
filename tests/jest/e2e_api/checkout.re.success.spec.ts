@@ -12,7 +12,7 @@ let payDollarCreditCard: Model.PayDollarCreditCard
 let failedAttemptOrder: Model.FailedAttempt
 let cookie: string
 
-describe('Checkout API - Logged in - Failed Attempt (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
+export const ReCheckoutSuccessTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()
@@ -236,4 +236,7 @@ describe('Checkout API - Logged in - Failed Attempt (skip-prod) ' + config.baseU
         order = await request.getOrderInfo(reCheckout.orderId)
         expect(order.status).toEqual('placed')
     })
-})
+}
+
+describe('Checkout API - Logged in - Failed Attempt (skip-prod) ' + config.baseUrl +
+    config.api.checkout, ReCheckoutSuccessTest)

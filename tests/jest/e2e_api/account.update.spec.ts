@@ -4,10 +4,38 @@ let request = new Utils.ApiUtils()
 import 'jest-extended'
 import faker from "faker/locale/vi"
 import * as model from '../../../common/interface'
+let account: model.Account
 let signIn: model.SignIn
 let cookie: string
 
-describe('Update info API ' + config.baseUrl + config.api.account, () => {
+export const AccountInfoTest = () => {
+    beforeAll(async () => {
+        cookie = await request.getLogInCookie()
+    })
+
+    it('GET / get account info', async () => {
+        let response = await request.get(config.api.account)
+        expect(response.status).toEqual(200)
+        account = response.data
+        expect(account.id).not.toBeEmpty()
+        expect(account.firstName).not.toBeEmpty()
+        expect(account.lastName).not.toBeEmpty()
+        expect(account.email).toEqual(config.testAccount.email)
+        expect(account.language).toMatch(/en|vn/)
+        expect(account.accountCredit).toBeNumber()
+        expect(account.provider).toEqual('local')
+        expect(account.state).toEqual('confirmed')
+        expect(account.gender).toBeString()
+        expect(account.nsId).not.toBeEmpty()
+        expect(account.cart).toBeArray()
+
+        if (account.stripe) {
+            expect(account.stripe.customerId).not.toBeEmpty()
+        }
+    })
+}
+
+export const AccountUpdateInfoTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
     })
@@ -44,9 +72,9 @@ describe('Update info API ' + config.baseUrl + config.api.account, () => {
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
-})
+}
 
-describe('Update password API ' + config.baseUrl + config.api.password, () => {
+export const AccountUpdatePasswordTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
     })
@@ -110,4 +138,7 @@ describe('Update password API ' + config.baseUrl + config.api.password, () => {
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
-})
+}
+
+describe('Update info API ' + config.baseUrl + config.api.account, AccountUpdateInfoTest)
+describe('Update password API ' + config.baseUrl + config.api.password, AccountUpdatePasswordTest)

@@ -6,7 +6,7 @@ import 'jest-extended'
 import * as model from '../../../common/interface'
 let product: model.ProductInfoModel
 
-describe('Product API ' + config.baseUrl + config.api.product + '<productID>', () => {
+export const ProductInfoTest = () => {
     it('GET / invalid product ID', async () => {
         let response = await request.get(config.api.product + 'INVALID-ID')
         expect(response.status).toEqual(500)
@@ -127,4 +127,6 @@ describe('Product API ' + config.baseUrl + config.api.product + '<productID>', (
             expect(response.status).toEqual(200)
         }
     })
-})
+}
+
+describe('Product API ' + config.baseUrl + config.api.product, ProductInfoTest)

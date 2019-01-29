@@ -7,7 +7,6 @@ import * as Model from '../../../common/interface'
 let account: Model.Account
 let customer: Model.Customer
 let cookie: string
-const stripe = require('stripe')(config.stripeKey)
 
 const stripeData = {
     "card[number]": "5555555555554444",
@@ -15,16 +14,13 @@ const stripeData = {
     "card[cvc]": "222",
     "card[exp_month]": "02",
     "card[exp_year]": "22",
-    "guid": "48e71616-fb1d-4a97-9195-7272b9051713",
-    "muid": "8b70f8ca-a443-47c8-977d-806755e73b54",
-    "sid": "0caa240e-3765-4e10-8454-cbca8c60d961",
-    "pasted_fields": "number",
-    "payment_user_agent": "stripe.js/bd1b10d1; stripe-js-v3/bd1b10d1",
-    "referrer": "https://secure.staging.leflair.io/checkout?language=vn",
     "key": config.stripeKey
 }
 
-describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
+const stripeSource = request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+    .then(res => res.data)
+
+export const CheckoutSplitTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()
@@ -41,9 +37,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemSG1 = await request.getProductWithCountry('SG', 0, 400000, 1)
         let itemSG2 = await request.getProductWithCountry('SG', 400000, 500000, 1)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG1, itemSG2],
-            stripeSource, true)
+            await stripeSource, true)
         let order = await request.getOrderInfo(checkout.code)
 
         expect(order).not.toBeArray()
@@ -65,9 +60,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemHK1 = await request.getProductWithCountry('HK', 0, 400000, 1)
         let itemHK2 = await request.getProductWithCountry('HK', 400000, 500000, 1)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemHK1, itemHK2],
-            stripeSource, true)
+            await stripeSource, true)
         let order = await request.getOrderInfo(checkout.code)
 
         expect(order).not.toBeArray()
@@ -89,9 +83,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemSG1 = await request.getProductWithCountry('SG', 300000, 400000, 1)
         let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG1, itemSG2],
-            stripeSource, true)
+            await stripeSource, true)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
@@ -115,9 +108,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemHK1 = await request.getProductWithCountry('HK', 300000, 400000, 1)
         let itemHK2 = await request.getProductWithCountry('HK', 800000, 2000000, 1)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemHK1, itemHK2],
-            stripeSource, true)
+            await stripeSource, true)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
@@ -141,9 +133,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemSG = await request.getProductWithCountry('SG', 0, 2000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG, itemVN],
-            stripeSource, true)
+            await stripeSource, true)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
@@ -168,9 +159,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemHK = await request.getProductWithCountry('HK', 0, 2000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemHK, itemVN],
-            stripeSource, true)
+            await stripeSource, true)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
@@ -197,9 +187,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemVN1 = await request.getInStockProduct(config.api.todaySales, 1, 300000)
         let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemVN1, itemVN2],
-            stripeSource, true)
+            await stripeSource, true)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(3)
@@ -231,9 +220,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemVN1 = await request.getInStockProduct(config.api.todaySales, 1, 300000)
         let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemHK1, itemHK2, itemVN1, itemVN2],
-            stripeSource, true)
+            await stripeSource, true)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(3)
@@ -264,9 +252,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemHK = await request.getProductWithCountry('HK', 0, 6000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG, itemHK, itemVN],
-            stripeSource, true)
+            await stripeSource, true)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(3)
@@ -308,9 +295,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemSG = await request.getProductWithCountry('SG', 0, 2000000, 1)
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG, itemVN],
-            stripeSource, true, voucher._id)
+            await stripeSource, true, voucher._id)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(2)
@@ -345,9 +331,8 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
         let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
         let itemSG3 = await request.getProductWithCountry('SG', 1000000, 2000000, 1)
 
-        let stripeSource = await stripe.sources.create(stripeData)
         let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemSG3],
-            stripeSource, true, voucher._id)
+            await stripeSource, true, voucher._id)
         let orders = await request.getSplitOrderInfo(checkout.code)
 
         expect(orders).toBeArrayOfSize(3)
@@ -370,4 +355,7 @@ describe('Checkout API - Split order (skip-prod) ' + config.baseUrl + config.api
             orders[1].paymentSummary.voucherAmount +
             orders[2].paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
     })
-})
+}
+
+describe('Checkout API - Split order (skip-prod) ' + config.baseUrl +
+    config.api.checkout, CheckoutSplitTest)

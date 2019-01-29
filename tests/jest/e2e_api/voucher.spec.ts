@@ -9,7 +9,7 @@ let voucher: model.Voucher
 let voucherInfo: model.VoucherModel
 let customer: model.Customer
 
-describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
+export const VoucherTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         customer = await access.getCustomerInfo({ email: config.testAccount.email })
@@ -118,4 +118,6 @@ describe('Voucher API ' + config.baseUrl + config.api.voucher, () => {
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
-})
+}
+
+describe('Voucher API ' + config.baseUrl + config.api.voucher, VoucherTest)

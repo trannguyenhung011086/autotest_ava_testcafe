@@ -6,7 +6,7 @@ import faker from "faker/locale/vi"
 import * as model from '../../../common/interface'
 let signUp: model.SignIn
 
-describe('Register API ' + config.baseUrl + config.api.signUp, () => {
+export const AccountSignUpTest = () => {
     it('POST / empty email and password', async () => {
         let response = await request.post(config.api.signUp,
             {
@@ -86,4 +86,6 @@ describe('Register API ' + config.baseUrl + config.api.signUp, () => {
         expect(signUp.gender).toEqual('M')
         expect(signUp.cart).toBeArrayOfSize(0)
     })
-})
+}
+
+describe('Register API ' + config.baseUrl + config.api.signUp, AccountSignUpTest)

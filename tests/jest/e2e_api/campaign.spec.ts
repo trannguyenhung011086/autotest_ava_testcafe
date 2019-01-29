@@ -5,8 +5,7 @@ let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../../common/interface'
 
-describe('Campaign API ' + config.baseUrl + config.api.campaigns + '<campaignName>', () => {
-    
+export const CampaignInfoTest = () => {
     it('GET / valid campaign name', async () => {
         let campaign: model.Campaign = await access.getCampaign({
             endDate: { $gt: new Date() }
@@ -32,4 +31,6 @@ describe('Campaign API ' + config.baseUrl + config.api.campaigns + '<campaignNam
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('Not found')
     })
-})
+}
+
+describe('Campaign API ' + config.baseUrl + config.api.campaigns, CampaignInfoTest)

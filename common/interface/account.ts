@@ -17,7 +17,9 @@ export interface SignIn {
 }
 
 export interface Account extends SignIn {
-    stripe: object
+    stripe: {
+        customerId: string
+    }
 }
 
 export interface Customer {

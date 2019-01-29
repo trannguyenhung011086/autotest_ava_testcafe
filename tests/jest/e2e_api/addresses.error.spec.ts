@@ -10,7 +10,7 @@ let district: model.District
 let address: model.Shipping
 let addresses: model.Addresses
 
-describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
+export const AddressesErrorTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         addresses = await request.getAddresses()
@@ -237,4 +237,6 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('TAX_CODE_INVALID_FORMAT')
     })
-})
+}
+
+describe('Addresses error API ' + config.baseUrl + config.api.addresses, AddressesErrorTest)

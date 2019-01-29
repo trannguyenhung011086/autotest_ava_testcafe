@@ -5,7 +5,7 @@ let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../../common/interface'
 
-describe('Secret sale API ' + config.baseUrl + config.api.secretSales, () => {
+export const SecretSaleTest = () => {
     it('GET / cannot get secret sale when not call campaign API', async () => {
         let response = await request.get(config.api.secretSales)
         expect(response.status).toEqual(200)
@@ -56,4 +56,6 @@ describe('Secret sale API ' + config.baseUrl + config.api.secretSales, () => {
         expect(response.status).toEqual(200)
         expect(response.data).toBeTrue()
     })
-})
+}
+
+describe('Secret sale API ' + config.baseUrl + config.api.secretSales, SecretSaleTest)

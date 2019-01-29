@@ -4,7 +4,7 @@ let request = new Utils.ApiUtils()
 import 'jest-extended'
 let cookie: string
 
-describe('Verify auto-confirm order (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
+export const OrdersConfirmTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()
@@ -73,4 +73,7 @@ describe('Verify auto-confirm order (skip-prod) ' + config.baseUrl + config.api.
     // it('Auto-confirm order for regular customer', async () => {
 
     // })
-})
+}
+
+describe('Verify auto-confirm order (skip-prod) ' + config.baseUrl +
+    config.api.checkout, OrdersConfirmTest)

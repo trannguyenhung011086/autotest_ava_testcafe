@@ -6,7 +6,7 @@ import * as model from '../../../common/interface'
 let menu: model.CategoryMenu
 let topMenu: model.TopMenu
 
-describe('Category menu API ' + config.baseUrl + '/api/menus/items/<cateID>', () => {
+export const CategoryTest = () => {
     it('GET / invalid category ID', async () => {
         let response = await request.get('/api/menus/items/INVALID-ID')
         expect(response.status).toEqual(500)
@@ -155,4 +155,6 @@ describe('Category menu API ' + config.baseUrl + '/api/menus/items/<cateID>', ()
             expect(sale.id).not.toEqual(featured.data.id)
         }
     })
-})
+}
+
+describe('Category menu API ' + config.baseUrl + '/api/menus/items/<cateID>', CategoryTest)

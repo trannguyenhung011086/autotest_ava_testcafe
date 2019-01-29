@@ -7,7 +7,7 @@ let item: Model.Product
 let cart: Model.Cart
 let cookie: string
 
-describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
+export const CartErrorTest = () => {
     beforeAll(async () => {
         cookie = await request.getGuestCookie()
     })
@@ -73,4 +73,6 @@ describe('Cart API - Error ' + config.baseUrl + config.api.cart, () => {
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('Not found')
     })
-})
+}
+
+describe('Cart API - Error ' + config.baseUrl + config.api.cart, CartErrorTest)

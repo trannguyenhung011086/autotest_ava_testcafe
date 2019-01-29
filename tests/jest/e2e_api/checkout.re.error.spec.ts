@@ -11,7 +11,7 @@ let item: Model.Product
 let failedAttemptOrder: Model.FailedAttempt
 let cookie: string
 
-describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.checkout, () => {
+export const ReCheckoutErrorTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
@@ -570,4 +570,7 @@ describe('Checkout API - Failed Attempt - Error ' + config.baseUrl + config.api.
         expect(response.status).toEqual(400)
         expect(response.data.message).toEqual('USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE')
     })
-})
+}
+
+describe('Checkout API - Failed Attempt - Error ' + config.baseUrl +
+    config.api.checkout, ReCheckoutErrorTest)

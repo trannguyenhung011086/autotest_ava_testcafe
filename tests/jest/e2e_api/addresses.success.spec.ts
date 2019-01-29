@@ -8,7 +8,7 @@ let cities: model.City[]
 let addresses: model.Addresses
 import waitForExpect from 'wait-for-expect'
 
-describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
+export const AddressesSuccessTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         cities = await request.getCities()
@@ -207,4 +207,6 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
             })
         }
     })
-})
+}
+
+describe('Addresses success API ' + config.baseUrl + config.api.addresses, AddressesSuccessTest)

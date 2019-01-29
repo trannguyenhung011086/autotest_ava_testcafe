@@ -10,7 +10,7 @@ let addresses: Model.Addresses
 let payDollarCreditCard: Model.PayDollarCreditCard
 let cookie: string
 
-describe('Checkout API - Logged in - PayDollar (skip-prod) ' + config.baseUrl + config.api.checkout, () => {
+export const CheckoutPayDollarTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses()
@@ -275,4 +275,7 @@ describe('Checkout API - Logged in - PayDollar (skip-prod) ' + config.baseUrl + 
         order = await request.getOrderInfo(checkout.orderId)
         expect(order.status).toEqual('placed')
     })
-})
+}
+
+describe('Checkout API - Logged in - PayDollar (skip-prod) ' + config.baseUrl +
+    config.api.checkout, CheckoutPayDollarTest)

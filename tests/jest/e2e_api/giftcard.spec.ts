@@ -8,7 +8,7 @@ let cookie: string
 let giftCard: model.Giftcard
 let giftcardInfo: model.GiftcardModel
 
-describe('Giftcard API ' + config.baseUrl + config.api.giftcard, () => {
+export const GiftcardTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
     })
@@ -48,4 +48,6 @@ describe('Giftcard API ' + config.baseUrl + config.api.giftcard, () => {
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
-})
+}
+
+describe('Giftcard API ' + config.baseUrl + config.api.giftcard, GiftcardTest)

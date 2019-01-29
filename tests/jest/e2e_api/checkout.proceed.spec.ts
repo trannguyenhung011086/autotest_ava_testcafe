@@ -10,7 +10,7 @@ let cart: Model.Cart
 let addresses: Model.Addresses
 let cookie: string
 
-describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.checkout, () => {
+export const CheckoutProceedTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         await request.addAddresses()
@@ -45,4 +45,7 @@ describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.che
         expect(checkout.creditCards).toBeArray()
         expect(checkout.cart).toContainEqual(cart)
     })
-})
+}
+
+describe('Checkout API - Logged in - Proceed ' + config.baseUrl
+    + config.api.checkout, CheckoutProceedTest)

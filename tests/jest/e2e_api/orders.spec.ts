@@ -7,11 +7,8 @@ let cookie: string
 let account: model.Account
 let orders: model.OrderSummary[]
 let orderItem: model.Order
-const orderStatus = ['pending', 'placed', 'confirmed', 'cancelled', 'shipped', 'delivered', 'return request', 'returned']
-const paymentMethod = ['COD', 'STRIPE', 'CC', 'FREE']
-const card = ['VISA', 'Master']
 
-describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
+export const OrdersInfoTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         account = await request.getAccountInfo()
@@ -33,7 +30,7 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
                 expect(order.id).not.toBeEmpty()
                 expect(order.code).toMatch(/^SG|HK|VN/)
                 expect(order.createdDate).toMatch(/^(\d\d\/){2}\d{4}$/)
-                expect(orderStatus).toContain(order.status)
+                expect(order.status).toMatch(/pending|placed|confirmed|cancelled|shipped|delivered|return request|returned/)
                 if (order.shippedDate != null) {
                     expect(order.shippedDate).toMatch(/^(\d\d\/){2}\d{4}$/)
                 }
@@ -58,7 +55,7 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
                 expect(orderItem.id).toEqual(order.id)
                 expect(orderItem.code).toMatch(/^SG|HK|VN/)
                 expect(orderItem.createdDate).toMatch(/^(\d\d\/){2}\d{4}$/)
-                expect(orderStatus).toContain(orderItem.status)
+                expect(order.status).toMatch(/pending|placed|confirmed|cancelled|shipped|delivered|return request|returned/)
                 if (orderItem.shippedDate != null) {
                     expect(orderItem.shippedDate).toMatch(/^(\d\d\/){2}\d{4}$/)
                 }
@@ -90,14 +87,14 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
                 expect(orderItem.address.shipping.lastName).not.toBeEmpty()
                 expect(orderItem.address.shipping.phone).not.toBeEmpty()
 
-                expect(paymentMethod).toContain(orderItem.paymentSummary.method)
+                expect(orderItem.paymentSummary.method).toMatch(/COD|STRIPE|CC|FREE/)
                 if (orderItem.paymentSummary.method == 'COD' ||
                     orderItem.paymentSummary.method == 'STRIPE') {
                     expect(orderItem.paymentSummary.card).toBeNull()
                 }
                 if (orderItem.paymentSummary.card != null) {
                     expect(orderItem.paymentSummary.card.lastDigits).toMatch(/\d{4}/)
-                    expect(card).toContain(orderItem.paymentSummary.card.type)
+                    expect(orderItem.paymentSummary.card.type).toMatch(/VISA|Master/)
                 }
 
                 let total = orderItem.paymentSummary.subtotal + orderItem.paymentSummary.shipping +
@@ -167,4 +164,6 @@ describe('User orders info API ' + config.baseUrl + config.api.orders, () => {
         expect(response.status).toEqual(401)
         expect(response.data.message).toEqual('Access denied.')
     })
-})
+}
+
+describe('User orders info API ' + config.baseUrl + config.api.orders, OrdersInfoTest)
