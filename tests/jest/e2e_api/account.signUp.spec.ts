@@ -1,4 +1,4 @@
-import config from '../../../config'
+import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
@@ -30,7 +30,7 @@ export const AccountSignUpTest = () => {
     it('POST / length < 7 password', async () => {
         let response = await request.post(config.api.signUp,
             {
-                "email": faker.internet.email(), "password": "123",
+                "email": 'QA_' + faker.internet.email(), "password": "123",
                 "language": "vn", "gender": "M"
             })
         expect(response.status).toEqual(500)
@@ -59,14 +59,14 @@ export const AccountSignUpTest = () => {
     it('POST / missing password field', async () => {
         let response = await request.post(config.api.signUp,
             {
-                "email": faker.internet.email()
+                "email": 'QA_' + faker.internet.email()
             })
         expect(response.status).toEqual(500)
         expect(response.data.message).toEqual('User validation failed: password: Password should be longer')
     })
 
     it('POST / successful', async () => {
-        const email = faker.internet.email()
+        const email = 'QA_' + faker.internet.email()
         let response = await request.post(config.api.signUp,
             {
                 "email": email, "password": faker.internet.password(),

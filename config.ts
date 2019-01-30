@@ -29,9 +29,10 @@ switch (process.env.NODE_ENV) {
         baseUrl = 'https://www.staging.leflair.io'
         payDollarBase = 'https://test.paydollar.com'
         payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
+        apiNs = 'https://api.staging.leflair.io'
 }
 
-const config = {
+export const config = {
     stgDb: {
         uri: 'mongodb://104.199.151.20',
         name: 'admin-leflair'
@@ -94,7 +95,14 @@ const config = {
         facebook: 'trannguyenhung011086@protonmail.com',
         passwordFacebook: '0944226282',
         usedVoucher: 'VCB150'
+    },
+    notifyMsg: {
+        missingEmail: 'Vui lòng nhập email.',
+        missingPassword: 'Vui lòng nhập password.',
+        invalidEmailPassword: 'Email hoặc mật khẩu không đúng. Vui lòng thử lại',
+        invalidEmailFormat: 'Địa chỉ email không đúng',
+        passwordLength: 'Mật khẩu phải dài ít nhất 7 ký tự',
+        emailExisted: 'Email đã đăng ký. Vui lòng đăng nhập',
+        welcome: 'Chào mừng bạn đến với Leflair!'
     }
 }
-
-export default config

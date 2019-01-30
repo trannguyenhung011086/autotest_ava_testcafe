@@ -1,4 +1,4 @@
-import config from '../../../config'
+import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
@@ -18,7 +18,7 @@ export const AccountForgotTest = () => {
     })
 
     it('POST / non-existing email', async () => {
-        let response = await request.post(config.api.forgot, { "email": faker.internet.email() })
+        let response = await request.post(config.api.forgot, { "email": 'QA_' + faker.internet.email() })
         expect(response.status).toEqual(404)
         expect(response.data.message).toEqual('EMAIL_NOT_EXIST')
     })

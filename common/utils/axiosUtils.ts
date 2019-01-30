@@ -1,10 +1,10 @@
-import config from '../../config'
+import { config } from '../../config'
 import axios, { AxiosResponse } from 'axios'
 import * as qs from 'qs'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
 import * as tough from 'tough-cookie'
 
-export default class AxiosUtils {
+export class AxiosUtils {
     constructor() {
         axiosCookieJarSupport(axios)
     }

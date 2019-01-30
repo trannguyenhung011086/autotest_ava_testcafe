@@ -1,4 +1,4 @@
-import config from '../../../config'
+import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
@@ -48,11 +48,6 @@ export const CacheCreateTest = () => {
 
                 expect(cache.event.potd).toBeBoolean()
                 expect(cache.event).toContainKey('potdId')
-                // if (cache.event.potd) {
-                //     expect(cache.event.potdId).not.toBeEmpty()
-                // } else {
-                //     expect(cache.event.potdId).toBeNull()
-                // }
 
                 if (cache.category) {
                     expect(cache.category.id).not.toBeEmpty()
@@ -181,18 +176,6 @@ export const ProductFeedsTest = () => {
         }
 
         expect(parsed.errors).toBeArrayOfSize(0)
-        expect(parsed.meta.fields).toEqual(['id',
-            'title',
-            'link',
-            'image_link',
-            'price',
-            'sale_price',
-            'sale_price_effective_date',
-            'description',
-            'availability',
-            'brand',
-            'condition',
-            'google_product_category'])
     })
 
     it('GET / get Google product feeds ' + config.baseUrl + config.api.feedGoogle, async () => {
@@ -217,7 +200,6 @@ export const ProductFeedsTest = () => {
         }
 
         expect(parsed.errors).toBeArrayOfSize(0)
-        expect(parsed.meta.fields).toEqual(['Page URL', 'Custom label'])
     })
 
     it('GET / get Google dynamic product feeds ' + config.baseUrl + config.api.feedGoogleDynamic, async () => {
@@ -259,18 +241,9 @@ export const ProductFeedsTest = () => {
         }
 
         expect(parsed.errors).toBeArrayOfSize(0)
-        expect(parsed.meta.fields).toEqual(['ID',
-            'Item title',
-            'Final URL',
-            'Image URL',
-            'Item description',
-            'Item category',
-            'Price',
-            'Sale price',
-            'Final mobile URL'])
     })
 
-    it('GET / get Criteo product feeds v1' + config.baseUrl + config.api.feedCriteo, async () => {
+    it('GET / get Criteo product feeds v1 ' + config.baseUrl + config.api.feedCriteo, async () => {
         let response = await request.get(config.api.feedCriteo)
         expect(response.status).toEqual(200)
 
@@ -312,22 +285,10 @@ export const ProductFeedsTest = () => {
         }
 
         expect(parsed.errors).toBeArrayOfSize(0)
-        expect(parsed.meta.fields).toEqual(['id',
-            'name',
-            'producturl',
-            'bigimage',
-            'price',
-            'retailprice',
-            'description',
-            'instock',
-            'extra_brand',
-            'extra_color',
-            'extra_size',
-            'category'])
     })
 
     // need to improve Criteo feeds format later
-    it.skip('GET / get Criteo product feeds v2' + config.baseUrl + config.api.feedCriteo, async () => {
+    it.skip('GET / get Criteo product feeds v2 ' + config.baseUrl + config.api.feedCriteo, async () => {
         let response = await request.get(config.api.feedCriteo)
         expect(response.status).toEqual(200)
 

@@ -1,9 +1,3 @@
-import AxiosUtils from './axiosUtils'
-import ApiUtils from './apiUtils'
-import MongoUtils from './mongoUtils'
-
-export {
-    AxiosUtils,
-    ApiUtils,
-    MongoUtils
-}
+export { AxiosUtils } from './axiosUtils'
+export { ApiUtils } from './apiUtils'
+export { MongoUtils } from './mongoUtils'

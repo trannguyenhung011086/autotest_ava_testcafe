@@ -1,10 +1,10 @@
 import { t, RequestMock } from 'testcafe'
-import config from '../../../../config'
+import { config } from '../../../../config'
 import * as Utils from '../../../../common/utils'
 let api = new Utils.ApiUtils()
 import * as model from '../../../../common/interface'
 let sales: model.SalesModel[]
-import Pages from '../page_objects'
+import { Pages } from '../page_objects'
 const page = new Pages()
 
 const mockRedirect = RequestMock()

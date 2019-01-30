@@ -26,6 +26,7 @@ import {
     GiftcardTest,
     OrdersConfirmTest,
     OrdersInfoTest,
+    CacheCreateTest,
     ProductFeedsTest,
     ProductInfoTest,
     SaleInfoTest,

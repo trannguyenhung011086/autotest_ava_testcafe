@@ -1,4 +1,4 @@
-import config from '../../../config'
+import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'

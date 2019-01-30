@@ -1,8 +1,8 @@
-import config from '../../config'
+import { config } from '../../config'
 import * as Model from '../interface'
 import { MongoClient } from 'mongodb'
 
-export default class MongoUtils {
+export class MongoUtils {
     public async getDbData(collectionName: string, query: Object): Promise<any> {
         let client: MongoClient
         try {

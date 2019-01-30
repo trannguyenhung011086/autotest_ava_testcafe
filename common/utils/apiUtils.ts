@@ -1,10 +1,10 @@
-import config from '../../config'
+import { config } from '../../config'
 import * as Model from '../interface'
-import AxiosUtils from './axiosUtils'
-import MongoUtils from './mongoUtils'
+import { AxiosUtils } from './axiosUtils'
+import { MongoUtils } from './mongoUtils'
 import * as faker from "faker/locale/vi"
 
-export default class ApiUtils extends AxiosUtils {
+export class ApiUtils extends AxiosUtils {
     constructor() {
         super()
     }
@@ -453,12 +453,12 @@ export default class ApiUtils extends AxiosUtils {
         let districts = await this.getDistricts(city.id)
         let district = await this.getDistrict(districts)
         let address: Model.Shipping = {
-            address: faker.address.streetAddress(),
+            address: 'QA_' + faker.address.streetAddress(),
             city: city,
             default: true,
             district: district,
-            firstName: faker.name.firstName(),
-            lastName: faker.name.lastName(),
+            firstName: 'QA_' + faker.name.firstName(),
+            lastName: 'QA_' + faker.name.lastName(),
             phone: faker.phone.phoneNumber().replace(/ /g, '')
         }
         if (addressType == 'shipping') {
@@ -466,7 +466,7 @@ export default class ApiUtils extends AxiosUtils {
         }
         if (addressType == 'billing') {
             address.type = 'billing'
-            address.companyName = faker.company.companyName()
+            address.companyName = 'QA_' + faker.company.companyName()
             address.taxCode = '1234567890'
         }
         return address

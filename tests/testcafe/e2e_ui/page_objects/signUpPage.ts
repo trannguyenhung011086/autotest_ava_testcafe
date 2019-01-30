@@ -1,7 +1,7 @@
 import { Selector, t } from 'testcafe'
-import SignInPage from './signInPage'
+import { SignInPage } from './signInPage'
 
-export default class SignUpPage extends SignInPage {
+export class SignUpPage extends SignInPage {
     femaleBtn: Selector
     maleBtn: Selector
 

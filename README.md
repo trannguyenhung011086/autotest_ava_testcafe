@@ -10,11 +10,11 @@ Structure:
 - common/utils: store GET/POST/PUT/DELETE class
 - tests/jest/e2e_api: API test cases
 
-Example test command: `jest tests/jest/e2e_api`
+Example test command: `NODE_ENV=stg jest tests/jest/e2e_api`
 
 Note: 
-- to run certain test based on name, use: `jest -t <testName> tests/jest/e2e_api`
-- to exclude certain tests on production, use: `jest -t '^((?!skip-prod).)*$' tests/jest/e2e_api`
+- to run certain test based on name, use: `NODE_ENV=stg jest -t <testName> tests/jest/e2e_api`
+- to exclude certain tests on production, use: `NODE_ENV=prod jest -t '^((?!skip-prod).)*$' tests/jest/e2e_api`
 
 ## E2E UI testing
 Use Testcafe framework to test web application

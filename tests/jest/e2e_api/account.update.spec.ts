@@ -1,4 +1,4 @@
-import config from '../../../config'
+import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
@@ -41,8 +41,8 @@ export const AccountUpdateInfoTest = () => {
     })
 
     it('PUT / can change name', async () => {
-        let firstName = faker.name.firstName()
-        let lastName = faker.name.lastName()
+        let firstName = 'QA_' + faker.name.firstName()
+        let lastName = 'QA_' + faker.name.lastName()
         let response = await request.put(config.api.account,
             { "firstName": firstName, "lastName": lastName })
         signIn = response.data

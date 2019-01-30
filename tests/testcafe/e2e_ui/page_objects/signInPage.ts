@@ -1,6 +1,6 @@
 import { Selector, t } from 'testcafe'
 
-export default class SignInPage {
+export class SignInPage {
     formHeader: Selector
     emailField: Selector
     passwordField: Selector

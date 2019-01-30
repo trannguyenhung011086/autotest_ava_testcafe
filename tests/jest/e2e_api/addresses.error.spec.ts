@@ -1,4 +1,4 @@
-import config from '../../../config'
+import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
 let request = new Utils.ApiUtils()
 import 'jest-extended'
@@ -19,12 +19,12 @@ export const AddressesErrorTest = () => {
         let districts = await request.getDistricts(city.id)
         district = await request.getDistrict(districts)
         address = {
-            address: faker.address.streetAddress(),
+            address: 'QA_' + faker.address.streetAddress(),
             city: city,
             default: true,
             district: district,
-            firstName: faker.name.firstName(),
-            lastName: faker.name.lastName(),
+            firstName: 'QA_' + faker.name.firstName(),
+            lastName: 'QA_' + faker.name.lastName(),
             phone: faker.phone.phoneNumber().replace(/ /g, ''),
             type: 'shipping'
         }
