@@ -6,7 +6,7 @@ import 'jest-extended'
 export const BestSellersTest = () => {
     it('GET / best sellers list', async () => {
         let response = await request.getBestSellers()
-        // expect(response.length).toEqual(16) // wait for WWW-238
+        expect(response.length).toEqual(16) // wait for WWW-238
 
         for (let item of response) {
             try {

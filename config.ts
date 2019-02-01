@@ -4,7 +4,7 @@ let payDollarBase: string
 let payDollarApi: string
 
 switch (process.env.NODE_ENV) {
-    case 'test':
+    case 'testing':
         baseUrl = 'https://www.testing.leflair.io'
         payDollarBase = 'https://test.paydollar.com'
         payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'

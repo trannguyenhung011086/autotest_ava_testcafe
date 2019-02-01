@@ -15,7 +15,7 @@ let googleMerchantFeeds: model.GoogleMerchantFeeds
 let insiderFeeds: model.InsiderFeeds
 let secretSales = []
 let secretSaleProducts = []
-let googleCategories: string[]
+let googleCategories: string[] // mapping list: https://docs.google.com/spreadsheets/d/1cL4mK-oQCrf9K0o5o21t_ChU8yDVnppxNGJmNJ3rkgw/edit#gid=2031209736
 import convert from 'xml-js'
 
 export const CacheCreateTest = () => {
