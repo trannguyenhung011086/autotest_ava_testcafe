@@ -1,8 +1,8 @@
 import { config } from '../../config'
 import axios, { AxiosResponse } from 'axios'
-import * as qs from 'qs'
+import qs from 'qs'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
-import * as tough from 'tough-cookie'
+import tough from 'tough-cookie'
 
 export class AxiosUtils {
     constructor() {
@@ -99,19 +99,24 @@ export class AxiosUtils {
         return await axios.get(encodeURI(api), options)
     }
 
-    public async postFormUrl(base: string, api: string, data: Object, cookie?: string): Promise<AxiosResponse> {
+    public async postFormUrl(api: string, data: Object, cookie?: string, base?: string): Promise<AxiosResponse> {
         let options = {
-            baseURL: base,
+            baseURL: config.baseUrl,
             withCredentials: true,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             validateStatus: (status) => {
                 return true
-            }
+            },
+            jar: this.cookieJar
         }
         if (cookie) {
             options.headers['Cookie'] = cookie
+            options.withCredentials = false
+        }
+        if (base) {
+            options.baseURL = base
         }
         return await axios.post(encodeURI(api), qs.stringify(data, { encodeValuesOnly: true }), options)
     }

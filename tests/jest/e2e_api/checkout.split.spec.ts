@@ -17,7 +17,7 @@ const stripeData = {
     "key": config.stripeKey
 }
 
-const stripeSource = request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+const stripeSource = request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
     .then(res => res.data)
 
 export const CheckoutSplitTest = () => {

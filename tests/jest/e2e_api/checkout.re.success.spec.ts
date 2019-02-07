@@ -42,8 +42,7 @@ export const ReCheckoutSuccessTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi,
-            payDollarCreditCard)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.data)
 
         expect(parse.successcode).toEqual('1')
@@ -94,7 +93,7 @@ export const ReCheckoutSuccessTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi, payDollarCreditCard)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.data)
 
         expect(parse.successcode).toEqual('0')
@@ -125,8 +124,7 @@ export const ReCheckoutSuccessTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi,
-            payDollarCreditCard)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.data)
 
         expect(parse.successcode).toEqual('0')
@@ -153,8 +151,7 @@ export const ReCheckoutSuccessTest = () => {
         expect(order.paymentSummary.shipping).toEqual(0)
 
         payDollarCreditCard = reCheckout.creditCard
-        let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi,
-            payDollarCreditCard)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.data)
 
         expect(parse.successcode).toEqual('0')
@@ -226,7 +223,7 @@ export const ReCheckoutSuccessTest = () => {
         expect(order.paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
 
         payDollarCreditCard = reCheckout.creditCard
-        let result = await request.postFormUrl(config.payDollarBase, config.payDollarApi, payDollarCreditCard)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.data)
 
         expect(parse.successcode).toEqual('0')

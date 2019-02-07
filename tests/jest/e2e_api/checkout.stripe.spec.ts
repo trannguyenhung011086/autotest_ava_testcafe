@@ -35,7 +35,7 @@ export const CheckoutStripeTest = () => {
         account = await request.getAccountInfo()
 
         stripeData['card[number]'] = '123456789'
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -60,7 +60,7 @@ export const CheckoutStripeTest = () => {
         account = await request.getAccountInfo()
 
         stripeData['card[number]'] = '4000000000009995'
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -85,7 +85,7 @@ export const CheckoutStripeTest = () => {
         account = await request.getAccountInfo()
 
         stripeData['card[number]'] = '3566002020360505'
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
 
         let response = await request.post(config.api.checkout, {
             "address": {
@@ -107,7 +107,7 @@ export const CheckoutStripeTest = () => {
     it('POST / checkout with new Stripe (not save card) - VISA', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
         stripeData['card[number]'] = '4000000000000077'
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
 
         let checkout = await request.createStripeOrder([item], stripeSource.data, false)
         expect(checkout.orderId).not.toBeEmpty()
@@ -123,7 +123,7 @@ export const CheckoutStripeTest = () => {
     it('POST / checkout with new Stripe (save card) - MASTER', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
         stripeData['card[number]'] = '5555555555554444'
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
 
         let checkout = await request.createStripeOrder([item], stripeSource.data, true)
         expect(checkout.orderId).not.toBeEmpty()
@@ -171,7 +171,7 @@ export const CheckoutStripeTest = () => {
         }
 
         stripeData['card[number]'] = '5555555555554444'
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
 
         let checkout = await request.createStripeOrder([item, item], stripeSource.data, true,
             voucher._id, credit)

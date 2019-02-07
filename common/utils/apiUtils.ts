@@ -913,7 +913,7 @@ export class ApiUtils extends AxiosUtils {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await this.postFormUrl(config.payDollarBase, config.payDollarApi, payDollarCreditCard)
+        let result = await this.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
         let parse = await this.parsePayDollarRes(result.data)
 
         if (parse.successcode != '1') {

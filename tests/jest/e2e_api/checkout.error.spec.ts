@@ -523,7 +523,7 @@ export const CheckoutErrorTest = () => {
             "card[exp_year]": "22",
             "key": config.stripeKey
         }
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
 
         let response = await request.post(config.api.checkout, {
             "address": {

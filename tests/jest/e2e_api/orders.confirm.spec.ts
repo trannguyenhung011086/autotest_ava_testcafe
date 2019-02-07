@@ -60,7 +60,7 @@ export const OrdersConfirmTest = () => {
             "key": config.stripeKey
         }
 
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
 
         let checkout = await request.createStripeOrder([item], stripeSource.data, false)
         expect(checkout.orderId).not.toBeEmpty()

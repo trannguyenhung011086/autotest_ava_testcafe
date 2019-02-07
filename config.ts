@@ -86,7 +86,7 @@ export const config = {
         subscriberNs: '/v1/subscriber-ns-cache-system-item-management'
     },
     stripeKey: 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy',
-    stripeApi: 'https://api.stripe.com',
+    stripeBase: 'https://api.stripe.com',
     payDollarBase: payDollarBase,
     payDollarApi: payDollarApi,
     testAccount: {
