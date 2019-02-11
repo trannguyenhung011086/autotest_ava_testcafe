@@ -77,7 +77,10 @@ export type PayDollarCreditCard = {
     pMethod?: string,
     epMonth?: number,
     epYear?: number,
-    securityCode?: string
+    securityCode?: string,
+    failUrl?: string,
+    errorUrl?: string,
+    successUrl?: string
 }
 
 export interface CheckoutOrder {

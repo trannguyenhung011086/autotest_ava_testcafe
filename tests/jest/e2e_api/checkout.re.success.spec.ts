@@ -15,24 +15,30 @@ let cookie: string
 export const ReCheckoutSuccessTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
-        await request.addAddresses()
-        addresses = await request.getAddresses()
-        account = await request.getAccountInfo()
+        await request.addAddresses(cookie)
+        addresses = await request.getAddresses(cookie)
+        account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
         jest.setTimeout(120000)
     })
 
     afterEach(async () => {
-        await request.emptyCart()
+        await request.emptyCart(cookie)
+    })
+
+    afterAll(async () => {
+        await request.deleteAddresses(cookie)
     })
 
     it('POST / create failed-attempt order', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id)
-        account = await request.getAccountInfo()
-        addresses = await request.getAddresses()
 
-        let checkout = await request.checkoutPayDollar(account, addresses)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
+        addresses = await request.getAddresses(cookie)
+
+        let checkout = await request.checkoutPayDollar(account, addresses,
+            null, null, null, cookie)
 
         payDollarCreditCard = checkout.creditCard
         payDollarCreditCard.cardHolder = 'testing card'
@@ -42,8 +48,9 @@ export const ReCheckoutSuccessTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
-        let parse = await request.parsePayDollarRes(result.data)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+            cookie, config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
         expect(parse.successcode).toEqual('1')
         expect(parse.Ref).toEqual(checkout.creditCard.orderRef)
@@ -52,20 +59,22 @@ export const ReCheckoutSuccessTest = () => {
         let failedAttempt = await request.post(config.api.checkout + '/order/failed-attempt', {
             "errorMsg": "invalid card",
             "orderCode": parse.Ref
-        })
-        expect(failedAttempt.status).toEqual(200)
+        }, cookie)
+        expect(failedAttempt.statusCode).toEqual(200)
 
-        let failedData: Model.FailedAttempt = failedAttempt.data
+        let failedData: Model.FailedAttempt = failedAttempt.body
         expect(parse.Ref).toInclude(failedData.code)
         expect(item.id).toEqual(failedData.products[0].productId)
     })
 
     it('POST / recheckout with COD', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        failedAttemptOrder = await request.createFailedAttemptOrder([item])
-        let reCheckout = await request.reCheckoutCod(failedAttemptOrder, addresses)
 
-        let order = await request.getOrderInfo(reCheckout.orderId)
+        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
+        let reCheckout = await request.reCheckoutCod(failedAttemptOrder, addresses,
+            null, null, cookie)
+
+        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.code).toInclude(reCheckout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -75,10 +84,12 @@ export const ReCheckoutSuccessTest = () => {
 
     it('POST / recheckout with new CC (not save card) - VISA', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        failedAttemptOrder = await request.createFailedAttemptOrder([item])
-        let reCheckout = await request.reCheckoutPayDollar(failedAttemptOrder, addresses, false)
 
-        let order = await request.getOrderInfo(reCheckout.orderId)
+        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
+        let reCheckout = await request.reCheckoutPayDollar(failedAttemptOrder, addresses,
+            false, null, null, cookie)
+
+        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
@@ -93,23 +104,26 @@ export const ReCheckoutSuccessTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
-        let parse = await request.parsePayDollarRes(result.data)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+            cookie, config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
         expect(parse.successcode).toEqual('0')
         expect(parse.Ref).toEqual(reCheckout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
 
-        order = await request.getOrderInfo(reCheckout.orderId)
+        order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.status).toEqual('placed')
     })
 
     it('POST / recheckout with new CC (save card) - MASTER', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        failedAttemptOrder = await request.createFailedAttemptOrder([item])
-        let reCheckout = await request.reCheckoutPayDollar(failedAttemptOrder, addresses, true)
 
-        let order = await request.getOrderInfo(reCheckout.orderId)
+        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
+        let reCheckout = await request.reCheckoutPayDollar(failedAttemptOrder, addresses,
+            true, null, null, cookie)
+
+        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
@@ -124,26 +138,28 @@ export const ReCheckoutSuccessTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
-        let parse = await request.parsePayDollarRes(result.data)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+            cookie, config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
         expect(parse.successcode).toEqual('0')
         expect(parse.Ref).toEqual(reCheckout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
 
-        order = await request.getOrderInfo(reCheckout.orderId)
+        order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.status).toEqual('placed')
     })
 
     it('POST / recheckout with saved CC', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
+
         let matchedCard = await request.getCard('PayDollar')
 
-        failedAttemptOrder = await request.createFailedAttemptOrder([item])
+        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
         let reCheckout = await request.reCheckoutSavedPayDollar(failedAttemptOrder, addresses,
-            matchedCard)
+            matchedCard, null, null, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId)
+        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
@@ -151,14 +167,15 @@ export const ReCheckoutSuccessTest = () => {
         expect(order.paymentSummary.shipping).toEqual(0)
 
         payDollarCreditCard = reCheckout.creditCard
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
-        let parse = await request.parsePayDollarRes(result.data)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+            cookie, config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
         expect(parse.successcode).toEqual('0')
         expect(parse.Ref).toEqual(reCheckout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
 
-        order = await request.getOrderInfo(reCheckout.orderId)
+        order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.status).toEqual('placed')
     })
 
@@ -183,11 +200,11 @@ export const ReCheckoutSuccessTest = () => {
             credit = item.salePrice + 25000 - voucher.amount
         }
 
-        failedAttemptOrder = await request.createFailedAttemptOrder([item])
+        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
         let reCheckout = await request.reCheckoutCod(failedAttemptOrder, addresses,
-            voucher._id, credit)
+            voucher._id, credit, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId)
+        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.code).toInclude(reCheckout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -210,11 +227,11 @@ export const ReCheckoutSuccessTest = () => {
         item = await request.getInStockProduct(config.api.currentSales, 1, 500000)
         let matchedCard = await request.getCard('PayDollar')
 
-        failedAttemptOrder = await request.createFailedAttemptOrder([item])
+        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
         let reCheckout = await request.reCheckoutSavedPayDollar(failedAttemptOrder, addresses,
-            matchedCard, voucher._id)
+            matchedCard, voucher._id, null, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId)
+        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
@@ -223,14 +240,15 @@ export const ReCheckoutSuccessTest = () => {
         expect(order.paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
 
         payDollarCreditCard = reCheckout.creditCard
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard, null, config.payDollarBase)
-        let parse = await request.parsePayDollarRes(result.data)
+        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+            cookie, config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
         expect(parse.successcode).toEqual('0')
         expect(parse.Ref).toEqual(reCheckout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
 
-        order = await request.getOrderInfo(reCheckout.orderId)
+        order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.status).toEqual('placed')
     })
 }

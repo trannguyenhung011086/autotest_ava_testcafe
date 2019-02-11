@@ -173,7 +173,13 @@ export interface BestSellers {
     cr: number
     slug: string
     international: boolean
-    score: string
+    isNewEvent: boolean
+    nsId: string
+    quantity: number
+    queryParams: string
+    variation: string
+    variationId: string
+    views: string
 }
 
 export type Banner = {

@@ -7,39 +7,46 @@ let cookie: string
 export const OrdersConfirmTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
-        await request.addAddresses()
+        await request.addAddresses(cookie)
     })
 
     afterEach(async () => {
-        await request.emptyCart()
+        await request.emptyCart(cookie)
+    })
+
+    afterAll(async () => {
+        await request.deleteAddresses(cookie)
     })
 
     it('Not auto-confirm order when value >= 5,000,000', async () => {
         let items = await request.getInStockProducts(config.api.currentSales, 1, 500000)
-        let checkout = await request.createCodOrder(items.slice(0, 5))
+
+        let checkout = await request.createCodOrder(items.slice(0, 5), null, null, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
         expect(order.status).toEqual('placed')
         expect(order.paymentSummary.total).toBeGreaterThanOrEqual(5000000)
     })
 
     it('Not auto-confirm order when quantity >= 2', async () => {
         let item = await request.getInStockProduct(config.api.currentSales, 3)
-        let checkout = await request.createCodOrder([item, item])
+
+        let checkout = await request.createCodOrder([item, item], null, null, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
         expect(order.status).toEqual('placed')
         expect(order.products[0].quantity).toBeGreaterThanOrEqual(2)
     })
 
     it('Not auto-confirm order when sum quantiy >= 5', async () => {
         let items = await request.getInStockProducts(config.api.featuredSales, 2)
-        let checkout = await request.createCodOrder(items.slice(0, 5))
+
+        let checkout = await request.createCodOrder(items.slice(0, 5), null, null, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
         expect(order.status).toEqual('placed')
 
         let sum = 0
@@ -51,6 +58,7 @@ export const OrdersConfirmTest = () => {
 
     it('Not auto-confirm international order', async () => {
         let item = await request.getInStockProduct(config.api.internationalSales, 2)
+
         let stripeData = {
             "type": "card",
             "card[cvc]": "222",
@@ -60,12 +68,14 @@ export const OrdersConfirmTest = () => {
             "key": config.stripeKey
         }
 
-        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase)
 
-        let checkout = await request.createStripeOrder([item], stripeSource.data, false)
+        let checkout = await request.createStripeOrder([item], stripeSource.body,
+            false, null, null, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeTrue()
     })
@@ -75,5 +85,4 @@ export const OrdersConfirmTest = () => {
     // })
 }
 
-describe('Verify auto-confirm order (skip-prod) ' + config.baseUrl +
-    config.api.checkout, OrdersConfirmTest)
+describe('Verify auto-confirm order (skip-prod) ' + config.baseUrl + config.api.checkout, OrdersConfirmTest)

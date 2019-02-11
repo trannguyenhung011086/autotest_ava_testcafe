@@ -24,11 +24,11 @@ export const CacheCreateTest = () => {
     })
 
     it('GET / create events caching ' + config.baseUrl, async () => {
-        let response = await request.get(config.api.subscriberNs + '/events/caching',
+        let res = await request.get(config.api.subscriberNs + '/events/caching',
             null, config.apiNs)
-        expect(response.status).toEqual(200)
+        expect(res.statusCode).toEqual(200)
 
-        eventsCache = response.data
+        eventsCache = res.body
         for (let cache of eventsCache) {
             try {
                 expect(cache.id).not.toBeEmpty()
@@ -73,11 +73,11 @@ export const CacheCreateTest = () => {
     })
 
     it('GET / create items caching ' + config.baseUrl, async () => {
-        let response = await request.get(config.api.subscriberNs + '/items/caching',
+        let res = await request.get(config.api.subscriberNs + '/items/caching',
             null, config.apiNs)
-        expect(response.status).toEqual(200)
+        expect(res.statusCode).toEqual(200)
 
-        itemsCache = response.data
+        itemsCache = res.body
         expect(itemsCache.total).toEqual(itemsCache.list.length)
 
         for (let item of itemsCache.list) {
@@ -92,20 +92,20 @@ export const CacheCreateTest = () => {
     })
 
     it('GET / create product feeds ' + config.baseUrl, async () => {
-        let response = await request.get(config.api.subscriberNs + '/product-feeds/caching',
+        let res = await request.get(config.api.subscriberNs + '/product-feeds/caching',
             null, config.apiNs)
-        expect(response.status).toEqual(200)
-        expect(response.data).toEqual('Product Feed is ready')
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toEqual('Product Feed is ready')
     })
 }
 
 export const ProductFeedsTest = () => {
     beforeAll(async () => {
         jest.setTimeout(150000)
-        let response = await request.get(config.api.subscriberNs + '/events/caching',
+        let res = await request.get(config.api.subscriberNs + '/events/caching',
             null, config.apiNs)
-        expect(response.status).toEqual(200)
-        eventsCache = response.data
+        expect(res.statusCode).toEqual(200)
+        eventsCache = res.body
         for (let cache of eventsCache) {
             if (cache.event.campaignId) {
                 secretSales.push(cache)
@@ -117,24 +117,24 @@ export const ProductFeedsTest = () => {
             }
         }
 
-        response = await request.get(config.api.subscriberNs + '/items/caching',
+        res = await request.get(config.api.subscriberNs + '/items/caching',
             null, config.apiNs)
-        expect(response.status).toEqual(200)
-        itemsCache = response.data
+        expect(res.statusCode).toEqual(200)
+        itemsCache = res.body
 
-        response = await request.get(config.api.subscriberNs + '/product-feeds/caching',
+        res = await request.get(config.api.subscriberNs + '/product-feeds/caching',
             null, config.apiNs)
-        expect(response.status).toEqual(200)
+        expect(res.statusCode).toEqual(200)
 
-        let res = await request.get('https://www.google.com/basepages/producttype/taxonomy.en-US.txt')
-        googleCategories = res.data.split('\n')
+        res = await request.get('https://www.google.com/basepages/producttype/taxonomy.en-US.txt')
+        googleCategories = res.body.split('\n')
     })
 
     it('GET / get Facebook product feeds ' + config.baseUrl + config.api.feedFacebook, async () => {
-        let response = await request.get(config.api.feedFacebook)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.feedFacebook)
+        expect(res.statusCode).toEqual(200)
 
-        let parsed = Papa.parse(response.data, { header: true })
+        let parsed = Papa.parse(res.body, { header: true })
         facebookFeeds = parsed.data
 
         for (let feed of facebookFeeds) {
@@ -179,10 +179,10 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Google product feeds ' + config.baseUrl + config.api.feedGoogle, async () => {
-        let response = await request.get(config.api.feedGoogle)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.feedGoogle)
+        expect(res.statusCode).toEqual(200)
 
-        let parsed = Papa.parse(response.data, { header: true })
+        let parsed = Papa.parse(res.body, { header: true })
         googleFeeds = parsed.data
 
         for (let feed of googleFeeds) {
@@ -203,10 +203,10 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Google dynamic product feeds ' + config.baseUrl + config.api.feedGoogleDynamic, async () => {
-        let response = await request.get(config.api.feedGoogleDynamic)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.feedGoogleDynamic)
+        expect(res.statusCode).toEqual(200)
 
-        let parsed = Papa.parse(response.data, { header: true })
+        let parsed = Papa.parse(res.body, { header: true })
         googleDynamicFeeds = parsed.data
 
         for (let feed of googleDynamicFeeds) {
@@ -244,10 +244,10 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Criteo product feeds v1 ' + config.baseUrl + config.api.feedCriteo, async () => {
-        let response = await request.get(config.api.feedCriteo)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.feedCriteo)
+        expect(res.statusCode).toEqual(200)
 
-        let parsed = Papa.parse(response.data, { header: true })
+        let parsed = Papa.parse(res.body, { header: true })
         criteoFeeds = parsed.data
 
         for (let feed of criteoFeeds) {
@@ -289,10 +289,10 @@ export const ProductFeedsTest = () => {
 
     // need to improve Criteo feeds format later
     it.skip('GET / get Criteo product feeds v2 ' + config.baseUrl + config.api.feedCriteo, async () => {
-        let response = await request.get(config.api.feedCriteo)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.feedCriteo)
+        expect(res.statusCode).toEqual(200)
 
-        let parsed = Papa.parse(response.data, { header: true })
+        let parsed = Papa.parse(res.body, { header: true })
         criteoFeeds2 = parsed.data
 
         for (let feed of criteoFeeds2) {
@@ -347,10 +347,10 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Google Merchant product feeds ' + config.baseUrl + config.api.feedGoogleMerchant, async () => {
-        let response = await request.get(config.api.feedGoogleMerchant)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.feedGoogleMerchant)
+        expect(res.statusCode).toEqual(200)
 
-        let result: any = convert.xml2js(response.data, { compact: true })
+        let result: any = convert.xml2js(res.body, { compact: true })
         googleMerchantFeeds = result
 
         expect(googleMerchantFeeds._declaration._attributes.version).toEqual('1.0')
@@ -442,10 +442,10 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Insider product feeds ' + config.baseUrl + config.api.feedInsider, async () => {
-        let response = await request.get(config.api.feedInsider)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.feedInsider)
+        expect(res.statusCode).toEqual(200)
 
-        let result: any = convert.xml2js(response.data, { compact: true })
+        let result: any = convert.xml2js(res.body, { compact: true })
         insiderFeeds = result
 
         expect(insiderFeeds._declaration._attributes.version).toEqual('1.0')

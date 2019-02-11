@@ -25,7 +25,7 @@ export class AxiosUtils {
         }
         if (cookie) {
             options.headers['Cookie'] = cookie
-            options.withCredentials = false
+            delete options.jar
         }
         if (base) {
             options.baseURL = base
@@ -47,7 +47,7 @@ export class AxiosUtils {
         }
         if (cookie) {
             options.headers['Cookie'] = cookie
-            options.withCredentials = false
+            delete options.jar
         }
         if (base) {
             options.baseURL = base
@@ -69,7 +69,7 @@ export class AxiosUtils {
         }
         if (cookie) {
             options.headers['Cookie'] = cookie
-            options.withCredentials = false
+            delete options.jar
         }
         if (base) {
             options.baseURL = base
@@ -91,7 +91,7 @@ export class AxiosUtils {
         }
         if (cookie) {
             options.headers['Cookie'] = cookie
-            options.withCredentials = false
+            delete options.jar
         }
         if (base) {
             options.baseURL = base
@@ -101,23 +101,25 @@ export class AxiosUtils {
 
     public async postFormUrl(api: string, data: Object, cookie?: string, base?: string): Promise<AxiosResponse> {
         let options = {
+            method: 'POST',
             baseURL: config.baseUrl,
             withCredentials: true,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            validateStatus: (status) => {
-                return true
-            },
             jar: this.cookieJar
         }
         if (cookie) {
             options.headers['Cookie'] = cookie
-            options.withCredentials = false
+            delete options.jar
         }
         if (base) {
             options.baseURL = base
         }
         return await axios.post(encodeURI(api), qs.stringify(data, { encodeValuesOnly: true }), options)
+            .catch(err => {
+                console.log(err)
+                return err
+            })
     }
 }

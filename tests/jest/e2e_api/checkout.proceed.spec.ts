@@ -13,20 +13,24 @@ let cookie: string
 export const CheckoutProceedTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        await request.addAddresses()
-        addresses = await request.getAddresses()
-        account = await request.getAccountInfo()
+        await request.addAddresses(cookie)
+        addresses = await request.getAddresses(cookie)
+        account = await request.getAccountInfo(cookie)
     })
 
     afterEach(async () => {
-        await request.emptyCart()
+        await request.emptyCart(cookie)
+    })
+
+    afterAll(async () => {
+        await request.deleteAddresses(cookie)
     })
 
     it('GET / proceed checkout with empty cart', async () => {
-        let response = await request.get(config.api.checkout)
-        checkout = response.data
+        let res = await request.get(config.api.checkout, cookie)
+        checkout = res.body
 
-        expect(response.status).toEqual(200)
+        expect(res.statusCode).toEqual(200)
         expect(checkout.accountCredit).toEqual(account.accountCredit)
         expect(checkout.cart).toBeArrayOfSize(0)
         expect(checkout.creditCards).toBeArray()
@@ -34,13 +38,16 @@ export const CheckoutProceedTest = () => {
 
     it('GET / proceed checkout with cart', async () => {
         item = await request.getInStockProduct(config.api.featuredSales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id })
-        cart = response.data
 
-        response = await request.get(config.api.checkout)
-        checkout = response.data
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
-        expect(response.status).toEqual(200)
+        res = await request.get(config.api.checkout, cookie)
+        checkout = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(checkout.accountCredit).toEqual(account.accountCredit)
         expect(checkout.creditCards).toBeArray()
         expect(checkout.cart).toContainEqual(cart)

@@ -13,97 +13,109 @@ export const CartSuccessTest = () => {
     })
 
     afterEach(async () => {
-        await request.emptyCart()
+        await request.emptyCart(cookie)
     })
 
     it('POST / add product to cart as guest', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id })
-        cart = response.data
 
-        expect(response.status).toEqual(200)
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(cart.id).not.toBeEmpty()
         expect(cart.productId).toEqual(item.id)
         expect(cart.title).not.toBeEmpty()
-
-        expect(cart.brand._id).not.toBeEmpty()
-        expect(cart.brand.__v).toBeNumber()
-        expect(new Date(cart.brand.createdAt)).toBeValidDate()
-        expect(new Date(cart.brand.updatedAt)).toBeValidDate()
-        expect(cart.brand.description).not.toBeEmpty()
-        expect(cart.brand.logo).not.toBeEmpty()
-        expect(cart.brand.name).not.toBeEmpty()
-
         expect(cart.image.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
         expect(cart.quantity).toEqual(1)
         expect(cart.retailPrice).toBeGreaterThan(cart.salePrice)
         expect(cart.availableQuantity).toBeGreaterThanOrEqual(1)
         expect(cart.slug).toInclude(cart.productContentId)
         expect(cart.categories.length).toBeGreaterThanOrEqual(1)
-        expect(cart.international).toBeBoolean()
         expect(cart.country).not.toBeEmpty()
         expect(cart.saleEnded).toBeFalse()
+        expect(cart.nsId).not.toBeEmpty()
+        // expect(cart.brand._id).not.toBeEmpty()
+        // expect(cart.brand.__v).toBeNumber()
+        // expect(new Date(cart.brand.createdAt)).toBeBefore(new Date(cart.brand.updatedAt))
+        // expect(cart.brand.description).not.toBeEmpty()
+        // expect(cart.brand.logo).not.toBeEmpty()
+        // expect(cart.brand.name).not.toBeEmpty()
+        // expect(cart.international).toBeBoolean()
     })
 
     it('POST / add same product to cart', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 3)
-        let response = await request.post(config.api.cart, { "productId": item.id })
+        item = await request.getInStockProduct(config.api.currentSales, 2)
 
-        cart = response.data
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+
+        cart = res.body
         expect(cart.quantity).toEqual(1)
 
-        response = await request.post(config.api.cart, { "productId": item.id })
-        cart = response.data
+        res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+
+        cart = res.body
         expect(cart.quantity).toEqual(2)
-    })
-
-    it('POST / add sold out product to cart', async () => {
-        const soldOut = await request.getSoldOutProduct(config.api.todaySales)
-        let response = await request.post(config.api.cart, {
-            "productId": soldOut.products[0].id
-        })
-        cart = response.data
-        expect(cart.quantity).toEqual(1)
-        expect(cart.availableQuantity).toEqual(0)
     })
 
     it('DELETE / remove product from cart', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id })
-        cart = response.data
 
-        response = await request.delete(config.api.cart + cart.id)
-        expect(response.status).toEqual(200)
-        expect(response.data.message).toEqual('ITEM_REMOVED_FROM_CART')
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
+
+        res = await request.delete(config.api.cart + cart.id, cookie)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.message).toEqual('ITEM_REMOVED_FROM_CART')
     })
 
     it('PUT / remove multiple products from cart', async () => {
         let itemA = await request.getInStockProduct(config.api.featuredSales, 1)
-        let response = await request.post(config.api.cart, { "productId": itemA.id })
-        let cartA = response.data
+
+        let res = await request.post(config.api.cart, {
+            "productId": itemA.id
+        }, cookie)
+        let cartA = res.body
 
         let itemB = await request.getInStockProduct(config.api.potdSales, 1)
-        response = await request.post(config.api.cart, { "productId": itemB.id })
-        let cartB = response.data
 
-        response = await request.put(config.api.cart + 'delete-multiple',
-            { "cartItemIds": [cartA.id, cartB.id] })
-        expect(response.status).toEqual(200)
-        expect(response.data.message).toEqual('ITEM_REMOVED_FROM_CART')
+        res = await request.post(config.api.cart, {
+            "productId": itemB.id
+        }, cookie)
+        let cartB = res.body
+
+        res = await request.put(config.api.cart + 'delete-multiple', {
+            "cartItemIds": [cartA.id, cartB.id]
+        }, cookie)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.message).toEqual('ITEM_REMOVED_FROM_CART')
     })
 
     it('POST / update cart after sign in', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id })
-        cart = response.data
+
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
         let signIn = await request.post(config.api.signIn,
             {
                 "email": config.testAccount.email,
                 "password": config.testAccount.password
-            })
+            }, cookie)
 
-        expect(signIn.data.cart).toContainEqual(cart)
+        expect(signIn.body.cart).toContainEqual(cart)
     })
 }
 

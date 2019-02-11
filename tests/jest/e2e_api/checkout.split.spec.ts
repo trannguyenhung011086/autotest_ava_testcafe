@@ -18,19 +18,23 @@ const stripeData = {
 }
 
 const stripeSource = request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
-    .then(res => res.data)
+    .then(res => res.body)
 
 export const CheckoutSplitTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
-        await request.addAddresses()
-        account = await request.getAccountInfo()
+        await request.addAddresses(cookie)
+        account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
         jest.setTimeout(150000)
     })
 
     afterEach(async () => {
-        await request.emptyCart()
+        await request.emptyCart(cookie)
+    })
+
+    afterAll(async () => {
+        await request.deleteAddresses(cookie)
     })
 
     it('POST / not split SG order when total < 1,000,000', async () => {
@@ -38,8 +42,8 @@ export const CheckoutSplitTest = () => {
         let itemSG2 = await request.getProductWithCountry('SG', 400000, 500000, 1)
 
         let checkout = await request.createStripeOrder([itemSG1, itemSG2],
-            await stripeSource, true)
-        let order = await request.getOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let order = await request.getOrderInfo(checkout.code, cookie)
 
         expect(order).not.toBeArray()
         expect(order.code).toEqual(`SGVN-${checkout.code}-1`)
@@ -61,8 +65,8 @@ export const CheckoutSplitTest = () => {
         let itemHK2 = await request.getProductWithCountry('HK', 400000, 500000, 1)
 
         let checkout = await request.createStripeOrder([itemHK1, itemHK2],
-            await stripeSource, true)
-        let order = await request.getOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let order = await request.getOrderInfo(checkout.code, cookie)
 
         expect(order).not.toBeArray()
         expect(order.code).toEqual(`SGVN-${checkout.code}-1`)
@@ -84,8 +88,8 @@ export const CheckoutSplitTest = () => {
         let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
 
         let checkout = await request.createStripeOrder([itemSG1, itemSG2],
-            await stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -109,8 +113,8 @@ export const CheckoutSplitTest = () => {
         let itemHK2 = await request.getProductWithCountry('HK', 800000, 2000000, 1)
 
         let checkout = await request.createStripeOrder([itemHK1, itemHK2],
-            await stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -134,8 +138,8 @@ export const CheckoutSplitTest = () => {
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let checkout = await request.createStripeOrder([itemSG, itemVN],
-            await stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -160,8 +164,8 @@ export const CheckoutSplitTest = () => {
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let checkout = await request.createStripeOrder([itemHK, itemVN],
-            await stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -188,8 +192,8 @@ export const CheckoutSplitTest = () => {
         let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
 
         let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemVN1, itemVN2],
-            await stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {
@@ -221,8 +225,8 @@ export const CheckoutSplitTest = () => {
         let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
 
         let checkout = await request.createStripeOrder([itemHK1, itemHK2, itemVN1, itemVN2],
-            await stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {
@@ -253,8 +257,8 @@ export const CheckoutSplitTest = () => {
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let checkout = await request.createStripeOrder([itemSG, itemHK, itemVN],
-            await stripeSource, true)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, null, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {
@@ -296,8 +300,8 @@ export const CheckoutSplitTest = () => {
         let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
 
         let checkout = await request.createStripeOrder([itemSG, itemVN],
-            await stripeSource, true, voucher._id)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, voucher._id, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
         for (let order of orders) {
@@ -332,8 +336,8 @@ export const CheckoutSplitTest = () => {
         let itemSG3 = await request.getProductWithCountry('SG', 1000000, 2000000, 1)
 
         let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemSG3],
-            await stripeSource, true, voucher._id)
-        let orders = await request.getSplitOrderInfo(checkout.code)
+            await stripeSource, true, voucher._id, null, cookie)
+        let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(3)
         for (let order of orders) {

@@ -13,61 +13,68 @@ let cookie: string
 export const CheckoutCodTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        await request.addAddresses()
-        addresses = await request.getAddresses()
-        account = await request.getAccountInfo()
+        await request.addAddresses(cookie)
+        addresses = await request.getAddresses(cookie)
+        account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
     })
 
     afterEach(async () => {
-        await request.emptyCart()
+        await request.emptyCart(cookie)
+    })
+
+    afterAll(async () => {
+        await request.deleteAddresses(cookie)
     })
 
     it('POST / cannot checkout with COD - international product', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id)
-        account = await request.getAccountInfo()
 
-        let response = await request.post(config.api.checkout, {
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
+
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
             },
             "cart": account.cart,
             "method": "COD"
-        })
+        }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
     })
 
     it('POST / cannot checkout with COD - domestic + international product', async () => {
         let item1 = await request.getInStockProduct(config.api.internationalSales, 1)
         let item2 = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item1.id)
-        await request.addToCart(item2.id)
-        account = await request.getAccountInfo()
 
-        let response = await request.post(config.api.checkout, {
+        await request.addToCart(item1.id, cookie)
+        await request.addToCart(item2.id, cookie)
+
+        account = await request.getAccountInfo(cookie)
+
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
             },
             "cart": account.cart,
             "method": "COD"
-        })
+        }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
     })
 
     it('POST / checkout with COD', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
 
-        let checkout = await request.createCodOrder([item])
+        let checkout = await request.createCodOrder([item], cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -94,10 +101,10 @@ export const CheckoutCodTest = () => {
             credit = item.salePrice + 25000 - voucher.amount
         }
 
-        let checkout = await request.createCodOrder([item, item], voucher._id, credit)
+        let checkout = await request.createCodOrder([item, item], voucher._id, credit, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -121,10 +128,10 @@ export const CheckoutCodTest = () => {
 
         item = await request.getInStockProduct(config.api.todaySales, 1, 500000)
 
-        let checkout = await request.createCodOrder([item], voucher._id)
+        let checkout = await request.createCodOrder([item], voucher._id, null, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId)
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()

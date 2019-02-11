@@ -7,15 +7,15 @@ import * as model from '../../../common/interface'
 
 export const SecretSaleTest = () => {
     it('GET / cannot get secret sale when not call campaign API', async () => {
-        let response = await request.get(config.api.secretSales)
-        expect(response.status).toEqual(200)
-        expect(response.data).toBeArrayOfSize(0)
+        let res = await request.get(config.api.secretSales)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toBeArrayOfSize(0)
     })
 
     it('GET / check secret sale when not call campaign API', async () => {
-        let response = await request.get(config.api.secretSales + '/check')
-        expect(response.status).toEqual(200)
-        expect(response.data).toBeFalse()
+        let res = await request.get(config.api.secretSales + '/check')
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toBeFalse()
     })
 
     it('GET / get secret sale when call campaign API', async () => {
@@ -24,10 +24,10 @@ export const SecretSaleTest = () => {
         })
         await request.get(config.api.campaigns + campaign.name)
 
-        let response = await request.get(config.api.secretSales)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.secretSales)
+        expect(res.statusCode).toEqual(200)
 
-        let sales: model.SalesModel[] = response.data
+        let sales: model.SalesModel[] = res.body
         expect(sales.length).toBeGreaterThan(0)
 
         for (let sale of sales) {
@@ -52,9 +52,9 @@ export const SecretSaleTest = () => {
         })
         await request.get(config.api.campaigns + campaign.name)
 
-        let response = await request.get(config.api.secretSales + '/check')
-        expect(response.status).toEqual(200)
-        expect(response.data).toBeTrue()
+        let res = await request.get(config.api.secretSales + '/check')
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toBeTrue()
     })
 }
 

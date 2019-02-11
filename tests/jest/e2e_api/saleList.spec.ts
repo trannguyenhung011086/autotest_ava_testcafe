@@ -7,9 +7,9 @@ let home: model.Home
 
 export const SaleListTest = () => {
     it('GET / all home sales', async () => {
-        let response = await request.get(config.api.home)
-        home = response.data
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.home)
+        home = res.body
+        expect(res.statusCode).toEqual(200)
 
         expect(home).toContainAllKeys(['featured',
             'today',

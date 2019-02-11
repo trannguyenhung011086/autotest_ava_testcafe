@@ -7,9 +7,9 @@ let brands: model.brands
 
 export const BrandInfoTest = () => {
     it('GET / get brands directory', async () => {
-        let response = await request.get(config.api.brands)
-        brands = response.data
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.brands)
+        brands = res.body
+        expect(res.statusCode).toEqual(200)
 
         for (let item of Object.keys(brands)) {
             let brand: model.BrandItem

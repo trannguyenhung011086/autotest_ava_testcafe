@@ -4,26 +4,15 @@ let payDollarBase: string
 let payDollarApi: string
 
 switch (process.env.NODE_ENV) {
-    case 'testing':
-        baseUrl = 'https://www.testing.leflair.io'
-        payDollarBase = 'https://test.paydollar.com'
-        payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
-        break
     case 'stg':
         baseUrl = 'https://www.staging.leflair.io'
         payDollarBase = 'https://test.paydollar.com'
         payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
         break
-    case 'stg-ns':
-        baseUrl = 'https://www.staging-ns.leflair.io'
-        payDollarBase = 'https://test.paydollar.com'
-        payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
-        apiNs = 'https://api.staging-ns.leflair.io'
-        break
     case 'prod':
         baseUrl = 'https://www.leflair.vn'
-        payDollarBase = 'https://paydollar.com'
-        payDollarApi = '/b2c/eng/directPay/payComp.jsp'
+        payDollarBase = 'https://www.paydollar.com'
+        payDollarApi = '/b2c2/eng/dPayment/payComp.jsp'
         break
     default:
         baseUrl = 'https://www.staging.leflair.io'

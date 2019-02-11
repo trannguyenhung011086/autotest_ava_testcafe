@@ -24,4 +24,5 @@ export interface Cart {
     international: boolean
     country: string
     saleEnded: boolean
+    nsId: string
 }

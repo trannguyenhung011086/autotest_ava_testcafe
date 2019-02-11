@@ -8,19 +8,19 @@ let topMenu: model.TopMenu
 
 export const CategoryTest = () => {
     it('GET / invalid category ID', async () => {
-        let response = await request.get('/api/menus/items/INVALID-ID')
-        expect(response.status).toEqual(500)
-        expect(response.data.error).toEqual('Argument passed in must be a single String of 12 bytes or a string of 24 hex characters')
+        let res = await request.get('/api/menus/items/INVALID-ID')
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.error).toEqual('Argument passed in must be a single String of 12 bytes or a string of 24 hex characters')
 
-        response = await request.get('/api/menus/items/5b56d3448f0dd7c0480acd1c')
-        expect(response.status).toEqual(500)
-        expect(response.data.error).toEqual("Cannot read property 'subitems' of undefined")
+        res = await request.get('/api/menus/items/5b56d3448f0dd7c0480acd1c')
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.error).toEqual("Cannot read property 'subitems' of undefined")
     })
 
     it('GET / top menu', async () => {
-        let response = await request.get(config.api.cateMenu)
-        expect(response.status).toEqual(200)
-        topMenu = response.data
+        let res = await request.get(config.api.cateMenu)
+        expect(res.statusCode).toEqual(200)
+        topMenu = res.body
 
         expect(topMenu.id).not.toBeEmpty()
         expect(topMenu.code).toEqual('TOP_NAV')
@@ -47,9 +47,9 @@ export const CategoryTest = () => {
         config.api.cateHealthBeauty,
         config.api.cateHomeLifeStyle
     ])('GET / valid category ID - %s', async (menuItem) => {
-        let response = await request.get(menuItem)
-        expect(response.status).toEqual(200)
-        menu = response.data
+        let res = await request.get(menuItem)
+        expect(res.statusCode).toEqual(200)
+        menu = res.body
 
         expect(menu.id).not.toBeEmpty()
         expect(menu.name).toBeString()
@@ -101,7 +101,7 @@ export const CategoryTest = () => {
         config.api.cateHomeLifeStyle
     ])('GET / get featured sales limit 1 - %s', async (menuItem) => {
         let sale = await request.get(menuItem + '/sales/featured?limit=1')
-        expect(sale.data).toBeObject()
+        expect(sale.body).toBeObject()
     })
 
     it.each([
@@ -149,10 +149,10 @@ export const CategoryTest = () => {
     ])('GET / get current sales excluding featured sales - %s', async (menuItem) => {
         let featured = await request.get(menuItem + '/sales/featured?limit=1')
         let sales = await request.getSales(config.api.cateApparel +
-            '/sales/current?excludeId=' + featured.data.id)
+            '/sales/current?excludeId=' + featured.body.id)
 
         for (let sale of sales) {
-            expect(sale.id).not.toEqual(featured.data.id)
+            expect(sale.id).not.toEqual(featured.body.id)
         }
     })
 }

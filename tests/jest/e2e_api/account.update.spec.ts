@@ -14,9 +14,10 @@ export const AccountInfoTest = () => {
     })
 
     it('GET / get account info', async () => {
-        let response = await request.get(config.api.account)
-        expect(response.status).toEqual(200)
-        account = response.data
+        let res = await request.get(config.api.account, cookie)
+        account = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(account.id).not.toBeEmpty()
         expect(account.firstName).not.toBeEmpty()
         expect(account.lastName).not.toBeEmpty()
@@ -29,7 +30,7 @@ export const AccountInfoTest = () => {
         expect(account.nsId).not.toBeEmpty()
         expect(account.cart).toBeArray()
 
-        if (account.stripe) {
+        if (account.stripe && Object.keys(account.stripe).length > 0) {
             expect(account.stripe.customerId).not.toBeEmpty()
         }
     })
@@ -43,10 +44,11 @@ export const AccountUpdateInfoTest = () => {
     it('PUT / can change name', async () => {
         let firstName = 'QA_' + faker.name.firstName()
         let lastName = 'QA_' + faker.name.lastName()
-        let response = await request.put(config.api.account,
-            { "firstName": firstName, "lastName": lastName })
-        signIn = response.data
-        expect(response.status).toEqual(200)
+        let res = await request.put(config.api.account,
+            { "firstName": firstName, "lastName": lastName }, cookie)
+        signIn = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(signIn.id).not.toBeEmpty()
         expect(signIn.firstName).toEqual(firstName)
         expect(signIn.lastName).toEqual(lastName)
@@ -60,17 +62,19 @@ export const AccountUpdateInfoTest = () => {
     })
 
     test.skip('PUT / cannot change email', async () => {
-        let response = await request.put(config.api.account,
-            { "email": 'new-' + config.testAccount.email })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('USER_UPDATE_ERROR')
+        let res = await request.put(config.api.account,
+            { "email": 'new-' + config.testAccount.email }, cookie)
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('USER_UPDATE_ERROR')
     }) // wait for WWW-335
 
     it('PUT / cannot update with wrong cookie', async () => {
-        let response = await request.put(config.api.account,
+        let res = await request.put(config.api.account,
             { "firstName": "first", "lastName": "last" }, 'connect-id=assdfds')
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('Access denied.')
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('Access denied.')
     })
 }
 
@@ -80,65 +84,72 @@ export const AccountUpdatePasswordTest = () => {
     })
 
     it('PUT / wrong current password', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
                 "currentPassword": faker.internet.password(),
                 "newPassword": faker.internet.password()
-            })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('COULD_NOT_CHANGE_PASSWORD')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('COULD_NOT_CHANGE_PASSWORD')
     })
 
     it('PUT / empty current password', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
                 "currentPassword": "",
                 "newPassword": faker.internet.password()
-            })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('COULD_NOT_CHANGE_PASSWORD')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('COULD_NOT_CHANGE_PASSWORD')
     })
 
     it('PUT / new password has length < 7', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
                 "currentPassword": config.testAccount.password,
                 "newPassword": "123456"
-            })
-        expect(response.status).toEqual(500)
-        expect(response.data).toMatch('ValidationError: User validation failed: password: Password should be longer')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(500)
+        expect(res.body).toMatch('ValidationError: User validation failed: password: Password should be longer')
     })
 
     it('PUT / empty new password', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
                 "currentPassword": config.testAccount.password,
                 "newPassword": ""
-            })
-        expect(response.status).toEqual(500)
-        expect(response.data).toMatch('ValidationError: User validation failed: password: Password should be longer')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(500)
+        expect(res.body).toMatch('ValidationError: User validation failed: password: Password should be longer')
     })
 
     it('PUT / can change password', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
                 "currentPassword": config.testAccount.password,
                 "newPassword": config.testAccount.password
-            })
-        expect(response.status).toEqual(200)
-        expect(response.data.message).toEqual('PASSWORD_CHANGED')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.message).toEqual('PASSWORD_CHANGED')
     })
 
     it('PUT / cannot update password with wrong cookie', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
                 "currentPassword": config.testAccount.password,
                 "newPassword": config.testAccount.password
             }, 'connect-id=assdfds')
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('Access denied.')
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('Access denied.')
     })
 }
 
+describe('Get account info API ' + config.baseUrl + config.api.account, AccountInfoTest)
 describe('Update info API ' + config.baseUrl + config.api.account, AccountUpdateInfoTest)
 describe('Update password API ' + config.baseUrl + config.api.password, AccountUpdatePasswordTest)

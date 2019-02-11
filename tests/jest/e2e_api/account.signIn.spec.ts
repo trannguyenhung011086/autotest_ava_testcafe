@@ -8,68 +8,77 @@ let signIn: model.SignIn
 
 export const AccountSignInTest = () => {
     it('POST / wrong email', async () => {
-        let response = await request.post(config.api.signIn,
+        let res = await request.post(config.api.signIn,
             {
-                "email": 'QA_' + faker.internet.email(), "password": faker.internet.password()
+                "email": 'QA_' + faker.internet.email(),
+                "password": faker.internet.password()
             })
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
+            
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
     it('POST / wrong password', async () => {
-        let response = await request.post(config.api.signIn,
+        let res = await request.post(config.api.signIn,
             {
-                "email": config.testAccount.email, "password": faker.internet.password()
+                "email": config.testAccount.email,
+                "password": faker.internet.password()
             })
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
     it('POST / use Facebook email', async () => {
-        let response = await request.post(config.api.signIn,
+        let res = await request.post(config.api.signIn,
             {
                 "email": config.testAccount.facebook,
                 "password": config.testAccount.passwordFacebook
             })
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
     it('POST / missing email field', async () => {
-        let response = await request.post(config.api.signIn,
+        let res = await request.post(config.api.signIn,
             {
                 "password": faker.internet.password()
             })
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
     it('POST / missing password field', async () => {
-        let response = await request.post(config.api.signIn,
+        let res = await request.post(config.api.signIn,
             {
                 "email": 'QA_' + faker.internet.email()
             })
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
     it('POST / empty email and password', async () => {
-        let response = await request.post(config.api.signIn,
+        let res = await request.post(config.api.signIn,
             {
                 "email": "", "password": ""
             })
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('EMAIL_PASSWORD_INCORRECT')
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
 
     it('POST / correct email and password - external email', async () => {
-        let response = await request.post(config.api.signIn,
+        let res = await request.post(config.api.signIn,
             {
                 "email": config.testAccount.email.toUpperCase(),
                 "password": config.testAccount.password
             })
-        signIn = response.data
-        expect(response.status).toEqual(200)
+        signIn = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(signIn.id).not.toBeEmpty()
         expect(signIn.firstName).toBeString()
         expect(signIn.lastName).toBeString()
@@ -85,19 +94,22 @@ export const AccountSignInTest = () => {
     })
 
     it('POST / correct email and password - internal email', async () => {
-        let response = await request.post(config.api.signIn,
+        let res = await request.post(config.api.signIn,
             {
                 "email": "qa_tech@leflair.vn", "password": "leflairqa"
             })
-        signIn = response.data
-        expect(response.status).toEqual(200)
+        signIn = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(signIn.preview).toBeTrue()
     })
 
     it('GET / sign out', async () => {
-        let response = await request.get(config.api.signOut)
-        expect(response.status).toEqual(200)
-        expect(response.data.message).toEqual('SIGNED_OUT_SUCCESSFUL')
+        let cookie = await request.getLogInCookie()
+        let res = await request.get(config.api.signOut, cookie)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.message).toEqual('SIGNED_OUT_SUCCESSFUL')
     })
 }
 

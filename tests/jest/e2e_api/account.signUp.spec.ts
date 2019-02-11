@@ -8,72 +8,89 @@ let signUp: model.SignIn
 
 export const AccountSignUpTest = () => {
     it('POST / empty email and password', async () => {
-        let response = await request.post(config.api.signUp,
+        let res = await request.post(config.api.signUp,
             {
-                "email": "", "password": "",
-                "language": "vn", "gender": "M"
+                "email": "",
+                "password": "",
+                "language": "vn",
+                "gender": "M"
             })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('EMAIL_ADDRESS_REQUIRED')
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('EMAIL_ADDRESS_REQUIRED')
     })
 
     it('POST / wrong format email', async () => {
-        let response = await request.post(config.api.signUp,
+        let res = await request.post(config.api.signUp,
             {
-                "email": ".test%!@#$%^&*()_+<>?@mail.com", "password": config.testAccount.password,
-                "language": "vn", "gender": "M"
+                "email": ".test%!@#$%^&*()_+<>?@mail.com",
+                "password": config.testAccount.password,
+                "language": "vn",
+                "gender": "M"
             })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('REGISTER_INVALID_EMAIL')
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('REGISTER_INVALID_EMAIL')
     })
 
     it('POST / length < 7 password', async () => {
-        let response = await request.post(config.api.signUp,
+        let res = await request.post(config.api.signUp,
             {
-                "email": 'QA_' + faker.internet.email(), "password": "123",
-                "language": "vn", "gender": "M"
+                "email": 'QA_' + faker.internet.email(),
+                "password": "123",
+                "language": "vn",
+                "gender": "M"
             })
-        expect(response.status).toEqual(500)
-        expect(response.data.message).toEqual('User validation failed: password: Password should be longer')
+
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('User validation failed: password: Password should be longer')
     })
 
     it('POST / existing account', async () => {
-        let response = await request.post(config.api.signUp,
+        let res = await request.post(config.api.signUp,
             {
-                "email": config.testAccount.email, "password": config.testAccount.password,
-                "language": "vn", "gender": "M"
+                "email": config.testAccount.email,
+                "password": config.testAccount.password,
+                "language": "vn",
+                "gender": "M"
             })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('EMAIL_ALREADY_EXISTS')
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('EMAIL_ALREADY_EXISTS')
     })
 
     it('POST / missing email field', async () => {
-        let response = await request.post(config.api.signUp,
+        let res = await request.post(config.api.signUp,
             {
                 "password": faker.internet.password()
             })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('EMAIL_ADDRESS_REQUIRED')
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('EMAIL_ADDRESS_REQUIRED')
     })
 
     it('POST / missing password field', async () => {
-        let response = await request.post(config.api.signUp,
+        let res = await request.post(config.api.signUp,
             {
                 "email": 'QA_' + faker.internet.email()
             })
-        expect(response.status).toEqual(500)
-        expect(response.data.message).toEqual('User validation failed: password: Password should be longer')
+
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('User validation failed: password: Password should be longer')
     })
 
     it('POST / successful', async () => {
         const email = 'QA_' + faker.internet.email()
-        let response = await request.post(config.api.signUp,
+        let res = await request.post(config.api.signUp,
             {
-                "email": email, "password": faker.internet.password(),
-                "language": "vn", "gender": "M"
+                "email": email,
+                "password": faker.internet.password(),
+                "language": "vn",
+                "gender": "M"
             })
-        signUp = response.data
-        expect(response.status).toEqual(200)
+        signUp = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(signUp.id).not.toBeEmpty()
         expect(signUp.firstName).toBeEmpty()
         expect(signUp.lastName).toBeEmpty()

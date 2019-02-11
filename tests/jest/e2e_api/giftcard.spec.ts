@@ -14,39 +14,41 @@ export const GiftcardTest = () => {
     })
 
     it('GET / check invalid giftcard', async () => {
-        let response = await request.get(config.api.giftcard + 'INVALID-ID')
-        expect(response.status).toEqual(500)
-        expect(response.data.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
+        let res = await request.get(config.api.giftcard + 'INVALID-ID', cookie)
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
     })
 
     it('GET / check redeemed giftcard', async () => {
         giftcardInfo = await access.getGiftCard({ redeemed: true })
-        let response = await request.get(config.api.giftcard + giftcardInfo.code)
-        expect(response.status).toEqual(500)
-        expect(response.data.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
+
+        let res = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
     })
 
     it('GET / check not redeemed giftcard', async () => {
         giftcardInfo = await access.getGiftCard({ redeemed: false })
-        let response = await request.get(config.api.giftcard + giftcardInfo.code)
-        giftCard = response.data
-        expect(response.status).toEqual(200)
+
+        let res = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
+        giftCard = res.body
+        expect(res.statusCode).toEqual(200)
         expect(giftCard.code).toEqual(giftcardInfo.code)
         expect(giftCard.id).not.toBeEmpty()
         expect(giftCard.amount).toBeGreaterThan(0)
     })
 
     it('GET / cannot check giftcard with invalid cookie', async () => {
-        let response = await request.get(config.api.giftcard + 'CARD-ID', 'abc')
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('Access denied.')
+        let res = await request.get(config.api.giftcard + 'CARD-ID', 'abc=abc')
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('Access denied.')
     })
 
     it('GET / cannot check giftcard without login', async () => {
-        await request.get(config.api.signOut)
-        let response = await request.get(config.api.giftcard + 'CARD-ID')
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('Access denied.')
+        await request.get(config.api.signOut, cookie)
+        let res = await request.get(config.api.giftcard + 'CARD-ID', cookie)
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('Access denied.')
     })
 }
 

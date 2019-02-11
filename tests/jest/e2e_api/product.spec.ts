@@ -8,27 +8,27 @@ let product: model.ProductInfoModel
 
 export const ProductInfoTest = () => {
     it('GET / invalid product ID', async () => {
-        let response = await request.get(config.api.product + 'INVALID-ID')
-        expect(response.status).toEqual(500)
-        expect(response.data.message).toEqual('COULD_NOT_LOAD_PRODUCT')
+        let res = await request.get(config.api.product + 'INVALID-ID')
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
     })
 
     it('GET / product of sale not started', async () => {
         let futureSale = await access.getSale({
             startDate: { $gt: new Date() }
         })
-        let response = await request.get(config.api.product + futureSale.products[0].product)
-        expect(response.status).toEqual(404)
-        expect(response.data.message).toEqual('SALE_NOT_FOUND')
+        let res = await request.get(config.api.product + futureSale.products[0].product)
+        expect(res.statusCode).toEqual(404)
+        expect(res.body.message).toEqual('SALE_NOT_FOUND')
     })
 
     it('GET / product of sale ended', async () => {
         let endedSale = await access.getSale({
             endDate: { $lt: new Date() }
         })
-        let response = await request.get(config.api.product + endedSale.products[0].product)
-        expect(response.status).toEqual(410)
-        expect(response.data.message).toEqual('SALE_HAS_ENDED')
+        let res = await request.get(config.api.product + endedSale.products[0].product)
+        expect(res.statusCode).toEqual(410)
+        expect(res.body.message).toEqual('SALE_HAS_ENDED')
     })
 
     it('GET / valid product ID', async () => {
@@ -37,37 +37,37 @@ export const ProductInfoTest = () => {
 
         for (let product of products) {
             try {
-                let response = await request.getProductInfo(product.id)
-                expect(response.id).toEqual(product.id)
+                let res = await request.getProductInfo(product.id)
+                expect(res.id).toEqual(product.id)
 
-                expect(response.sale.slug).not.toBeEmpty()
-                expect(new Date(response.sale.startTime)).toBeBefore(new Date(response.sale.endTime))
-                expect(response.sale.categories.length).toBeGreaterThanOrEqual(1)
-                expect(response.sale.potd).toBeBoolean()
+                expect(res.sale.slug).not.toBeEmpty()
+                expect(new Date(res.sale.startTime)).toBeBefore(new Date(res.sale.endTime))
+                expect(res.sale.categories.length).toBeGreaterThanOrEqual(1)
+                expect(res.sale.potd).toBeBoolean()
 
-                expect(response.brand.logo.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
-                expect(response.brand.name).not.toBeEmpty()
-                expect(response.brand.description).not.toBeEmpty()
+                expect(res.brand.logo.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
+                expect(res.brand.name).not.toBeEmpty()
+                expect(res.brand.description).not.toBeEmpty()
 
-                expect(response.title).not.toBeEmpty()
-                expect(response.returnable).toBeBoolean()
-                expect(response.returnDays).toBeNumber()
+                expect(res.title).not.toBeEmpty()
+                expect(res.returnable).toBeBoolean()
+                expect(res.returnDays).toBeNumber()
 
-                expect(response.description.heading).not.toBeEmpty()
-                expect(response.description.secondary).toBeArray()
+                expect(res.description.heading).not.toBeEmpty()
+                expect(res.description.secondary).toBeArray()
 
-                expect(response.images).toBeObject()
+                expect(res.images).toBeObject()
 
-                expect(response.products).toBeArray()
+                expect(res.products).toBeArray()
 
-                for (let product of response.products) {
+                for (let product of res.products) {
                     try {
                         expect(product.id).not.toBeEmpty()
                         expect(product.saleId).not.toBeEmpty()
                         expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
                         expect(product.inStock).toBeBoolean()
                         expect(product.quantity).toBeGreaterThanOrEqual(0)
-                        expect(Object.keys(response.images)).toContainEqual(product.imageKey)
+                        expect(Object.keys(res.images)).toContainEqual(product.imageKey)
                         expect(product.isVirtual).toBeBoolean()
                         expect(product.isBulky).toBeBoolean()
                     } catch (error) {
@@ -75,8 +75,8 @@ export const ProductInfoTest = () => {
                     }
                 }
 
-                expect(response.sizes).toBeArray()
-                expect(response.colors).toBeArray()
+                expect(res.sizes).toBeArray()
+                expect(res.colors).toBeArray()
             } catch (error) {
                 throw { failed_product: product, error: error }
             }
@@ -122,9 +122,9 @@ export const ProductInfoTest = () => {
             expect(color.name).not.toBeEmpty()
             expect(color.soldOut).toBeBoolean()
 
-            let response = await request.get(config.api.product + 'view-product/' +
+            let res = await request.get(config.api.product + 'view-product/' +
                 product.id + '/' + color.name)
-            expect(response.status).toEqual(200)
+            expect(res.statusCode).toEqual(200)
         }
     })
 }

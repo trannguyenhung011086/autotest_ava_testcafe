@@ -11,20 +11,21 @@ let orderItem: model.Order
 export const OrdersInfoTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
-        account = await request.getAccountInfo()
+        account = await request.getAccountInfo(cookie)
         jest.setTimeout(120000)
     })
 
     it('GET / cannot see order of another customer', async () => {
-        let response = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc')
-        expect(response.status).toEqual(200)
-        expect(response.data).toBeEmpty()
+        let res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', cookie)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toBeEmpty()
     })
 
     it('GET / can access orders', async () => {
-        let response = await request.get(config.api.orders)
-        orders = response.data
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.orders, cookie)
+        orders = res.body
+
+        expect(res.statusCode).toEqual(200)
         for (let order of orders) {
             try {
                 expect(order.id).not.toBeEmpty()
@@ -44,13 +45,13 @@ export const OrdersInfoTest = () => {
     })
 
     it('GET / can see order info using order ID', async () => {
-        orders = await request.getOrders()
+        orders = await request.getOrders(cookie)
 
         for (let order of orders) {
             try {
-                let response = await request.get(config.api.orders + '/' + order.id)
-                orderItem = response.data
-                expect(response.status).toEqual(200)
+                let res = await request.get(config.api.orders + '/' + order.id, cookie)
+                orderItem = res.body
+                expect(res.statusCode).toEqual(200)
 
                 expect(orderItem.id).toEqual(order.id)
                 expect(orderItem.code).toMatch(/^SG|HK|VN/)
@@ -131,20 +132,20 @@ export const OrdersInfoTest = () => {
     })
 
     it('GET / can see order info using order code', async () => {
-        orders = await request.getOrders()
+        orders = await request.getOrders(cookie)
 
         for (let order of orders) {
             try {
                 let orderCode = order.code.split('-')[1]
-                let response = await request.get(config.api.orders + '/' + orderCode)
-                expect(response.status).toEqual(200)
+                let res = await request.get(config.api.orders + '/' + orderCode, cookie)
+                expect(res.statusCode).toEqual(200)
 
-                if (Array.isArray(response.data)) {
-                    for (let item of response.data) {
+                if (Array.isArray(res.body)) {
+                    for (let item of res.body) {
                         expect(item.code).toInclude(orderCode)
                     }
                 } else {
-                    expect(response.data.code).toInclude(orderCode)
+                    expect(res.body.code).toInclude(orderCode)
                 }
             } catch (error) {
                 throw { failed_order: order, error: error }
@@ -153,16 +154,17 @@ export const OrdersInfoTest = () => {
     }, 180000)
 
     it('GET / cannot access order info with invalid cookie', async () => {
-        let response = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', 'abc')
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('Invalid request.')
+        let res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', 'abc=abc')
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('Invalid request.')
     })
 
     it('GET / cannot access orders without login', async () => {
-        await request.get(config.api.signOut)
-        let response = await request.get(config.api.orders)
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('Access denied.')
+        await request.get(config.api.signOut, cookie)
+        let res = await request.get(config.api.orders, cookie)
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('Access denied.')
     })
 }
 

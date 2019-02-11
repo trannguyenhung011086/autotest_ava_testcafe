@@ -11,25 +11,25 @@ export const CampaignInfoTest = () => {
             endDate: { $gt: new Date() }
         })
 
-        let response = await request.get(config.api.campaigns + campaign.name)
-        expect(response.status).toEqual(200)
-        expect(response.data.message).toEqual('SET')
+        let res = await request.get(config.api.campaigns + campaign.name)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.message).toEqual('SET')
 
-        response = await request.get(config.api.campaigns + campaign.name)
-        expect(response.status).toEqual(200)
-        expect(response.data.message).toEqual('NO_CHANGE')
+        res = await request.get(config.api.campaigns + campaign.name)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.message).toEqual('NO_CHANGE')
     })
 
     it('GET / invalid campaign name', async () => {
-        let response = await request.get(config.api.campaigns + 'INVALID-CAMPAIGN')
-        expect(response.status).toEqual(404)
-        expect(response.data.message).toEqual('NOT_FOUND')
+        let res = await request.get(config.api.campaigns + 'INVALID-CAMPAIGN')
+        expect(res.statusCode).toEqual(404)
+        expect(res.body.message).toEqual('NOT_FOUND')
     })
 
     it('GET / missing campaign name', async () => {
-        let response = await request.get(config.api.campaigns)
-        expect(response.status).toEqual(404)
-        expect(response.data.message).toEqual('Not found')
+        let res = await request.get(config.api.campaigns)
+        expect(res.statusCode).toEqual(404)
+        expect(res.body.message).toEqual('Not found')
     })
 }
 
