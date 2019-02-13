@@ -29,7 +29,7 @@ export const CategoryTest = () => {
         expect(topMenu.displayName.en).toEqual('Top Navigation')
         expect(topMenu.description).not.toBeEmpty()
 
-        for (let item of topMenu.items) {
+        topMenu.items.forEach(item => {
             expect(item.id).not.toBeEmpty()
             expect(item.name).toBeString()
             expect(item.displayName.vn).not.toBeEmpty()
@@ -37,7 +37,7 @@ export const CategoryTest = () => {
             expect(item.type).not.toBeEmpty()
             expect(item.slug.vn).toInclude(item.id)
             expect(item.slug.en).toInclude(item.id)
-        }
+        })
     })
 
     it.each([
@@ -57,7 +57,7 @@ export const CategoryTest = () => {
         expect(menu.displayName.en).not.toBeEmpty()
         expect(menu.type).toEqual('categories')
 
-        for (let item of menu.subitems) {
+        menu.subitems.forEach(item => {
             expect(item.id).not.toBeEmpty()
             expect(item.name).toBeString()
             expect(item.displayName.vn).not.toBeEmpty()
@@ -65,7 +65,7 @@ export const CategoryTest = () => {
             expect(item.salesCount).toBeNumber()
             expect(item.slug.vn).toInclude(item.id)
             expect(item.slug.en).toInclude(item.id)
-        }
+        })
 
         expect(menu.parent.id).not.toBeEmpty()
         expect(menu.parent.displayName.vn).not.toBeEmpty()
@@ -83,14 +83,14 @@ export const CategoryTest = () => {
     ])('GET / get featured sales - %s', async (menuItem) => {
         let sales = await request.getSales(menuItem + '/sales/featured')
 
-        for (let sale of sales) {
+        sales.forEach(sale => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
             expect(sale.image1.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
             expect(sale.slug).toInclude(sale.id)
             expect(sale.international).toBeBoolean()
-        }
+        })
     })
 
     it.each([
@@ -113,7 +113,7 @@ export const CategoryTest = () => {
     ])('GET / get current sales - %s', async (menuItem) => {
         let sales = await request.getSales(menuItem + '/sales/current')
 
-        for (let sale of sales) {
+        sales.forEach(sale => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
@@ -126,7 +126,7 @@ export const CategoryTest = () => {
             }
 
             expect(sale.international).toBeBoolean()
-        }
+        })
     })
 
     it.each([
@@ -151,9 +151,9 @@ export const CategoryTest = () => {
         let sales = await request.getSales(config.api.cateApparel +
             '/sales/current?excludeId=' + featured.body.id)
 
-        for (let sale of sales) {
+        sales.forEach(sale => {
             expect(sale.id).not.toEqual(featured.body.id)
-        }
+        })
     })
 }
 

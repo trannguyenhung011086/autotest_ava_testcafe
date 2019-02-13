@@ -10,14 +10,16 @@ let addresses: Model.Addresses
 let item: Model.Product
 let cart: Model.Cart
 let cookie: string
+let checkoutInput: Model.CheckoutInput
 
 export const CheckoutErrorTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
+        checkoutInput = {}
     })
 
     afterEach(async () => {
@@ -43,9 +45,11 @@ export const CheckoutErrorTest = () => {
             },
             "cart": account.cart,
             "method": "FREE"
-        }, 'abc=abc')
+        }, 'leflair.connect2.sid=test')
 
-        expect(res.statusCode).toEqual(500)
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toContainEqual('EMAIL_ADDRESS_REQUIRED')
+        expect(res.body.message).toContainEqual('EMAIL_ADDRESS_NOT_WELL_FORMAT')
     })
 
     it('POST / cannot checkout with empty data', async () => {
@@ -264,9 +268,10 @@ export const CheckoutErrorTest = () => {
     // validate availability
 
     it.skip('POST / cannot checkout with sold out product', async () => {
-        let soldOut = await request.getSoldOutProduct(config.api.currentSales)
+        let soldOut = await request.getSoldOutProductInfo(config.api.currentSales)
         await request.addToCart(soldOut.products[0].id, cookie)
-        // after Netsuite integration, API does not allow to add sold out product to cart anymore -> need another workaround
+        // after Netsuite integration, API does not allow to add sold out product to cart 
+        // need another workaround
 
         account = await request.getAccountInfo(cookie)
 
@@ -290,12 +295,14 @@ export const CheckoutErrorTest = () => {
             startDate: { $gte: new Date('2018-11-11 01:00:00.000Z') },
             endDate: { $lt: new Date() }
         })
+
         let item = await access.getProduct({
             _id: endedSale.products[0].product
         })
 
         await request.addToCart(item.variations[0]._id, cookie)
-        // after Netsuite integration, API does not allow to add sale ended product to cart anymore -> need another workaround
+        // after Netsuite integration, API does not allow to add sale ended product to cart
+        // need another workaround
 
         account = await request.getAccountInfo(cookie)
 
@@ -324,7 +331,6 @@ export const CheckoutErrorTest = () => {
         })
 
         item = await request.getInStockProduct(config.api.todaySales, 1)
-
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -339,7 +345,7 @@ export const CheckoutErrorTest = () => {
             "voucher": voucher._id,
             "accountCredit": account.accountCredit
         }, cookie)
-        
+
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('NOT_MEET_MINIMUM_ITEMS')
         expect(res.body.data.voucher.numberOfItems).toEqual(voucher.numberOfItems)
@@ -356,7 +362,6 @@ export const CheckoutErrorTest = () => {
         })
 
         item = await request.getInStockProduct(config.api.todaySales, 1)
-
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -378,7 +383,6 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with voucher not meeting min purchase', async () => {
-        item = await request.getProductWithCountry('VN', 0, 500000, 1)
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
@@ -386,6 +390,7 @@ export const CheckoutErrorTest = () => {
             minimumPurchase: { $gte: 500000 }
         })
 
+        item = await request.getProductWithCountry('VN', 0, 500000)
         await request.addToCart(item.id, cookie)
         account = await request.getAccountInfo(cookie)
 
@@ -405,11 +410,7 @@ export const CheckoutErrorTest = () => {
         expect(res.body.message).toEqual('TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM')
     })
 
-    it('POST / cannot checkout with voucher exceeding number of usage', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
+    it('POST / cannot checkout with voucher exceeding number of usage (skip-prod)', async () => {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             multipleUser: true,
@@ -417,7 +418,14 @@ export const CheckoutErrorTest = () => {
             used: false
         }, customer)
 
-        await request.createCodOrder([item], voucher._id)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+
+        await request.checkoutCod(checkoutInput, cookie)
 
         item = await request.getInStockProduct(config.api.todaySales, 1)
         await request.addToCart(item.id, cookie)
@@ -440,15 +448,15 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with expired voucher', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $lt: new Date() },
             binRange: { $exists: false },
             used: false
         })
+
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -467,15 +475,15 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with redeemed voucher', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $lt: new Date() },
             binRange: { $exists: false },
             used: true
         })
+
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -494,16 +502,16 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with COD using voucher for CC', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
             used: false,
             minimumPurchase: { $lte: item.salePrice }
         })
+
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -522,16 +530,16 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with voucher for Stripe using wrong bin range (skip-prod)', async () => {
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
             used: false,
             minimumPurchase: { $lte: item.salePrice }
         })
+
+        item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
 
         const stripeData = {
             "type": "card",
@@ -542,7 +550,7 @@ export const CheckoutErrorTest = () => {
             "key": config.stripeKey
         }
         const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase)
+            cookie, config.stripeBase).then(res => res.body)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -551,7 +559,7 @@ export const CheckoutErrorTest = () => {
             },
             "cart": account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource.body,
+            "methodData": stripeSource,
             "shipping": 0,
             "voucher": voucher._id,
             "accountCredit": account.accountCredit
@@ -561,22 +569,13 @@ export const CheckoutErrorTest = () => {
         expect(res.body.message).toEqual('THIS_CC_NOT_ACCEPTABLE')
     })
 
-    it('POST / cannot checkout with already used voucher (skip-prod)', async () => {
-        // need to exclude this 
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        let voucher = await access.getNotUsedVoucher({
+    it('POST / cannot checkout with already used voucher', async () => {
+        let voucher = await access.getUsedVoucher({
             expiry: { $gte: new Date() },
+            binRange: { $exists: false },
             used: false,
-            discountType: 'amount',
-            minimumPurchase: 0,
-            numberOfItems: 0,
             oncePerAccount: true
         }, customer)
-
-        await request.createCodOrder([item], voucher._id)
 
         item = await request.getInStockProduct(config.api.currentSales, 1)
         await request.addToCart(item.id, cookie)
@@ -599,15 +598,15 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with voucher only used for other customer', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
             customer: { $exists: true, $ne: customer._id }
         })
+
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
+        account = await request.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {

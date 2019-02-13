@@ -15,6 +15,7 @@ export const GiftcardTest = () => {
 
     it('GET / check invalid giftcard', async () => {
         let res = await request.get(config.api.giftcard + 'INVALID-ID', cookie)
+
         expect(res.statusCode).toEqual(500)
         expect(res.body.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
     })
@@ -23,6 +24,7 @@ export const GiftcardTest = () => {
         giftcardInfo = await access.getGiftCard({ redeemed: true })
 
         let res = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
+
         expect(res.statusCode).toEqual(500)
         expect(res.body.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
     })
@@ -32,6 +34,7 @@ export const GiftcardTest = () => {
 
         let res = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
         giftCard = res.body
+
         expect(res.statusCode).toEqual(200)
         expect(giftCard.code).toEqual(giftcardInfo.code)
         expect(giftCard.id).not.toBeEmpty()
@@ -39,7 +42,8 @@ export const GiftcardTest = () => {
     })
 
     it('GET / cannot check giftcard with invalid cookie', async () => {
-        let res = await request.get(config.api.giftcard + 'CARD-ID', 'abc=abc')
+        let res = await request.get(config.api.giftcard + 'CARD-ID', 'leflair.connect2.sid=test')
+
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')
     })
@@ -47,6 +51,7 @@ export const GiftcardTest = () => {
     it('GET / cannot check giftcard without login', async () => {
         await request.get(config.api.signOut, cookie)
         let res = await request.get(config.api.giftcard + 'CARD-ID', cookie)
+
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')
     })

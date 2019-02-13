@@ -17,7 +17,8 @@ import {
     CheckoutCodTest,
     CheckoutErrorTest,
     CheckoutPayDollarTest,
-    CheckoutProceedTest,
+    CheckoutProceedLoggedInTest,
+    CheckoutProceedGuestTest,
     CheckoutSplitTest,
     CheckoutStripeTest,
     ReCheckoutErrorTest,
@@ -26,7 +27,6 @@ import {
     GiftcardTest,
     OrdersConfirmTest,
     OrdersInfoTest,
-    CacheCreateTest,
     ProductFeedsTest,
     ProductInfoTest,
     SaleInfoTest,
@@ -64,21 +64,23 @@ describe('Secret Sale Test', SecretSaleTest)
 describe('Cart Success Test', CartSuccessTest)
 describe('Cart Error Test', CartErrorTest)
 
-describe('Checkout Proceed Test', CheckoutProceedTest)
-describe('Checkout Error Test', CheckoutErrorTest)
-describe('Checkout COD Test', CheckoutCodTest)
-describe('Checkout PayDollar Test', CheckoutPayDollarTest)
+describe('Checkout Proceed (Logged In) Test', CheckoutProceedLoggedInTest)
+describe('Checkout Proceed (Guest) Test', CheckoutProceedGuestTest)
 
-describe('Checkout Stripe Test', CheckoutStripeTest)
-describe('Checkout Split Order Test', CheckoutSplitTest)
+describe('Checkout Error Test', CheckoutErrorTest)
+describe('Checkout COD Test (skip-prod)', CheckoutCodTest)
+describe('Checkout PayDollar Test (skip-prod)', CheckoutPayDollarTest)
+
+describe('Checkout Stripe Test (skip-prod)', CheckoutStripeTest)
+describe('Checkout Split Order Test (skip-prod)', CheckoutSplitTest)
 
 describe('Re-checkout Error Test', ReCheckoutErrorTest)
-describe('Re-checkout Success Test', ReCheckoutSuccessTest)
+describe('Re-checkout Success Test (skip-prod)', ReCheckoutSuccessTest)
 
 describe('Creditcard Info Test', CreditCardTest)
 
 describe('Order Info Test', OrdersInfoTest)
-describe('Auto-confirm Order Test', OrdersConfirmTest)
+describe('Auto-confirm Order Test (skip-prod)', OrdersConfirmTest)
 
 describe('Voucher Test', VoucherTest)
 describe('Gift Card Test', GiftcardTest)

@@ -8,15 +8,17 @@ let account: Model.Account
 let customer: Model.Customer
 let item: Model.Product
 let addresses: Model.Addresses
+let checkoutInput: Model.CheckoutInput
 let cookie: string
 
 export const CheckoutCodTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
+        checkoutInput = {}
     })
 
     afterEach(async () => {
@@ -70,11 +72,16 @@ export const CheckoutCodTest = () => {
 
     it('POST / checkout with COD', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
 
-        let checkout = await request.createCodOrder([item], cookie)
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+
+        let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
+
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -82,7 +89,7 @@ export const CheckoutCodTest = () => {
         expect(order.paymentSummary.shipping).toEqual(25000)
     })
 
-    it('POST / checkout with COD - voucher (amount) + credit', async () => {
+    it('POST / checkout with COD - voucher (amount) + credit (skip-prod)', async () => {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             used: false,
@@ -93,6 +100,7 @@ export const CheckoutCodTest = () => {
         }, customer)
 
         item = await request.getInStockProduct(config.api.todaySales, 2)
+        await request.addToCart(item.id, cookie)
 
         let credit: number
         if (account.accountCredit < (item.salePrice + 25000 - voucher.amount)) {
@@ -101,10 +109,16 @@ export const CheckoutCodTest = () => {
             credit = item.salePrice + 25000 - voucher.amount
         }
 
-        let checkout = await request.createCodOrder([item, item], voucher._id, credit, cookie)
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.credit = credit
+
+        let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
+
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -114,7 +128,7 @@ export const CheckoutCodTest = () => {
         expect(Math.abs(order.paymentSummary.accountCredit)).toEqual(credit)
     })
 
-    it('POST / checkout with COD - voucher (percentage + max discount)', async () => {
+    it('POST / checkout with COD - voucher (percentage + max discount) (skip-prod)', async () => {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             used: false,
@@ -127,8 +141,13 @@ export const CheckoutCodTest = () => {
         }, customer)
 
         item = await request.getInStockProduct(config.api.todaySales, 1, 500000)
+        await request.addToCart(item.id, cookie)
 
-        let checkout = await request.createCodOrder([item], voucher._id, null, cookie)
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+
+        let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)

@@ -6,7 +6,9 @@ import 'jest-extended'
 import * as Model from '../../../common/interface'
 let account: Model.Account
 let customer: Model.Customer
+let addresses: Model.Addresses
 let cookie: string
+let checkoutInput: Model.CheckoutInput
 
 const stripeData = {
     "card[number]": "5555555555554444",
@@ -17,15 +19,18 @@ const stripeData = {
     "key": config.stripeKey
 }
 
-const stripeSource = request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
-    .then(res => res.body)
+let stripeSource: any
 
 export const CheckoutSplitTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
+        addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
+        stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase).then(res => res.body)
+        checkoutInput = {}
         jest.setTimeout(150000)
     })
 
@@ -38,11 +43,18 @@ export const CheckoutSplitTest = () => {
     })
 
     it('POST / not split SG order when total < 1,000,000', async () => {
-        let itemSG1 = await request.getProductWithCountry('SG', 0, 400000, 1)
-        let itemSG2 = await request.getProductWithCountry('SG', 400000, 500000, 1)
+        let itemSG1 = await request.getProductWithCountry('SG', 0, 400000)
+        let itemSG2 = await request.getProductWithCountry('SG', 400000, 500000)
 
-        let checkout = await request.createStripeOrder([itemSG1, itemSG2],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemSG1.id, cookie)
+        await request.addToCart(itemSG2.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let order = await request.getOrderInfo(checkout.code, cookie)
 
         expect(order).not.toBeArray()
@@ -60,12 +72,20 @@ export const CheckoutSplitTest = () => {
         }
     })
 
-    it('POST / not split HK order when total < 1,000,000', async () => {
-        let itemHK1 = await request.getProductWithCountry('HK', 0, 400000, 1)
-        let itemHK2 = await request.getProductWithCountry('HK', 400000, 500000, 1)
+    it.skip('POST / not split HK order when total < 1,000,000', async () => {
+        // skip due to not have HK stock now
+        let itemHK1 = await request.getProductWithCountry('HK', 0, 400000)
+        let itemHK2 = await request.getProductWithCountry('HK', 400000, 500000)
 
-        let checkout = await request.createStripeOrder([itemHK1, itemHK2],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemHK1.id, cookie)
+        await request.addToCart(itemHK2.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let order = await request.getOrderInfo(checkout.code, cookie)
 
         expect(order).not.toBeArray()
@@ -84,11 +104,18 @@ export const CheckoutSplitTest = () => {
     })
 
     it('POST / split SG order when total >= 1,000,000', async () => {
-        let itemSG1 = await request.getProductWithCountry('SG', 300000, 400000, 1)
-        let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
+        let itemSG1 = await request.getProductWithCountry('SG', 0, 800000)
+        let itemSG2 = await request.getProductWithCountry('SG', 900000, 2000000)
 
-        let checkout = await request.createStripeOrder([itemSG1, itemSG2],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemSG1.id, cookie)
+        await request.addToCart(itemSG2.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
@@ -108,12 +135,20 @@ export const CheckoutSplitTest = () => {
         }
     })
 
-    it('POST / split HK order when total >= 1,000,000', async () => {
-        let itemHK1 = await request.getProductWithCountry('HK', 300000, 400000, 1)
-        let itemHK2 = await request.getProductWithCountry('HK', 800000, 2000000, 1)
+    it.skip('POST / split HK order when total >= 1,000,000', async () => {
+        // skip due to not have HK stock now
+        let itemHK1 = await request.getProductWithCountry('HK', 0, 800000)
+        let itemHK2 = await request.getProductWithCountry('HK', 900000, 2000000)
 
-        let checkout = await request.createStripeOrder([itemHK1, itemHK2],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemHK1.id, cookie)
+        await request.addToCart(itemHK2.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
@@ -134,11 +169,18 @@ export const CheckoutSplitTest = () => {
     })
 
     it('POST / split SG and VN order', async () => {
-        let itemSG = await request.getProductWithCountry('SG', 0, 2000000, 1)
-        let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
+        let itemSG = await request.getProductWithCountry('SG', 0, 2000000)
+        let itemVN = await request.getProductWithCountry('VN', 0, 2000000)
 
-        let checkout = await request.createStripeOrder([itemSG, itemVN],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemSG.id, cookie)
+        await request.addToCart(itemVN.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
@@ -159,12 +201,20 @@ export const CheckoutSplitTest = () => {
         }
     })
 
-    it('POST / split HK and VN order', async () => {
-        let itemHK = await request.getProductWithCountry('HK', 0, 2000000, 1)
-        let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
+    it.skip('POST / split HK and VN order', async () => {
+        // skip due to not have HK stock now
+        let itemHK = await request.getProductWithCountry('HK', 0, 2000000)
+        let itemVN = await request.getProductWithCountry('VN', 0, 2000000)
 
-        let checkout = await request.createStripeOrder([itemHK, itemVN],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemHK.id, cookie)
+        await request.addToCart(itemVN.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
@@ -186,13 +236,22 @@ export const CheckoutSplitTest = () => {
     })
 
     it('POST / split multiple SG and VN order', async () => {
-        let itemSG1 = await request.getProductWithCountry('SG', 300000, 400000, 1)
-        let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
-        let itemVN1 = await request.getInStockProduct(config.api.todaySales, 1, 300000)
-        let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
+        let itemSG1 = await request.getProductWithCountry('SG', 0, 800000)
+        let itemSG2 = await request.getProductWithCountry('SG', 900000, 2000000)
+        let itemVN1 = await request.getProductWithCountry('VN', 0, 800000)
+        let itemVN2 = await request.getProductWithCountry('VN', 1000000, 2000000)
 
-        let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemVN1, itemVN2],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemSG1.id, cookie)
+        await request.addToCart(itemSG2.id, cookie)
+        await request.addToCart(itemVN1.id, cookie)
+        await request.addToCart(itemVN2.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(3)
@@ -218,14 +277,24 @@ export const CheckoutSplitTest = () => {
         }
     })
 
-    it('POST / split multiple HK and VN order', async () => {
-        let itemHK1 = await request.getProductWithCountry('HK', 300000, 400000, 1)
-        let itemHK2 = await request.getProductWithCountry('HK', 800000, 2000000, 1)
-        let itemVN1 = await request.getInStockProduct(config.api.todaySales, 1, 300000)
-        let itemVN2 = await request.getInStockProduct(config.api.featuredSales, 1, 300000)
+    it.skip('POST / split multiple HK and VN order', async () => {
+        // skip due to not have HK stock now
+        let itemHK1 = await request.getProductWithCountry('HK', 0, 800000)
+        let itemHK2 = await request.getProductWithCountry('HK', 900000, 2000000)
+        let itemVN1 = await request.getProductWithCountry('VN', 0, 800000)
+        let itemVN2 = await request.getProductWithCountry('VN', 900000, 2000000)
 
-        let checkout = await request.createStripeOrder([itemHK1, itemHK2, itemVN1, itemVN2],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemHK1.id, cookie)
+        await request.addToCart(itemHK2.id, cookie)
+        await request.addToCart(itemVN1.id, cookie)
+        await request.addToCart(itemVN2.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(3)
@@ -251,13 +320,22 @@ export const CheckoutSplitTest = () => {
         }
     })
 
-    it('POST / split SG, HK and VN order', async () => {
-        let itemSG = await request.getProductWithCountry('SG', 0, 2000000, 1)
-        let itemHK = await request.getProductWithCountry('HK', 0, 6000000, 1)
-        let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
+    it.skip('POST / split SG, HK and VN order', async () => {
+        // skip due to not have HK stock now
+        let itemSG = await request.getProductWithCountry('SG', 0, 2000000)
+        let itemHK = await request.getProductWithCountry('HK', 0, 2000000)
+        let itemVN = await request.getProductWithCountry('VN', 0, 2000000)
 
-        let checkout = await request.createStripeOrder([itemSG, itemHK, itemVN],
-            await stripeSource, true, null, null, cookie)
+        await request.addToCart(itemSG.id, cookie)
+        await request.addToCart(itemHK.id, cookie)
+        await request.addToCart(itemVN.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(3)
@@ -296,11 +374,19 @@ export const CheckoutSplitTest = () => {
             specificDays: []
         }, customer)
 
-        let itemSG = await request.getProductWithCountry('SG', 0, 2000000, 1)
-        let itemVN = await request.getInStockProduct(config.api.todaySales, 1, 300000)
+        let itemSG = await request.getProductWithCountry('SG', 0, 2000000)
+        let itemVN = await request.getProductWithCountry('VN', 0, 2000000)
 
-        let checkout = await request.createStripeOrder([itemSG, itemVN],
-            await stripeSource, true, voucher._id, null, cookie)
+        await request.addToCart(itemSG.id, cookie)
+        await request.addToCart(itemVN.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(2)
@@ -331,12 +417,21 @@ export const CheckoutSplitTest = () => {
             specificDays: []
         })
 
-        let itemSG1 = await request.getProductWithCountry('SG', 500000, 2000000, 1)
-        let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000, 1)
-        let itemSG3 = await request.getProductWithCountry('SG', 1000000, 2000000, 1)
+        let itemSG1 = await request.getProductWithCountry('SG', 500000, 700000)
+        let itemSG2 = await request.getProductWithCountry('SG', 800000, 2000000)
+        let itemSG3 = await request.getProductWithCountry('SG', 2100000, 2000000)
 
-        let checkout = await request.createStripeOrder([itemSG1, itemSG2, itemSG3],
-            await stripeSource, true, voucher._id, null, cookie)
+        await request.addToCart(itemSG1.id, cookie)
+        await request.addToCart(itemSG2.id, cookie)
+        await request.addToCart(itemSG3.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = stripeSource
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         let orders = await request.getSplitOrderInfo(checkout.code, cookie)
 
         expect(orders).toBeArrayOfSize(3)

@@ -14,6 +14,7 @@ export class ApiUtils extends GotUtils {
             email: email,
             password: password
         }
+
         let cookie = await this.post(config.api.signIn, data)
             .then(res => res.headers['set-cookie'][0])
 
@@ -67,7 +68,10 @@ export class ApiUtils extends GotUtils {
     }
 
     public async addToCart(productId: string, cookie?: string, check?: boolean): Promise<Model.Cart> {
-        let res = await this.post(config.api.cart, { "productId": productId }, cookie)
+        let res = await this.post(config.api.cart, {
+            "productId": productId
+        }, cookie)
+
         if (check && res.statusCode != 200) {
             throw {
                 message: 'Cannot add to cart: ' + productId,
@@ -78,7 +82,10 @@ export class ApiUtils extends GotUtils {
     }
 
     public async updateQuantityCart(cartId: string, quantity: number, cookie?: string): Promise<Model.Cart> {
-        let res = await this.put(config.api.cart + cartId, { "quantity": quantity }, cookie)
+        let res = await this.put(config.api.cart + cartId, {
+            "quantity": quantity
+        }, cookie)
+
         if (res.statusCode != 200) {
             throw {
                 message: 'Cannot update quantity: ' + cartId,
@@ -132,49 +139,36 @@ export class ApiUtils extends GotUtils {
         return res.body
     }
 
-    public async getProducts(saleType: string, productType?: string): Promise<Model.Products[]> {
+    public async getProducts(saleType: string, crossBorder?: string): Promise<Model.Products[]> {
         const sales = await this.getSales(saleType)
+        let saleList = []
         let domestic = []
         let international = []
+        let productList = []
 
-        sales.forEach(sale => {
-            if (sale.international == false) {
-                domestic.push(sale)
-            } else if (sale.international == true) {
-                international.push(sale)
-            }
-        })
-
-        if (productType == 'international' || saleType == config.api.internationalSales) {
-            if (international.length == 0) {
-                throw 'There is no international product from ' + saleType
-            }
-            const saleInfo = await this.getSaleInfo(international[0]['id'])
-            return saleInfo.products
-        } else {
-            if (domestic.length == 0) {
-                throw 'There is no domestic product from ' + saleType
-            }
-            const saleInfo = await this.getSaleInfo(domestic[0]['id'])
-            return saleInfo.products
-        }
-    }
-
-    public async getSaleWithManyProducts(saleType: string, amount: number = 90) {
-        const sales = await this.getSales(saleType)
-        var matched: Model.SalesModel
         for (let sale of sales) {
-            var saleInfo = await this.getSaleInfo(sale['id'])
-            var products = saleInfo.products
-            if (products.length > amount) {
-                matched = sale
-                break
+            if (sale.international === true) {
+                international.push(sale)
+            } else {
+                domestic.push(sale)
             }
         }
-        if (matched == undefined) {
-            throw `There is no sale with ${amount} products from ${saleType}`
+
+        if (saleType == config.api.internationalSales || crossBorder == 'international') {
+            saleList = international
+        } else {
+            saleList = domestic
         }
-        return matched
+
+        for (let sale of saleList) {
+            const saleInfo = await this.getSaleInfo(sale['id'])
+
+            for (let product of saleInfo.products) {
+                productList.push(product)
+            }
+        }
+
+        return productList
     }
 
     public async getBestSellers(): Promise<Model.BestSellers[]> {
@@ -188,7 +182,7 @@ export class ApiUtils extends GotUtils {
         return res.body
     }
 
-    public async getProductWithSizes(saleType: string): Promise<Model.ProductInfoModel> {
+    public async getProductInfoWithSizes(saleType: string): Promise<Model.ProductInfoModel> {
         let products = await this.getProducts(saleType)
 
         let result: Model.ProductInfoModel
@@ -206,7 +200,7 @@ export class ApiUtils extends GotUtils {
         return result
     }
 
-    public async getProductWithColors(saleType: string): Promise<Model.ProductInfoModel> {
+    public async getProductInfoWithColors(saleType: string): Promise<Model.ProductInfoModel> {
         let products = await this.getProducts(saleType)
 
         let result: Model.ProductInfoModel
@@ -240,6 +234,7 @@ export class ApiUtils extends GotUtils {
         let result: Model.Product
         for (let item of matched) {
             let info = await this.getProductInfo(item.id)
+
             for (let product of info.products) {
                 if (price && product.salePrice >= price && product.quantity >= quantity) {
                     result = product
@@ -273,6 +268,7 @@ export class ApiUtils extends GotUtils {
         let result: Model.Product[] = []
         for (let item of matched) {
             let info = await this.getProductInfo(item.id)
+
             for (let product of info.products) {
                 if (price && product.salePrice >= price && product.quantity >= quantity) {
                     result.push(product)
@@ -291,7 +287,7 @@ export class ApiUtils extends GotUtils {
         return result
     }
 
-    public async getSoldOutProduct(saleType: string): Promise<Model.ProductInfoModel> {
+    public async getSoldOutProductInfo(saleType: string): Promise<Model.ProductInfoModel> {
         let products = await this.getProducts(saleType)
         let matched: Model.Products[] = []
 
@@ -319,42 +315,37 @@ export class ApiUtils extends GotUtils {
         return result
     }
 
-    public async getProductWithCountry(country: string, minPrice: number, maxPrice: number, quantity: number) {
+    public async getProductWithCountry(country: string, minPrice: number, maxPrice: number): Promise<Model.Product> {
         let sales = await new MongoUtils().getSaleList({
             country: country,
             startDate: { $lt: new Date() },
             endDate: { $gte: new Date() }
         })
-        let matched: Model.Products[] = []
+        let inStockList = []
 
         for (let sale of sales) {
             let saleInfo = await this.getSaleInfo(sale._id)
-            for (let product of saleInfo.products) {
-                if (product.soldOut === false && product.salePrice >= minPrice &&
+
+            saleInfo.products.forEach(product => {
+                if (product.soldOut === false &&
+                    product.salePrice >= minPrice &&
                     product.salePrice <= maxPrice) {
-                    matched.push(product)
+                    inStockList.push(product)
                 }
-            }
+            })
         }
 
-        let result: Model.Product
-        for (let item of matched) {
-            if (item.quantity >= quantity && item.soldOut == false) {
-                let info = await this.getProductInfo(item.id)
-                for (let product of info.products) {
-                    if (product.quantity >= quantity) {
-                        result = product
-                        break
-                    }
-                }
-                break
-            }
-        }
-
-        if (!result) {
+        if (inStockList.length == 0) {
             throw `There is no product with stock from ${country}!`
         }
-        return result
+
+        let info = await this.getProductInfo(inStockList[0].id)
+
+        for (let product of info.products) {
+            if (product.inStock === true) {
+                return product
+            }
+        }
     }
 
     public async getAddresses(cookie?: string): Promise<Model.Addresses> {
@@ -622,276 +613,96 @@ export class ApiUtils extends GotUtils {
         return res.body
     }
 
-    public async checkoutPayDollar(account: Model.Account, addresses: Model.Addresses,
-        saveNewCard?: boolean, voucherId?: string, credit?: number,
-        cookie?: string): Promise<Model.CheckoutOrder> {
-
+    public async checkoutPayDollar(info: Model.CheckoutInput, cookie?: string): Promise<Model.CheckoutOrder> {
         let data = {
             "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
+                "shipping": info.addresses.shipping[0],
+                "billing": info.addresses.billing[0]
             },
-            "cart": account.cart,
+            "cart": info.account.cart,
             "method": "CC",
             "shipping": 0
         }
-        if (saveNewCard) {
-            data['saveCard'] = saveNewCard
+        if (info.saveNewCard) {
+            data['saveCard'] = info.saveNewCard
         }
-        if (voucherId) {
-            data['voucher'] = voucherId
+        if (info.voucherId) {
+            data['voucher'] = info.voucherId
         }
-        if (credit) {
-            data['accountCredit'] = credit
+        if (info.credit) {
+            data['accountCredit'] = info.credit
         }
-
-        let res = await this.post(config.api.checkout, data, cookie,
-            config.baseUrl.replace('www', 'secure'))
-
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot execute checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
-        return res.body
-    }
-
-    public async reCheckoutPayDollar(failedAttemptOrder: Model.FailedAttempt,
-        addresses: Model.Addresses, saveNewCard?: boolean, voucherId?: string,
-        credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
-
-        let data = {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": [
-                {
-                    "id": failedAttemptOrder.products[0].id,
-                    "quantity": failedAttemptOrder.products[0].quantity,
-                    "salePrice": failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            "method": "CC",
-            "shipping": 0
-        }
-        if (saveNewCard) {
-            data['saveCard'] = saveNewCard
-        }
-        if (voucherId) {
-            data['voucher'] = voucherId
-        }
-        if (credit) {
-            data['accountCredit'] = credit
-        }
-
-        let res = await this.post(config.api.checkout + '/order/' +
-            failedAttemptOrder.code, data, cookie)
-
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot execute re-checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
-        return res.body
-    }
-
-    public async checkoutSavedPayDollar(account: Model.Account, addresses: Model.Addresses,
-        cardId: string, voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
-
-        let data = {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "CC",
-            "methodData": cardId,
-            "shipping": 0
-        }
-        if (voucherId) {
-            data['voucher'] = voucherId
-        }
-        if (credit) {
-            data['accountCredit'] = credit
+        if (info.methodData) {
+            data['methodData'] = info.methodData
         }
 
         let res = await this.post(config.api.checkout, data, cookie)
+
         if (res.statusCode != 200) {
             throw {
-                message: 'Cannot execute checkout',
+                message: 'Cannot complete PayDollar checkout',
                 error: JSON.stringify(res.body, null, '\t')
             }
         }
         return res.body
     }
 
-    public async reCheckoutSavedPayDollar(failedAttemptOrder: Model.FailedAttempt,
-        addresses: Model.Addresses, cardId: string, voucherId?: string, credit?: number,
-        cookie?: string): Promise<Model.CheckoutOrder> {
-
+    public async checkoutCod(info: Model.CheckoutInput, cookie?: string): Promise<Model.CheckoutOrder> {
         let data = {
             "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
+                "shipping": info.addresses.shipping[0],
+                "billing": info.addresses.billing[0]
             },
-            "cart": [
-                {
-                    "id": failedAttemptOrder.products[0].id,
-                    "quantity": failedAttemptOrder.products[0].quantity,
-                    "salePrice": failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            "method": "CC",
-            "methodData": cardId,
-            "shipping": 0
-        }
-        if (voucherId) {
-            data['voucher'] = voucherId
-        }
-        if (credit) {
-            data['accountCredit'] = credit
-        }
-
-        let res = await this.post(config.api.checkout + '/order/' +
-            failedAttemptOrder.code, data, cookie)
-
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot execute re-checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
-        return res.body
-    }
-
-    public async checkoutCod(account: Model.Account, addresses: Model.Addresses,
-        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
-
-        let data = {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
+            "cart": info.account.cart,
             "method": "COD",
             "shipping": 25000
         }
-        if (voucherId) {
-            data['voucher'] = voucherId
+        if (info.voucherId) {
+            data['voucher'] = info.voucherId
         }
-        if (credit) {
-            data['accountCredit'] = credit
+        if (info.credit) {
+            data['accountCredit'] = info.credit
         }
 
         let res = await this.post(config.api.checkout, data, cookie)
         if (res.statusCode != 200) {
             throw {
-                message: 'Cannot execute checkout',
+                message: 'Cannot complete COD checkout',
                 error: JSON.stringify(res.body, null, '\t')
             }
         }
         return res.body
     }
 
-    public async reCheckoutCod(failedAttemptOrder: Model.FailedAttempt,
-        addresses: Model.Addresses, voucherId?: string, credit?: number,
-        cookie?: string): Promise<Model.CheckoutOrder> {
-
+    public async checkoutStripe(info: Model.CheckoutInput, cookie?: string): Promise<Model.CheckoutOrder> {
         let data = {
             "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
+                "shipping": info.addresses.shipping[0],
+                "billing": info.addresses.billing[0]
             },
-            "cart": [
-                {
-                    "id": failedAttemptOrder.products[0].id,
-                    "quantity": failedAttemptOrder.products[0].quantity,
-                    "salePrice": failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            "method": "COD",
-            "shipping": 25000
-        }
-        if (voucherId) {
-            data['voucher'] = voucherId
-        }
-        if (credit) {
-            data['accountCredit'] = credit
-        }
-
-        let res = await this.post(config.api.checkout + '/order/' +
-            failedAttemptOrder.code, data, cookie)
-
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot execute re-checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
-        return res.body
-    }
-
-    public async checkoutStripe(account: Model.Account, addresses: Model.Addresses,
-        stripeSource: any, saveNewCard?: boolean, voucherId?: string, credit?: number,
-        cookie?: string): Promise<Model.CheckoutOrder> {
-
-        let data = {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
+            "cart": info.account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource,
+            "methodData": info.stripeSource,
             "shipping": 0
         }
-        if (saveNewCard) {
-            data['saveCard'] = saveNewCard
+        if (info.saveNewCard) {
+            data['saveCard'] = info.saveNewCard
         }
-        if (voucherId) {
-            data['voucher'] = voucherId
+        if (info.voucherId) {
+            data['voucher'] = info.voucherId
         }
-        if (credit) {
-            data['accountCredit'] = credit
+        if (info.credit) {
+            data['accountCredit'] = info.credit
         }
-
-        let res = await this.post(config.api.checkout, data, cookie)
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot execute checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
-        return res.body
-    }
-
-    public async checkoutSavedStripe(account: Model.Account, addresses: Model.Addresses,
-        cardId: string, voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
-
-        let data = {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "STRIPE",
-            "methodData": cardId,
-            "shipping": 0
-        }
-        if (voucherId) {
-            data['voucher'] = voucherId
-        }
-        if (credit) {
-            data['accountCredit'] = credit
+        if (info.methodData) {
+            data['methodData'] = info.methodData
         }
 
         let res = await this.post(config.api.checkout, data, cookie)
+
         if (res.statusCode != 200) {
             throw {
-                message: 'Cannot execute checkout',
+                message: 'Cannot complete STRIPE checkout',
                 error: JSON.stringify(res.body, null, '\t')
             }
         }
@@ -902,11 +713,13 @@ export class ApiUtils extends GotUtils {
         for (let item of items) {
             await this.addToCart(item.id, cookie)
         }
-        let account = await this.getAccountInfo(cookie)
-        let addresses = await this.getAddresses(cookie)
 
-        let checkout = await this.checkoutPayDollar(account, addresses,
-            null, null, null, cookie)
+        let info: Model.CheckoutInput
+        info = {}
+        info.account = await this.getAccountInfo(cookie)
+        info.addresses = await this.getAddresses(cookie)
+
+        let checkout = await this.checkoutPayDollar(info, cookie)
 
         let payDollarCreditCard = checkout.creditCard
         payDollarCreditCard.cardHolder = 'testing card'
@@ -919,10 +732,11 @@ export class ApiUtils extends GotUtils {
         payDollarCreditCard.failUrl = 'https://secure.leflair.vn/checkout'
         payDollarCreditCard.successUrl = 'https://secure.leflair.vn/checkout/thank-you/' + checkout.code
 
-        let result = await this.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let res = await this.postFormUrl(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
+        console.log(res.headers)
 
-        let parse = await this.parsePayDollarRes(result.body)
+        let parse = await this.parsePayDollarRes(res.body)
 
         if (parse.successcode != '1') {
             throw 'Cannot create failed-attempt order!'
@@ -930,69 +744,5 @@ export class ApiUtils extends GotUtils {
 
         let failedAttempt = await this.failedAttempt(parse.Ref, cookie)
         return failedAttempt
-    }
-
-    public async createCodOrder(items: Model.Product[], voucherId?: string, credit?: number,
-        cookie?: string): Promise<Model.CheckoutOrder> {
-
-        for (let item of items) {
-            await this.addToCart(item.id, cookie)
-        }
-        let account = await this.getAccountInfo(cookie)
-        let addresses = await this.getAddresses(cookie)
-
-        return await this.checkoutCod(account, addresses, voucherId, credit, cookie)
-    }
-
-    public async createPayDollarOrder(items: Model.Product[], saveNewCard?: boolean,
-        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
-
-        for (let item of items) {
-            await this.addToCart(item.id, cookie)
-        }
-        let account = await this.getAccountInfo(cookie)
-        let addresses = await this.getAddresses(cookie)
-
-        return await this.checkoutPayDollar(account, addresses, saveNewCard, voucherId,
-            credit, cookie)
-    }
-
-    public async createSavedPayDollarOrder(items: Model.Product[], cardId: string,
-        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
-
-        for (let item of items) {
-            await this.addToCart(item.id, cookie)
-        }
-        let account = await this.getAccountInfo(cookie)
-        let addresses = await this.getAddresses(cookie)
-
-        return await this.checkoutSavedPayDollar(account, addresses, cardId, voucherId,
-            credit, cookie)
-    }
-
-    public async createStripeOrder(items: Model.Product[], stripeSource: any, saveNewCard?: boolean,
-        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
-
-        for (let item of items) {
-            await this.addToCart(item.id, cookie)
-        }
-        let account = await this.getAccountInfo(cookie)
-        let addresses = await this.getAddresses(cookie)
-
-        return await this.checkoutStripe(account, addresses, stripeSource, saveNewCard,
-            voucherId, credit, cookie)
-    }
-
-    public async createSavedStripeOrder(items: Model.Product[], cardId: string,
-        voucherId?: string, credit?: number, cookie?: string): Promise<Model.CheckoutOrder> {
-
-        for (let item of items) {
-            await this.addToCart(item.id, cookie)
-        }
-        let account = await this.getAccountInfo(cookie)
-        let addresses = await this.getAddresses(cookie)
-
-        return await this.checkoutSavedStripe(account, addresses, cardId, voucherId,
-            credit, cookie)
     }
 }

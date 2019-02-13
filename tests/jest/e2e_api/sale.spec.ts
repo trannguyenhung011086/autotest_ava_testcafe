@@ -5,7 +5,12 @@ let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../../common/interface'
 
+
 export const SaleInfoTest = () => {
+    beforeAll(async () => {
+        jest.setTimeout(120000)
+    })
+
     it('GET / invalid sale ID', async () => {
         let res = await request.get(config.api.sales + 'INVALID-ID')
         expect(res.statusCode).toEqual(404)
@@ -57,57 +62,65 @@ export const SaleInfoTest = () => {
         expect(res.body.message).toEqual('SALE_HAS_ENDED')
     })
 
-    it('GET / valid ongoing sale ID', async () => {
-        let sales = await request.getSales(config.api.currentSales)
-        expect(sales.length).toBeGreaterThanOrEqual(1)
+    it.each([[config.api.currentSales],
+    [config.api.todaySales],
+    [config.api.featuredSales],
+    [config.api.internationalSales],
+    [config.api.potdSales],
+    [config.api.cateAccessories + '/sales/current'],
+    [config.api.cateApparel + '/sales/current'],
+    [config.api.cateBagsShoes + '/sales/current'],
+    [config.api.cateHealthBeauty + '/sales/current'],
+    [config.api.cateHomeLifeStyle + '/sales/current']])
+        ('GET / valid onging sale %s', async (saleType) => {
+            let sales = await request.getSales(saleType)
+            expect(sales.length).toBeGreaterThanOrEqual(1)
 
-        for (let sale of sales) {
-            try {
-                let res = await request.getSaleInfo(sale.id)
-                expect(res.id).toEqual(sale.id)
-                expect(res.title).not.toBeEmpty()
-                expect(res.endTime).toEqual(sale.endTime)
-                expect(new Date(res.startTime)).toBeBefore(new Date())
+            for (let sale of sales) {
+                try {
+                    let res = await request.getSaleInfo(sale.id)
+                    expect(res.id).toEqual(sale.id)
+                    expect(res.title).not.toBeEmpty()
+                    expect(res.endTime).toEqual(sale.endTime)
+                    expect(new Date(res.startTime)).toBeBefore(new Date())
 
-                expect(res.products).toBeArray()
-                for (let product of res.products) {
-                    try {
-                        expect(product.id).not.toBeEmpty()
-                        expect(product.title).not.toBeEmpty()
-                        expect(product.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                        expect(product.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                        expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
-                        expect(product.soldOut).toBeBoolean()
-                        expect(product.category).not.toBeEmpty()
-                        expect(product.brand).not.toBeEmpty()
-                        expect(product.slug).toInclude(product.id)
-                        expect(product.quantity).toBeNumber()
-                        expect(product.numberOfVariations).toBeGreaterThanOrEqual(0)
-                    } catch (error) {
-                        throw { failed_product: product, failed_sale: sale.id, error: error }
-                    }
+                    res.products.forEach(product => {
+                        try {
+                            expect(product.id).not.toBeEmpty()
+                            expect(product.title).not.toBeEmpty()
+                            expect(product.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                            expect(product.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                            expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
+                            expect(product.soldOut).toBeBoolean()
+                            expect(product.category).not.toBeEmpty()
+                            expect(product.brand).not.toBeEmpty()
+                            expect(product.slug).toInclude(product.id)
+                            expect(product.quantity).toBeNumber()
+                            expect(product.numberOfVariations).toBeGreaterThanOrEqual(0)
+                        } catch (error) {
+                            throw { failed_product: product, failed_sale: sale.id, error: error }
+                        }
+                    })
+
+                    expect(res.filter.gender).toBeArray()
+                    expect(res.filter.type).toBeArray()
+                    expect(res.filter.color).toBeArray()
+                    expect(res.filter.size).toBeArray()
+                    expect(res.filter.brand).toBeArray()
+                    expect(res.filter.category).toBeArray()
+
+                    expect(res.sort).toContainAllValues(['RECOMMENDED',
+                        'HIGHEST_DISCOUNT',
+                        'LOW_PRICE',
+                        'HIGH_PRICE'])
+
+                    expect(res.campaign).toBeFalse()
+                    expect(res.slug).toInclude(res.id)
+                } catch (error) {
+                    throw { failed_sale: sale.id, error: error }
                 }
-
-                expect(res.filter.gender).toBeArray()
-                expect(res.filter.type).toBeArray()
-                expect(res.filter.color).toBeArray()
-                expect(res.filter.size).toBeArray()
-                expect(res.filter.brand).toBeArray()
-                expect(res.filter.category).toBeArray()
-
-                expect(res.sort).toContainAllValues(['RECOMMENDED',
-                    'HIGHEST_DISCOUNT',
-                    'LOW_PRICE',
-                    'HIGH_PRICE'])
-
-                expect(res.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                expect(res.campaign).toBeFalse()
-                expect(res.slug).toInclude(res.id)
-            } catch (error) {
-                throw { failed_sale: sale.id, error: error }
             }
-        }
-    })
+        })
 
     it('GET / valid ongoing sale ID with filter', async () => {
         let sales = await request.getSales(config.api.featuredSales)
@@ -139,7 +152,7 @@ export const SaleInfoTest = () => {
         filterString = filterString + '&' + filterList.join('&')
 
         let filteredSale = await request.getSaleInfo(sales[0].id + filterString)
-        expect(filteredSale.products.length).toBeLessThan(sale.products.length)
+        expect(filteredSale.products.length).toBeLessThanOrEqual(sale.products.length)
     })
 
     it('GET / valid upcoming sale ID', async () => {

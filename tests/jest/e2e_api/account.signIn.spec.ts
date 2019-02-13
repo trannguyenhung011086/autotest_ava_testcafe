@@ -13,7 +13,7 @@ export const AccountSignInTest = () => {
                 "email": 'QA_' + faker.internet.email(),
                 "password": faker.internet.password()
             })
-            
+
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('EMAIL_PASSWORD_INCORRECT')
     })
@@ -63,7 +63,8 @@ export const AccountSignInTest = () => {
     it('POST / empty email and password', async () => {
         let res = await request.post(config.api.signIn,
             {
-                "email": "", "password": ""
+                "email": "",
+                "password": ""
             })
 
         expect(res.statusCode).toEqual(401)
@@ -96,7 +97,8 @@ export const AccountSignInTest = () => {
     it('POST / correct email and password - internal email', async () => {
         let res = await request.post(config.api.signIn,
             {
-                "email": "qa_tech@leflair.vn", "password": "leflairqa"
+                "email": "qa_tech@leflair.vn", 
+                "password": "leflairqa"
             })
         signIn = res.body
 

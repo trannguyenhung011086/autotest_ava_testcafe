@@ -10,7 +10,7 @@ let cookie: string
 
 export const AccountInfoTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
     })
 
     it('GET / get account info', async () => {
@@ -44,8 +44,11 @@ export const AccountUpdateInfoTest = () => {
     it('PUT / can change name', async () => {
         let firstName = 'QA_' + faker.name.firstName()
         let lastName = 'QA_' + faker.name.lastName()
-        let res = await request.put(config.api.account,
-            { "firstName": firstName, "lastName": lastName }, cookie)
+
+        let res = await request.put(config.api.account, {
+            "firstName": firstName,
+            "lastName": lastName
+        }, cookie)
         signIn = res.body
 
         expect(res.statusCode).toEqual(200)
@@ -62,16 +65,19 @@ export const AccountUpdateInfoTest = () => {
     })
 
     test.skip('PUT / cannot change email', async () => {
-        let res = await request.put(config.api.account,
-            { "email": 'new-' + config.testAccount.email }, cookie)
+        let res = await request.put(config.api.account, {
+            "email": 'new-' + config.testAccount.email
+        }, cookie)
 
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('USER_UPDATE_ERROR')
     }) // wait for WWW-335
 
     it('PUT / cannot update with wrong cookie', async () => {
-        let res = await request.put(config.api.account,
-            { "firstName": "first", "lastName": "last" }, 'connect-id=assdfds')
+        let res = await request.put(config.api.account, {
+            "firstName": "first",
+            "lastName": "last"
+        }, 'leflair.connect2.sid=test')
 
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')
@@ -113,7 +119,7 @@ export const AccountUpdatePasswordTest = () => {
             }, cookie)
 
         expect(res.statusCode).toEqual(500)
-        expect(res.body).toMatch('ValidationError: User validation failed: password: Password should be longer')
+        expect(res.body).toMatch('Internal Server Error')
     })
 
     it('PUT / empty new password', async () => {
@@ -124,7 +130,7 @@ export const AccountUpdatePasswordTest = () => {
             }, cookie)
 
         expect(res.statusCode).toEqual(500)
-        expect(res.body).toMatch('ValidationError: User validation failed: password: Password should be longer')
+        expect(res.body).toMatch('Internal Server Error')
     })
 
     it('PUT / can change password', async () => {
@@ -143,7 +149,7 @@ export const AccountUpdatePasswordTest = () => {
             {
                 "currentPassword": config.testAccount.password,
                 "newPassword": config.testAccount.password
-            }, 'connect-id=assdfds')
+            }, 'leflair.connect2.sid=test')
 
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')

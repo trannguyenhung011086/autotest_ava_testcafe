@@ -4,16 +4,21 @@ let request = new Utils.ApiUtils()
 let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as model from '../../../common/interface'
+let cookie: string
 
 export const SecretSaleTest = () => {
+    beforeAll(async () => {
+        cookie = await request.getGuestCookie()
+    })
+
     it('GET / cannot get secret sale when not call campaign API', async () => {
-        let res = await request.get(config.api.secretSales)
+        let res = await request.get(config.api.secretSales, cookie)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toBeArrayOfSize(0)
     })
 
     it('GET / check secret sale when not call campaign API', async () => {
-        let res = await request.get(config.api.secretSales + '/check')
+        let res = await request.get(config.api.secretSales + '/check', cookie)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toBeFalse()
     })
@@ -22,9 +27,9 @@ export const SecretSaleTest = () => {
         let campaign: model.Campaign = await access.getCampaign({
             endDate: { $gt: new Date() }
         })
-        await request.get(config.api.campaigns + campaign.name)
+        await request.get(config.api.campaigns + campaign.name, cookie)
 
-        let res = await request.get(config.api.secretSales)
+        let res = await request.get(config.api.secretSales, cookie)
         expect(res.statusCode).toEqual(200)
 
         let sales: model.SalesModel[] = res.body
@@ -50,9 +55,9 @@ export const SecretSaleTest = () => {
         let campaign: model.Campaign = await access.getCampaign({
             endDate: { $gt: new Date() }
         })
-        await request.get(config.api.campaigns + campaign.name)
+        await request.get(config.api.campaigns + campaign.name, cookie)
 
-        let res = await request.get(config.api.secretSales + '/check')
+        let res = await request.get(config.api.secretSales + '/check', cookie)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toBeTrue()
     })

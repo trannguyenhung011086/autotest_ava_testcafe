@@ -15,7 +15,7 @@ export const AddressesSuccessTest = () => {
         jest.setTimeout(120000)
     })
 
-    afterAll(async() => {
+    afterAll(async () => {
         await request.deleteAddresses(cookie)
     })
 
@@ -26,10 +26,10 @@ export const AddressesSuccessTest = () => {
         cities = res.body
         expect(res.statusCode).toEqual(200)
 
-        for (let city of cities) {
+        cities.forEach(city => {
             expect(city.id).not.toBeEmpty()
             expect(city.name).not.toBeEmpty()
-        }
+        })
     })
 
     it('GET / get all districts of each city', async () => {
@@ -41,10 +41,10 @@ export const AddressesSuccessTest = () => {
             districts = res.body
             expect(res.statusCode).toEqual(200)
 
-            for (let district of districts) {
+            districts.forEach(district => {
                 expect(district.id).not.toBeEmpty()
                 expect(district.name).not.toBeEmpty()
-            }
+            })
         }
     })
 

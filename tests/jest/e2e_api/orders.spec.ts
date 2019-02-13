@@ -10,7 +10,7 @@ let orderItem: model.Order
 
 export const OrdersInfoTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         account = await request.getAccountInfo(cookie)
         jest.setTimeout(120000)
     })
@@ -26,12 +26,13 @@ export const OrdersInfoTest = () => {
         orders = res.body
 
         expect(res.statusCode).toEqual(200)
-        for (let order of orders) {
+        orders.forEach(order => {
             try {
                 expect(order.id).not.toBeEmpty()
                 expect(order.code).toMatch(/^SG|HK|VN/)
                 expect(order.createdDate).toMatch(/^(\d\d\/){2}\d{4}$/)
                 expect(order.status).toMatch(/pending|placed|confirmed|cancelled|shipped|delivered|return request|returned/)
+                
                 if (order.shippedDate != null) {
                     expect(order.shippedDate).toMatch(/^(\d\d\/){2}\d{4}$/)
                 }
@@ -41,7 +42,7 @@ export const OrdersInfoTest = () => {
             } catch (error) {
                 throw { failed_order: order, error: error }
             }
-        }
+        })
     })
 
     it('GET / can see order info using order ID', async () => {
@@ -57,6 +58,7 @@ export const OrdersInfoTest = () => {
                 expect(orderItem.code).toMatch(/^SG|HK|VN/)
                 expect(orderItem.createdDate).toMatch(/^(\d\d\/){2}\d{4}$/)
                 expect(order.status).toMatch(/pending|placed|confirmed|cancelled|shipped|delivered|return request|returned/)
+                
                 if (orderItem.shippedDate != null) {
                     expect(orderItem.shippedDate).toMatch(/^(\d\d\/){2}\d{4}$/)
                 }
@@ -89,6 +91,7 @@ export const OrdersInfoTest = () => {
                 expect(orderItem.address.shipping.phone).not.toBeEmpty()
 
                 expect(orderItem.paymentSummary.method).toMatch(/COD|STRIPE|CC|FREE/)
+                
                 if (orderItem.paymentSummary.method == 'COD' ||
                     orderItem.paymentSummary.method == 'STRIPE') {
                     expect(orderItem.paymentSummary.card).toBeNull()
@@ -98,16 +101,19 @@ export const OrdersInfoTest = () => {
                     expect(orderItem.paymentSummary.card.type).toMatch(/VISA|Master/)
                 }
 
-                let total = orderItem.paymentSummary.subtotal + orderItem.paymentSummary.shipping +
-                    orderItem.paymentSummary.accountCredit - orderItem.paymentSummary.voucherAmount
                 expect(orderItem.paymentSummary.shipping).toBeLessThanOrEqual(25000)
                 expect(orderItem.paymentSummary.subtotal).toBeGreaterThanOrEqual(0)
-                expect(orderItem.paymentSummary.total).toBeGreaterThanOrEqual(0)
                 expect(orderItem.paymentSummary.accountCredit).toBeLessThanOrEqual(0)
                 expect(orderItem.paymentSummary.voucherAmount).toBeGreaterThanOrEqual(0)
-                expect(orderItem.paymentSummary.total).toEqual(total)
+                expect(orderItem.paymentSummary.total).toBeGreaterThanOrEqual(0)
 
-                for (let product of orderItem.products) {
+                let total = orderItem.paymentSummary.subtotal + orderItem.paymentSummary.shipping +
+                    orderItem.paymentSummary.accountCredit - orderItem.paymentSummary.voucherAmount
+                if (total >= 0) {
+                    expect(orderItem.paymentSummary.total).toEqual(total)
+                }
+
+                orderItem.products.forEach(product => {
                     try {
                         expect(product.id).not.toBeEmpty()
                         expect(product.productContentId).not.toBeEmpty()
@@ -124,9 +130,9 @@ export const OrdersInfoTest = () => {
                     } catch (error) {
                         throw { failed_product: product, order: orderItem.id, error: error }
                     }
-                }
+                })
             } catch (error) {
-                throw { failed_order: order, error: error }
+                throw { failed_order: orderItem, error: error }
             }
         }
     })
@@ -154,7 +160,8 @@ export const OrdersInfoTest = () => {
     }, 180000)
 
     it('GET / cannot access order info with invalid cookie', async () => {
-        let res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', 'abc=abc')
+        let res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', 'leflair.connect2.sid=test')
+        
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Invalid request.')
     })

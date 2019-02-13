@@ -24,6 +24,24 @@ export class GotUtils {
         return await got.get(api, options)
     }
 
+    public async getPlain(api: string, cookie?: string, base?: string) {
+        let options = {
+            baseUrl: config.baseUrl,
+            headers: {
+                'Content-Type': 'text/plain'
+            },
+            throwHttpErrors: false,
+            // cookieJar: this.cookieJar
+        }
+        if (cookie) {
+            options.headers['Cookie'] = cookie
+        }
+        if (base) {
+            options.baseUrl = base
+        }
+        return await got.get(api, options)
+    }
+
     public async post(api: string, data: Object, cookie?: string, base?: string) {
         let options: GotJSONOptions = {
             baseUrl: config.baseUrl,
@@ -65,13 +83,14 @@ export class GotUtils {
     }
 
     public async postFormUrl(api: string, data: any, cookie?: string, base?: string) {
-        let options = {
+        let options: GotJSONOptions = {
             baseUrl: config.baseUrl,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: data,
             throwHttpErrors: false,
+            json: true,
             form: true,
             // cookieJar: this.cookieJar
         }

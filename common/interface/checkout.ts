@@ -1,23 +1,24 @@
-import * as cart from '../interface/cart'
-import * as creditcard from '../interface/creditcard'
-import * as address from '../interface/addresses'
-import * as order from '../interface/orders'
+import { Cart } from '../interface/cart'
+import { CreditCardModel } from '../interface/creditcard'
+import { OrderedProduct } from '../interface/orders'
+import { Account } from '../interface/account'
+import { Addresses } from '../interface/addresses'
 
 export interface Checkout {
     accountCredit: number
-    cart: cart.Cart[]
-    creditCards: creditcard.CreditCardModel[]
+    cart: Cart[]
+    creditCards: CreditCardModel[]
 }
 
 export interface FailedAttempt extends Checkout {
     address: {
-        billing: address.Billing,
-        shipping: address.Shipping
+        billing: Addresses["billing"],
+        shipping: Addresses["shipping"]
     }
     code: string
     email: string
     orderId: string
-    products: order.OrderedProduct[]
+    products: OrderedProduct[]
 }
 
 export interface StripeSource {
@@ -103,4 +104,15 @@ export interface PayDollarResponse {
     AuthId: string
     TxTime: string
     errMsg: string
+}
+
+export interface CheckoutInput {
+    account?: Account
+    addresses?: Addresses
+    voucherId?: string
+    credit?: number
+    stripeSource?: any
+    saveNewCard?: boolean
+    methodData?: string
+    cart?: any[]
 }

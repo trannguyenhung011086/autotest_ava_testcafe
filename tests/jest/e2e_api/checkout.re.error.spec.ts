@@ -13,14 +13,14 @@ let cookie: string
 
 export const ReCheckoutErrorTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
         item = await request.getInStockProduct(config.api.todaySales, 1)
         failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
-        jest.setTimeout(120000)
+        jest.setTimeout(150000)
     })
 
     afterEach(async () => {
@@ -33,7 +33,7 @@ export const ReCheckoutErrorTest = () => {
 
     // validate required data
 
-    it.only('POST / cannot recheckout with invalid cookie', async () => {
+    it('POST / cannot recheckout with invalid cookie', async () => {
         let res = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
                 "address": {
@@ -50,7 +50,7 @@ export const ReCheckoutErrorTest = () => {
                 "method": "COD",
                 "shipping": 25000,
                 "accountCredit": 0
-            }, 'abc=abc')
+            }, 'leflair.connect2.sid=test')
 
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toContainEqual('EMAIL_ADDRESS_REQUIRED')
@@ -449,7 +449,7 @@ export const ReCheckoutErrorTest = () => {
         expect(res.body.message).toEqual('REQUIRES_CC_PAYMENT')
     })
 
-    it('POST / cannot recheckout with voucher for Stripe using wrong bin range', async () => {
+    it('POST / cannot recheckout with voucher for Stripe using wrong bin range (skip-prod)', async () => {
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
@@ -465,7 +465,8 @@ export const ReCheckoutErrorTest = () => {
             "card[exp_year]": "22",
             "key": config.stripeKey
         }
-        const stripeSource = await request.postFormUrl('/v1/sources', stripeData, null, config.stripeBase)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase).then(res => res.body)
 
         let res = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
@@ -481,7 +482,7 @@ export const ReCheckoutErrorTest = () => {
                     }
                 ],
                 "method": "STRIPE",
-                "methodData": stripeSource.body,
+                "methodData": stripeSource,
                 "shipping": 0,
                 "voucher": voucher._id
             }, cookie)

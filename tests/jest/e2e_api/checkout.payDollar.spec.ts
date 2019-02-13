@@ -4,10 +4,12 @@ let request = new Utils.ApiUtils()
 let access = new Utils.MongoUtils()
 import 'jest-extended'
 import * as Model from '../../../common/interface'
+import { read } from 'fs';
 let account: Model.Account
 let item: Model.Product
 let addresses: Model.Addresses
 let payDollarCreditCard: Model.PayDollarCreditCard
+let checkoutInput: Model.CheckoutInput
 let cookie: string
 
 export const CheckoutPayDollarTest = () => {
@@ -16,6 +18,7 @@ export const CheckoutPayDollarTest = () => {
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
+        checkoutInput = {}
         jest.setTimeout(150000)
     })
 
@@ -51,13 +54,12 @@ export const CheckoutPayDollarTest = () => {
 
     it('POST / cannot checkout with invalid CC', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
-
         await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-        addresses = await request.getAddresses(cookie)
 
-        let checkout = await request.checkoutPayDollar(account, addresses,
-            null, null, null, cookie)
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+
+        let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
 
         payDollarCreditCard = checkout.creditCard
         payDollarCreditCard.cardHolder = 'testing card'
@@ -80,11 +82,11 @@ export const CheckoutPayDollarTest = () => {
         ('POST / cannot checkout with non-supported CC - %s %s', async (cardNumber, provider) => {
             item = await request.getInStockProduct(config.api.todaySales, 1)
             await request.addToCart(item.id, cookie)
-            account = await request.getAccountInfo(cookie)
-            addresses = await request.getAddresses(cookie)
 
-            let checkout = await request.checkoutPayDollar(account, addresses,
-                null, null, null, cookie)
+            checkoutInput.account = await request.getAccountInfo(cookie)
+            checkoutInput.addresses = addresses
+
+            let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
 
             payDollarCreditCard = checkout.creditCard
             payDollarCreditCard.cardHolder = 'testing card'
@@ -105,9 +107,13 @@ export const CheckoutPayDollarTest = () => {
 
     it('POST / checkout with new CC (not save card) - VISA', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
 
-        let checkout = await request.createPayDollarOrder([item], false, null, null, cookie)
-        expect(checkout.orderId).not.toBeEmpty()
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+
+        let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
         expect(checkout.creditCard.orderRef).toInclude(order.code)
@@ -138,8 +144,13 @@ export const CheckoutPayDollarTest = () => {
 
     it('POST / checkout with new CC (save card) - MASTER', async () => {
         item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
 
-        let checkout = await request.createPayDollarOrder([item], true, null, null, cookie)
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = true
+
+        let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
@@ -170,12 +181,16 @@ export const CheckoutPayDollarTest = () => {
     })
 
     it('POST / checkout with saved CC', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-
         let matchedCard = await request.getCard('PayDollar')
 
-        let checkout = await request.createSavedPayDollarOrder([item], matchedCard,
-            null, null, cookie)
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        await request.addToCart(item.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.methodData = matchedCard
+
+        let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
@@ -217,8 +232,15 @@ export const CheckoutPayDollarTest = () => {
             credit = item.salePrice - voucher.amount
         }
 
-        let checkout = await request.createPayDollarOrder([item, item], false,
-            voucher._id, credit, cookie)
+        await request.addToCart(item.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.credit = credit
+        checkoutInput.saveNewCard = false
+
+        let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
@@ -251,6 +273,8 @@ export const CheckoutPayDollarTest = () => {
     })
 
     it('POST / checkout with saved CC - voucher (percentage + max discount)', async () => {
+        let matchedCard = await request.getCard('PayDollar')
+
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
@@ -261,10 +285,14 @@ export const CheckoutPayDollarTest = () => {
         })
 
         item = await request.getInStockProduct(config.api.todaySales, 1)
-        let matchedCard = await request.getCard('PayDollar')
+        await request.addToCart(item.id, cookie)
 
-        let checkout = await request.createSavedPayDollarOrder([item], matchedCard,
-            voucher._id, null, cookie)
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.methodData = matchedCard
+
+        let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)

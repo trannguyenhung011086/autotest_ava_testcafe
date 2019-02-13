@@ -56,7 +56,7 @@ export const BrandInfoTest = () => {
             expect(brand.meta).toBeObject()
         }
 
-        for (let product of brand.products) {
+        brand.products.forEach(product => {
             try {
                 expect(product.id).not.toBeEmpty()
                 expect(product.brand).toEqual(brand.name)
@@ -72,7 +72,7 @@ export const BrandInfoTest = () => {
             } catch (error) {
                 throw { failed_product: product, error: error }
             }
-        }
+        })
     })
 }
 

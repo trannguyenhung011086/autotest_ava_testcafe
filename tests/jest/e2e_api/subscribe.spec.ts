@@ -6,19 +6,25 @@ import faker from "faker/locale/vi"
 
 export const NewsSubscribeTest = () => {
     it('POST / empty email', async () => {
-        let res = await request.post(config.api.subscribe, { "email": "" })
+        let res = await request.post(config.api.subscribe, {
+            "email": ""
+        })
         expect(res.statusCode).toEqual(200)
         expect(res.body.message).toEqual('done')
     })
 
     it('POST / wrong format email', async () => {
-        let res = await request.post(config.api.subscribe, { "email": ".test%!@#$%^&*()_+<>?@mail.com" })
+        let res = await request.post(config.api.subscribe, {
+            "email": ".test%!@#$%^&*()_+<>?@mail.com"
+        })
         expect(res.statusCode).toEqual(200)
         expect(res.body.message).toEqual('done')
     })
 
     it('POST / valid email', async () => {
-        let res = await request.post(config.api.subscribe, { "email": faker.internet.email() })
+        let res = await request.post(config.api.subscribe, {
+            "email": faker.internet.email()
+        })
         expect(res.statusCode).toEqual(200)
         expect(res.body.message).toEqual('done')
     })

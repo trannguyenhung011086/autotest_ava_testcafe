@@ -9,15 +9,14 @@ import waitForExpect from 'wait-for-expect'
 
 export const CreditCardTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
     })
 
     it('GET / can access creditcard info', async () => {
         let res = await request.get(config.api.creditcard, cookie)
         creditcards = res.body
 
-        expect(res.statusCode).toEqual(200)
-        for (let card of creditcards) {
+        creditcards.forEach(card => {
             expect(card.cardholderName).not.toBeEmpty()
             expect(card.id).not.toBeEmpty()
             expect(card.lastDigits).toMatch(/\d{4}/)
@@ -25,10 +24,10 @@ export const CreditCardTest = () => {
             if (card.provider) {
                 expect(card.provider).toEqual('STRIPE')
             }
-        }
+        })
     })
 
-    it('DELETE / can delete creditcard', async () => {
+    it('DELETE / can delete creditcard (skip-prod)', async () => {
         let res = await request.get(config.api.creditcard, cookie)
         creditcards = res.body
 
@@ -53,7 +52,7 @@ export const CreditCardTest = () => {
     })
 
     it('GET / cannot access creditcard info with invalid cookie', async () => {
-        let res = await request.get(config.api.creditcard, 'abc=abc')
+        let res = await request.get(config.api.creditcard, 'leflair.connect2.sid=test')
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')
     })

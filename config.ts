@@ -1,24 +1,26 @@
 let baseUrl: string
-let apiNs: string
 let payDollarBase: string
 let payDollarApi: string
+let stripeKey: string
 
 switch (process.env.NODE_ENV) {
     case 'stg':
         baseUrl = 'https://www.staging.leflair.io'
         payDollarBase = 'https://test.paydollar.com'
         payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
+        stripeKey = 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy'
         break
     case 'prod':
         baseUrl = 'https://www.leflair.vn'
         payDollarBase = 'https://www.paydollar.com'
         payDollarApi = '/b2c2/eng/dPayment/payComp.jsp'
+        stripeKey = 'pk_live_2oLGoFep9LLlvVMs1TroLmM1'
         break
     default:
         baseUrl = 'https://www.staging.leflair.io'
         payDollarBase = 'https://test.paydollar.com'
         payDollarApi = '/b2cDemo/eng/directPay/payComp.jsp'
-        apiNs = 'https://api.staging.leflair.io'
+        stripeKey = 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy'
 }
 
 export const config = {
@@ -27,7 +29,6 @@ export const config = {
         name: 'admin-leflair'
     },
     baseUrl: baseUrl,
-    apiNs: apiNs,
     signIn: '/auth/signin',
     signUp: '/auth/register',
     api: {
@@ -71,10 +72,9 @@ export const config = {
         feedGoogleDynamic: '/api/v1/google-dynamic-product-feeds',
         feedCriteo: '/api/v1/criteo',
         feedInsider: '/api/v1/insider',
-        feedGoogleMerchant: '/api/v1/google-merchant',
-        subscriberNs: '/v1/subscriber-ns-cache-system-item-management'
+        feedGoogleMerchant: '/api/v1/google-merchant'
     },
-    stripeKey: 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy',
+    stripeKey: stripeKey,
     stripeBase: 'https://api.stripe.com',
     payDollarBase: payDollarBase,
     payDollarApi: payDollarApi,

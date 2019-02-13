@@ -105,7 +105,7 @@ export interface SalesModel {
     id: string
     title: string
     endTime: string
-    image: string
+    image?: string
     image1?: string
     image2?: string
     image3?: string
@@ -138,7 +138,6 @@ export interface SaleInfoModel {
     products: Products[]
     filter: FilterModel
     sort: string[]
-    image: string
     campaign: boolean
     slug: string
     _id: string

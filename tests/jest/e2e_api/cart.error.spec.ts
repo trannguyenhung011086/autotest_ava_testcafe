@@ -32,7 +32,7 @@ export const CartErrorTest = () => {
     })
 
     it('POST / cannot add sold out product to cart', async () => {
-        const soldOut = await request.getSoldOutProduct(config.api.currentSales)
+        const soldOut = await request.getSoldOutProductInfo(config.api.currentSales)
 
         let res = await request.post(config.api.cart, {
             "productId": soldOut.products[0].id
@@ -44,7 +44,6 @@ export const CartErrorTest = () => {
 
     it('POST / cannot add sale ended product to cart', async () => {
         let endedSale = await access.getSale({
-            startDate: { $gte: new Date('2018-11-11 01:00:00.000Z') },
             endDate: { $lt: new Date() }
         })
 

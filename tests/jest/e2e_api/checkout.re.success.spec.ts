@@ -10,6 +10,7 @@ let item: Model.Product
 let addresses: Model.Addresses
 let payDollarCreditCard: Model.PayDollarCreditCard
 let failedAttemptOrder: Model.FailedAttempt
+let checkoutInput: Model.CheckoutInput
 let cookie: string
 
 export const ReCheckoutSuccessTest = () => {
@@ -17,9 +18,24 @@ export const ReCheckoutSuccessTest = () => {
         cookie = await request.getLogInCookie()
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
+
         account = await request.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
-        jest.setTimeout(120000)
+
+        item = await request.getInStockProduct(config.api.todaySales, 1)
+        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
+
+        checkoutInput = {}
+        checkoutInput.addresses = addresses
+        checkoutInput.cart = [
+            {
+                id: failedAttemptOrder.products[0].id,
+                quantity: failedAttemptOrder.products[0].quantity,
+                salePrice: failedAttemptOrder.products[0].salePrice,
+            }
+        ]
+
+        jest.setTimeout(150000)
     })
 
     afterEach(async () => {
@@ -30,49 +46,8 @@ export const ReCheckoutSuccessTest = () => {
         await request.deleteAddresses(cookie)
     })
 
-    it('POST / create failed-attempt order', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-        addresses = await request.getAddresses(cookie)
-
-        let checkout = await request.checkoutPayDollar(account, addresses,
-            null, null, null, cookie)
-
-        payDollarCreditCard = checkout.creditCard
-        payDollarCreditCard.cardHolder = 'testing card'
-        payDollarCreditCard.cardNo = '5422882800700006'
-        payDollarCreditCard.pMethod = 'Master'
-        payDollarCreditCard.epMonth = 7
-        payDollarCreditCard.epYear = 2020
-        payDollarCreditCard.securityCode = '123'
-
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
-            cookie, config.payDollarBase)
-        let parse = await request.parsePayDollarRes(result.body)
-
-        expect(parse.successcode).toEqual('1')
-        expect(parse.Ref).toEqual(checkout.creditCard.orderRef)
-        expect(parse.errMsg).toMatch(/Transaction failed/)
-
-        let failedAttempt = await request.post(config.api.checkout + '/order/failed-attempt', {
-            "errorMsg": "invalid card",
-            "orderCode": parse.Ref
-        }, cookie)
-        expect(failedAttempt.statusCode).toEqual(200)
-
-        let failedData: Model.FailedAttempt = failedAttempt.body
-        expect(parse.Ref).toInclude(failedData.code)
-        expect(item.id).toEqual(failedData.products[0].productId)
-    })
-
     it('POST / recheckout with COD', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-
-        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
-        let reCheckout = await request.reCheckoutCod(failedAttemptOrder, addresses,
-            null, null, cookie)
+        let reCheckout = await request.checkoutCod(checkoutInput, cookie)
 
         let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.code).toInclude(reCheckout.code)
@@ -83,11 +58,9 @@ export const ReCheckoutSuccessTest = () => {
     })
 
     it('POST / recheckout with new CC (not save card) - VISA', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        checkoutInput.saveNewCard = false
 
-        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
-        let reCheckout = await request.reCheckoutPayDollar(failedAttemptOrder, addresses,
-            false, null, null, cookie)
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
         let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
@@ -117,11 +90,9 @@ export const ReCheckoutSuccessTest = () => {
     })
 
     it('POST / recheckout with new CC (save card) - MASTER', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        checkoutInput.saveNewCard = true
 
-        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
-        let reCheckout = await request.reCheckoutPayDollar(failedAttemptOrder, addresses,
-            true, null, null, cookie)
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
         let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
@@ -151,13 +122,10 @@ export const ReCheckoutSuccessTest = () => {
     })
 
     it('POST / recheckout with saved CC', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-
         let matchedCard = await request.getCard('PayDollar')
+        checkoutInput.methodData = matchedCard
 
-        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
-        let reCheckout = await request.reCheckoutSavedPayDollar(failedAttemptOrder, addresses,
-            matchedCard, null, null, cookie)
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
         let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
@@ -191,8 +159,6 @@ export const ReCheckoutSuccessTest = () => {
             specificDays: []
         }, customer)
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-
         let credit: number
         if (account.accountCredit < (item.salePrice + 25000 - voucher.amount)) {
             credit = account.accountCredit
@@ -200,9 +166,10 @@ export const ReCheckoutSuccessTest = () => {
             credit = item.salePrice + 25000 - voucher.amount
         }
 
-        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
-        let reCheckout = await request.reCheckoutCod(failedAttemptOrder, addresses,
-            voucher._id, credit, cookie)
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.credit = credit
+
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
         let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.code).toInclude(reCheckout.code)
@@ -224,12 +191,12 @@ export const ReCheckoutSuccessTest = () => {
             specificDays: []
         })
 
-        item = await request.getInStockProduct(config.api.currentSales, 1, 500000)
         let matchedCard = await request.getCard('PayDollar')
 
-        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
-        let reCheckout = await request.reCheckoutSavedPayDollar(failedAttemptOrder, addresses,
-            matchedCard, voucher._id, null, cookie)
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.methodData = matchedCard
+
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
         let order = await request.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)

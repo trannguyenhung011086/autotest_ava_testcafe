@@ -5,10 +5,10 @@ import 'jest-extended'
 
 export const BestSellersTest = () => {
     it('GET / best sellers list', async () => {
-        let res = await request.getBestSellers()
-        // expect(res.length).toEqual(16) // wait for WWW-238
+        let items = await request.getBestSellers()
+        // expect(items.length).toEqual(16) // wait for WWW-238
 
-        for (let item of res) {
+        items.forEach(item => {
             try {
                 expect(item.id).not.toBeEmpty()
                 expect(item.title).not.toBeEmpty()
@@ -28,7 +28,7 @@ export const BestSellersTest = () => {
             } catch (error) {
                 throw { failed_item: item, error: error }
             }
-        }
+        })
     })
 }
 

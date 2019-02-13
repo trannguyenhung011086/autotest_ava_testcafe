@@ -8,6 +8,7 @@ let account: Model.Account
 let item: Model.Product
 let addresses: Model.Addresses
 let cookie: string
+let checkoutInput: Model.CheckoutInput
 
 const stripeData = {
     "type": "card",
@@ -23,6 +24,8 @@ export const CheckoutStripeTest = () => {
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)
         account = await request.getAccountInfo(cookie)
+        checkoutInput = {}
+        jest.setTimeout(120000)
     })
 
     afterEach(async () => {
@@ -35,13 +38,13 @@ export const CheckoutStripeTest = () => {
 
     it('POST / cannot checkout with invalid Stripe', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
-
         await request.addToCart(item.id, cookie)
+
         account = await request.getAccountInfo(cookie)
 
         stripeData['card[number]'] = '123456789'
         const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase)
+            cookie, config.stripeBase).then(res => res.body)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -50,7 +53,7 @@ export const CheckoutStripeTest = () => {
             },
             "cart": account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource.body
+            "methodData": stripeSource
         }, cookie)
 
         expect(res.statusCode).toEqual(500)
@@ -60,42 +63,15 @@ export const CheckoutStripeTest = () => {
         expect(res.body.error.message).toEqual('Missing required param: source.')
     })
 
-    it('POST / cannot checkout with insufficient fund Stripe', async () => {
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        stripeData['card[number]'] = '4000000000009995'
-        const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase)
-
-        let res = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "STRIPE",
-            "methodData": stripeSource.body
-        }, cookie)
-
-        expect(res.statusCode).toEqual(500)
-        expect(res.body.message).toEqual('STRIPE_CUSTOMER_ERROR')
-        expect(res.body.error.type).toEqual('StripeCardError')
-        expect(res.body.error.code).toEqual('card_declined')
-        expect(res.body.error.message).toEqual('Your card has insufficient funds.')
-    })
-
     it('POST / cannot checkout with unsupported Stripe', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
-
         await request.addToCart(item.id, cookie)
+
         account = await request.getAccountInfo(cookie)
 
-        stripeData['card[number]'] = '3566002020360505'
+        stripeData['card[number]'] = '3566002020360505' // JCB
         const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase)
+            cookie, config.stripeBase).then(res => res.body)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -104,7 +80,7 @@ export const CheckoutStripeTest = () => {
             },
             "cart": account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource.body
+            "methodData": stripeSource
         }, cookie)
 
         expect(res.statusCode).toEqual(500)
@@ -116,13 +92,17 @@ export const CheckoutStripeTest = () => {
 
     it('POST / checkout with new Stripe (not save card) - VISA', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart(item.id, cookie)
 
         stripeData['card[number]'] = '4000000000000077'
-        const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase)
 
-        let checkout = await request.createStripeOrder([item], stripeSource.body, false,
-            null, null, cookie)
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase).then(res => res.body)
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
@@ -135,29 +115,17 @@ export const CheckoutStripeTest = () => {
 
     it('POST / checkout with new Stripe (save card) - MASTER', async () => {
         item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart(item.id, cookie)
 
         stripeData['card[number]'] = '5555555555554444'
-        const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase)
 
-        let checkout = await request.createStripeOrder([item], stripeSource.body, true,
-            null, null, cookie)
-        expect(checkout.orderId).not.toBeEmpty()
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = true
+        checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase).then(res => res.body)
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
-        expect(order.code).toInclude(checkout.code)
-        expect(order.status).toEqual('placed')
-        expect(order.isCrossBorder).toBeTrue()
-        expect(order.paymentSummary.method).toEqual('STRIPE')
-        expect(order.paymentSummary.shipping).toEqual(0)
-    })
-
-    it('POST / checkout with saved Stripe', async () => {
-        let matchedCard = await request.getCard('Stripe', cookie)
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-
-        let checkout = await request.createStripeOrder([item], matchedCard,
-            null, null, null, cookie)
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
@@ -179,6 +147,7 @@ export const CheckoutStripeTest = () => {
         })
 
         item = await request.getInStockProduct(config.api.internationalSales, 2)
+        await request.addToCart(item.id, cookie)
 
         let credit: number
         if (account.accountCredit < (item.salePrice - voucher.amount)) {
@@ -188,11 +157,16 @@ export const CheckoutStripeTest = () => {
         }
 
         stripeData['card[number]'] = '5555555555554444'
-        const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase)
 
-        let checkout = await request.createStripeOrder([item, item], stripeSource.body,
-            true, voucher._id, credit, cookie)
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.credit = credit
+        checkoutInput.saveNewCard = true
+        checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase).then(res => res.body)
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
@@ -203,6 +177,27 @@ export const CheckoutStripeTest = () => {
         expect(order.paymentSummary.shipping).toEqual(0)
         expect(order.paymentSummary.voucherAmount).toEqual(voucher.amount)
         expect(Math.abs(order.paymentSummary.accountCredit)).toEqual(credit)
+    })
+
+    it('POST / checkout with saved Stripe', async () => {
+        let matchedCard = await request.getCard('Stripe', cookie)
+
+        item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart(item.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.methodData = matchedCard
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
+        expect(checkout.orderId).not.toBeEmpty()
+
+        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        expect(order.code).toInclude(checkout.code)
+        expect(order.status).toEqual('placed')
+        expect(order.isCrossBorder).toBeTrue()
+        expect(order.paymentSummary.method).toEqual('STRIPE')
+        expect(order.paymentSummary.shipping).toEqual(0)
     })
 
     it('POST / checkout with saved Stripe - voucher (percentage + max discount)', async () => {
@@ -216,10 +211,16 @@ export const CheckoutStripeTest = () => {
         })
 
         let matchedCard = await request.getCard('Stripe', cookie)
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
 
-        let checkout = await request.createSavedStripeOrder([item], matchedCard,
-            voucher._id, null, cookie)
+        item = await request.getInStockProduct(config.api.internationalSales, 1)
+        await request.addToCart(item.id, cookie)
+
+        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.methodData = matchedCard
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
         let order = await request.getOrderInfo(checkout.orderId, cookie)
