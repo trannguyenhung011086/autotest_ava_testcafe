@@ -21,22 +21,24 @@ fixture('Check product detail page ' + config.baseUrl)
     .meta({ type: 'regression' })
 
 test.requestHooks(mockRedirect)
-    ('Redirect to homepage when product API returns error', async () => {
+    ('Redirect to homepage when product API returns 403 error code', async () => {
         sales = await requestSale.getSales(config.api.featuredSales)
 
-        await t.navigateTo(config.baseUrl + '/vn/sales/' + sales[0].slug)
-        await t.click('.product-card')
+        await t
+            .navigateTo(config.baseUrl + '/vn/sales/' + sales[0].slug)
+            .click('.product-card')
 
         let location = await t.eval(() => document.location.href)
         await t.expect(location).eql(config.baseUrl + '/vn')
     })
 
 test.requestHooks(mockNonRedirect)
-    ('Not redirect to homepage when product API returns error', async () => {
+    ('Not redirect to homepage when product API returns 500 error code', async () => {
         sales = await requestSale.getSales(config.api.featuredSales)
 
-        await t.navigateTo(config.baseUrl + '/vn/sales/' + sales[0].slug)
-        await t.click('.product-card')
+        await t
+            .navigateTo(config.baseUrl + '/vn/sales/' + sales[0].slug)
+            .click('.product-card')
 
         let location = await t.eval(() => document.location.href)
         await t.expect(location).notEql(config.baseUrl + '/vn')

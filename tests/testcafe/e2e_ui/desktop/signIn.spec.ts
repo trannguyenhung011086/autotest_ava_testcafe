@@ -12,8 +12,9 @@ fixture('Sign in via email ' + config.baseUrl)
 
 test('Cannot sign in with empty email and password', async () => {
     await page.signIn.submitEmpty()
-    await t.expect(await page.signIn.getEmailError()).eql(config.notifyMsg.missingEmail)
-    await t.expect(await page.signIn.getPasswordError()).eql(config.notifyMsg.missingPassword)
+    await t
+        .expect(await page.signIn.getEmailError()).eql(config.notifyMsg.missingEmail)
+        .expect(await page.signIn.getPasswordError()).eql(config.notifyMsg.missingPassword)
 })
 
 test('Cannot sign in with non-existing email', async () => {

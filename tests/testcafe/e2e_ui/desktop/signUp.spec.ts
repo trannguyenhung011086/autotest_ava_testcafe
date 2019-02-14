@@ -12,8 +12,9 @@ fixture('Sign up via email ' + config.baseUrl)
 
 test('Cannot sign up with empty email and password', async () => {
     await page.signUp.submitEmpty()
-    await t.expect(await page.signUp.getEmailError()).eql(config.notifyMsg.missingEmail)
-    await t.expect(await page.signUp.getPasswordError()).eql(config.notifyMsg.missingPassword)
+    await t
+        .expect(await page.signUp.getEmailError()).eql(config.notifyMsg.missingEmail)
+        .expect(await page.signUp.getPasswordError()).eql(config.notifyMsg.missingPassword)
 })
 
 test('Cannot sign up with wrong format email', async () => {
