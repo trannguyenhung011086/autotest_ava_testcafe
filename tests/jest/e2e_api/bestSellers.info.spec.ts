@@ -1,7 +1,7 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
+
+let request = new Utils.BestSellersUtils
 
 export const BestSellersTest = () => {
     it('GET / best sellers list', async () => {
@@ -15,8 +15,8 @@ export const BestSellersTest = () => {
                 expect(item.brand).not.toBeEmpty()
                 expect(item.retailPrice).toBeGreaterThan(item.salePrice)
                 expect(item.category).not.toBeEmpty()
-                expect(item.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
-                expect(item.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                expect(request.validateImage(item.image)).toBeTrue()
+                expect(request.validateImage(item.image2)).toBeTrue()
                 expect(item.cr).toBeNumber()
                 expect(item.slug).toInclude(item.id)
                 expect(item.international).toBeBoolean()

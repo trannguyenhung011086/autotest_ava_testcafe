@@ -1,12 +1,14 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let item: Model.Product
 let cart: Model.Cart
 let cookie: string
+
+let request = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let access = new Utils.DbAccessUtils
 
 export const CartErrorTest = () => {
     beforeAll(async () => {
@@ -32,7 +34,7 @@ export const CartErrorTest = () => {
     })
 
     it('POST / cannot add sold out product to cart', async () => {
-        const soldOut = await request.getSoldOutProductInfo(config.api.currentSales)
+        const soldOut = await requestProduct.getSoldOutProductInfo(config.api.currentSales)
 
         let res = await request.post(config.api.cart, {
             "productId": soldOut.products[0].id
@@ -60,7 +62,7 @@ export const CartErrorTest = () => {
     })
 
     it('PUT / cannot update quantity in cart to 0', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id
@@ -76,7 +78,7 @@ export const CartErrorTest = () => {
     })
 
     it('PUT / cannot update invalid quantity in cart', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
+        item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id
@@ -92,7 +94,7 @@ export const CartErrorTest = () => {
     })
 
     it('PUT / cannot update more than max quantity in cart', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id
@@ -108,7 +110,7 @@ export const CartErrorTest = () => {
     })
 
     it('DELETE / cannot remove product from cart with wrong cart item', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id
@@ -122,7 +124,7 @@ export const CartErrorTest = () => {
     })
 
     it('DELETE / cannot remove product from cart without cart item', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id

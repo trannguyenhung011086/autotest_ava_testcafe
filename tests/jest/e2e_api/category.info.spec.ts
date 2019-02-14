@@ -1,10 +1,12 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+
 let menu: model.CategoryMenu
 let topMenu: model.TopMenu
+
+let request = new Utils.Helper
+let requestSale = new Utils.SaleUtils
 
 export const CategoryTest = () => {
     it('GET / invalid category ID', async () => {
@@ -81,13 +83,13 @@ export const CategoryTest = () => {
         config.api.cateHealthBeauty,
         config.api.cateHomeLifeStyle
     ])('GET / get featured sales - %s', async (menuItem) => {
-        let sales = await request.getSales(menuItem + '/sales/featured')
+        let sales = await requestSale.getSales(menuItem + '/sales/featured')
 
         sales.forEach(sale => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image1.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+            expect(request.validateImage(sale.image1)).toBeTrue()
             expect(sale.slug).toInclude(sale.id)
             expect(sale.international).toBeBoolean()
         })
@@ -111,13 +113,13 @@ export const CategoryTest = () => {
         config.api.cateHealthBeauty,
         config.api.cateHomeLifeStyle
     ])('GET / get current sales - %s', async (menuItem) => {
-        let sales = await request.getSales(menuItem + '/sales/current')
+        let sales = await requestSale.getSales(menuItem + '/sales/current')
 
         sales.forEach(sale => {
             expect(sale.id).not.toBeEmpty()
             expect(sale.title).not.toBeEmpty()
             expect(sale.endTime).not.toBeEmpty()
-            expect(sale.image1.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+            expect(request.validateImage(sale.image1)).toBeTrue()
 
             if (sale.potd == false) {
                 expect(sale.slug).toInclude(sale.id)
@@ -136,7 +138,7 @@ export const CategoryTest = () => {
         config.api.cateHealthBeauty,
         config.api.cateHomeLifeStyle
     ])('GET / get current sales limit 1 - %s', async (menuItem) => {
-        let sales = await request.getSales(menuItem + '/sales/current?limit=1')
+        let sales = await requestSale.getSales(menuItem + '/sales/current?limit=1')
         expect(sales).toBeArrayOfSize(1)
     })
 
@@ -148,7 +150,7 @@ export const CategoryTest = () => {
         config.api.cateHomeLifeStyle
     ])('GET / get current sales excluding featured sales - %s', async (menuItem) => {
         let featured = await request.get(menuItem + '/sales/featured?limit=1')
-        let sales = await request.getSales(config.api.cateApparel +
+        let sales = await requestSale.getSales(config.api.cateApparel +
             '/sales/current?excludeId=' + featured.body.id)
 
         sales.forEach(sale => {

@@ -1,8 +1,8 @@
-import { Cart } from '../interface/cart'
-import { CreditCardModel } from '../interface/creditcard'
-import { OrderedProduct } from '../interface/orders'
-import { Account } from '../interface/account'
-import { Addresses } from '../interface/addresses'
+import { Cart } from './cart'
+import { CreditCardModel } from './creditcard'
+import { OrderedProduct } from './orders'
+import { Account } from './account'
+import { Addresses } from './addresses'
 
 export interface Checkout {
     accountCredit: number

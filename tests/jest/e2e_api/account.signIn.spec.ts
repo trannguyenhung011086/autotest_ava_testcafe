@@ -1,10 +1,10 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
-import faker from "faker/locale/vi"
+import faker from 'faker/locale/vi'
 import * as model from '../../../common/interface'
+
 let signIn: model.SignIn
+let request = new Utils.AccountUtils
 
 export const AccountSignInTest = () => {
     it('POST / wrong email', async () => {
@@ -97,7 +97,7 @@ export const AccountSignInTest = () => {
     it('POST / correct email and password - internal email', async () => {
         let res = await request.post(config.api.signIn,
             {
-                "email": "qa_tech@leflair.vn", 
+                "email": "qa_tech@leflair.vn",
                 "password": "leflairqa"
             })
         signIn = res.body
@@ -107,7 +107,7 @@ export const AccountSignInTest = () => {
     })
 
     it('GET / sign out', async () => {
-        let cookie = await request.getLogInCookie()
+        let cookie = await request.getLogInCookie(config.testAccount.email, config.testAccount.password)
         let res = await request.get(config.api.signOut, cookie)
 
         expect(res.statusCode).toEqual(200)

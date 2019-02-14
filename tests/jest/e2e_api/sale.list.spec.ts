@@ -1,14 +1,13 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
-let home: model.Home
+
+let request = new Utils.SaleUtils
 
 export const SaleListTest = () => {
     it('GET / all home sales', async () => {
         let res = await request.get(config.api.home)
-        home = res.body
+        let home: model.Home = res.body
         expect(res.statusCode).toEqual(200)
 
         expect(home).toContainAllKeys(['featured',
@@ -25,10 +24,10 @@ export const SaleListTest = () => {
         expect(home.upcoming).toBeArray()
 
         if (home.banners.length > 0) {
-            for (let banner of home.banners) {
-                expect(banner.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+            home.banners.forEach(banner => {
+                expect(request.validateImage(banner.image)).toBeTrue()
                 expect(banner.url).toBeString()
-            }
+            })
         }
     })
 
@@ -53,19 +52,19 @@ export const SaleListTest = () => {
                     expect(sale.endTime).not.toBeEmpty()
 
                     if (sale.image) {
-                        expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                        expect(request.validateImage(sale.image)).toBeTrue()
                     }
                     if (sale.image1) {
-                        expect(sale.image1.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                        expect(request.validateImage(sale.image1)).toBeTrue()
                     }
                     if (sale.image2) {
-                        expect(sale.image2.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                        expect(request.validateImage(sale.image2)).toBeTrue()
                     }
                     if (sale.image3) {
-                        expect(sale.image3.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                        expect(request.validateImage(sale.image3)).toBeTrue()
                     }
                     if (sale.image4) {
-                        expect(sale.image4.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                        expect(request.validateImage(sale.image4)).toBeTrue()
                     }
 
                     if (sale.categories) {
@@ -129,11 +128,11 @@ export const SaleListTest = () => {
 
             for (let sale of date.sales) {
                 expect(date.sales.length).toBeGreaterThanOrEqual(1)
-                
+
                 try {
                     expect(sale.id).not.toBeEmpty()
                     expect(sale.title).not.toBeEmpty()
-                    expect(sale.image.toLowerCase()).toMatch(/\.jpg|\.png|\.jpeg|\.jpe/)
+                    expect(request.validateImage(sale.image)).toBeTrue()
                     expect(sale.slug).toInclude(sale.id)
                     expect(sale.categories.length).toBeGreaterThanOrEqual(1)
                     expect(sale.international).toBeBoolean()

@@ -1,9 +1,7 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let account: Model.Account
 let customer: Model.Customer
 let item: Model.Product
@@ -11,29 +9,37 @@ let addresses: Model.Addresses
 let checkoutInput: Model.CheckoutInput
 let cookie: string
 
+let request = new Utils.CheckoutUtils
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let requestOrder = new Utils.OrderUtils
+let access = new Utils.DbAccessUtils
+
 export const CheckoutCodTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        await requestAddress.addAddresses(cookie)
+        addresses = await requestAddress.getAddresses(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
         checkoutInput = {}
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
     })
 
     afterAll(async () => {
-        await request.deleteAddresses(cookie)
+        await requestAddress.deleteAddresses(cookie)
     })
 
     it('POST / cannot checkout with COD - international product', async () => {
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
 
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -49,13 +55,13 @@ export const CheckoutCodTest = () => {
     })
 
     it('POST / cannot checkout with COD - domestic + international product', async () => {
-        let item1 = await request.getInStockProduct(config.api.internationalSales, 1)
-        let item2 = await request.getInStockProduct(config.api.todaySales, 1)
+        let item1 = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        let item2 = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
-        await request.addToCart(item1.id, cookie)
-        await request.addToCart(item2.id, cookie)
+        await requestCart.addToCart(item1.id, cookie)
+        await requestCart.addToCart(item2.id, cookie)
 
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -71,16 +77,16 @@ export const CheckoutCodTest = () => {
     })
 
     it('POST / checkout with COD', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
 
         let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
 
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
@@ -99,8 +105,8 @@ export const CheckoutCodTest = () => {
             oncePerAccount: true
         }, customer)
 
-        item = await request.getInStockProduct(config.api.todaySales, 2)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 2)
+        await requestCart.addToCart(item.id, cookie)
 
         let credit: number
         if (account.accountCredit < (item.salePrice + 25000 - voucher.amount)) {
@@ -109,7 +115,7 @@ export const CheckoutCodTest = () => {
             credit = item.salePrice + 25000 - voucher.amount
         }
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.voucherId = voucher._id
         checkoutInput.credit = credit
@@ -117,7 +123,7 @@ export const CheckoutCodTest = () => {
         let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
 
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
@@ -140,17 +146,17 @@ export const CheckoutCodTest = () => {
             specificDays: []
         }, customer)
 
-        item = await request.getInStockProduct(config.api.todaySales, 1, 500000)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1, 500000)
+        await requestCart.addToCart(item.id, cookie)
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.voucherId = voucher._id
 
         let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()

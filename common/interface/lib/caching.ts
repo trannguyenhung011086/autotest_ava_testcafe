@@ -1,4 +1,4 @@
-import * as brand from '../interface/brands'
+import * as brand from './brands'
 
 export interface EventCache {
     id: string

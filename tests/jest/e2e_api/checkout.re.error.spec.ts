@@ -1,9 +1,7 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let account: Model.Account
 let customer: Model.Customer
 let addresses: Model.Addresses
@@ -11,24 +9,31 @@ let item: Model.Product
 let failedAttemptOrder: Model.FailedAttempt
 let cookie: string
 
+let request = new Utils.CheckoutUtils
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let access = new Utils.DbAccessUtils
+
 export const ReCheckoutErrorTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        await requestAddress.addAddresses(cookie)
+        addresses = await requestAddress.getAddresses(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
         jest.setTimeout(150000)
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
     })
 
     afterAll(async () => {
-        await request.deleteAddresses(cookie)
+        await requestAddress.deleteAddresses(cookie)
     })
 
     // validate required data

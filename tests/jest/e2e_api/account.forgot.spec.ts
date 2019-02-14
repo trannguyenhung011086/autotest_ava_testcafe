@@ -1,8 +1,8 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
-import faker from "faker/locale/vi"
+import faker from 'faker/locale/vi'
+
+let request = new Utils.AccountUtils
 
 export const AccountForgotTest = () => {
     it('POST / empty email', async () => {
@@ -47,7 +47,7 @@ export const AccountForgotTest = () => {
         let res = await request.post(config.api.forgot, {
             "email": config.testAccount.email
         })
-        
+
         if (config.baseUrl != 'https://www.leflair.vn') {
             expect(res.statusCode).toEqual(400)
             expect(res.body.message).toEqual('COULD_NOT_SEND_EMAIL')

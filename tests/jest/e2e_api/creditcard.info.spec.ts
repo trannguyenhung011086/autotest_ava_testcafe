@@ -1,11 +1,12 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+import waitForExpect from 'wait-for-expect'
+
 let cookie: string
 let creditcards: model.CreditCard[]
-import waitForExpect from 'wait-for-expect'
+
+let request = new Utils.CreditCardUtils
 
 export const CreditCardTest = () => {
     beforeAll(async () => {

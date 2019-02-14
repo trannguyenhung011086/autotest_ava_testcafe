@@ -1,9 +1,10 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+
 let brands: model.brands
+
+let request = new Utils.BrandUtils
 
 export const BrandInfoTest = () => {
     it('GET / get brands directory', async () => {
@@ -60,8 +61,8 @@ export const BrandInfoTest = () => {
             try {
                 expect(product.id).not.toBeEmpty()
                 expect(product.brand).toEqual(brand.name)
-                expect(product.image.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
-                expect(product.image2.toLowerCase()).toMatch(/.+\.jpg|\.jpeg|\.png/)
+                expect(request.validateImage(product.image)).toBeTrue()
+                expect(request.validateImage(product.image2)).toBeTrue()
                 expect(product.numberOfVariations).toBeNumber()
                 expect(product.quantity).toBeNumber()
                 expect(product.queryParams).toInclude('?')

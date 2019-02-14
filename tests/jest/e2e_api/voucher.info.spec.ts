@@ -1,22 +1,23 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+
 let cookie: string
 let voucher: model.Voucher
 let voucherInfo: model.VoucherModel
 let customer: model.Customer
 
+let helper = new Utils.Helper
+let access = new Utils.DbAccessUtils
+
 export const VoucherTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await helper.getLogInCookie(config.testAccount.email, config.testAccount.password)
         customer = await access.getCustomerInfo({ email: config.testAccount.email })
     })
 
     it('GET / check invalid voucher', async () => {
-        let res = await request.get(config.api.voucher + 'INVALID-ID', cookie)
+        let res = await helper.get(config.api.voucher + 'INVALID-ID', cookie)
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('VOUCHER_NOT_EXISTS')
     })
@@ -27,7 +28,7 @@ export const VoucherTest = () => {
             expiry: { $lt: new Date() }
         })
 
-        let res = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('VOUCHER_CAMPAIGN_INVALID_OR_ENDED')
     })
@@ -37,7 +38,7 @@ export const VoucherTest = () => {
             startDate: { $gt: new Date() }
         })
 
-        let res = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('VOUCHER_CAMPAIGN_INVALID_OR_NOT_STARTED')
     })
@@ -49,7 +50,7 @@ export const VoucherTest = () => {
             used: true
         })
 
-        let res = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('VOUCHER_HAS_BEEN_REDEEMED')
     })
@@ -62,7 +63,7 @@ export const VoucherTest = () => {
             oncePerAccount: true
         }, customer)
 
-        let res = await request.get(config.api.voucher + voucher.code, cookie)
+        let res = await helper.get(config.api.voucher + voucher.code, cookie)
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('YOU_ALREADY_USED_THIS_VOUCHER')
     })
@@ -73,7 +74,7 @@ export const VoucherTest = () => {
             customer: { $exists: true }
         })
 
-        let res = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('NOT_ALLOWED_TO_USE_VOUCHER')
     })
@@ -85,7 +86,7 @@ export const VoucherTest = () => {
             used: false
         })
 
-        let res = await request.get(config.api.voucher + voucherInfo.code, cookie)
+        let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
         voucher = res.body
 
         expect(res.statusCode).toEqual(200)
@@ -100,14 +101,14 @@ export const VoucherTest = () => {
     })
 
     it('GET / cannot check voucher with invalid cookie', async () => {
-        let res = await request.get(config.api.voucher + 'CARD-ID', 'leflair.connect2.sid=test')
+        let res = await helper.get(config.api.voucher + 'CARD-ID', 'leflair.connect2.sid=test')
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')
     })
 
     it('GET / cannot check voucher without login', async () => {
-        await request.get(config.api.signOut, cookie)
-        let res = await request.get(config.api.voucher + 'CARD-ID', cookie)
+        await helper.get(config.api.signOut, cookie)
+        let res = await helper.get(config.api.voucher + 'CARD-ID', cookie)
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')
     })

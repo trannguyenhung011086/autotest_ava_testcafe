@@ -1,12 +1,12 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
-import faker from "faker/locale/vi"
+import faker from 'faker/locale/vi'
+
+let helper = new Utils.Helper
 
 export const NewsSubscribeTest = () => {
     it('POST / empty email', async () => {
-        let res = await request.post(config.api.subscribe, {
+        let res = await helper.post(config.api.subscribe, {
             "email": ""
         })
         expect(res.statusCode).toEqual(200)
@@ -14,7 +14,7 @@ export const NewsSubscribeTest = () => {
     })
 
     it('POST / wrong format email', async () => {
-        let res = await request.post(config.api.subscribe, {
+        let res = await helper.post(config.api.subscribe, {
             "email": ".test%!@#$%^&*()_+<>?@mail.com"
         })
         expect(res.statusCode).toEqual(200)
@@ -22,7 +22,7 @@ export const NewsSubscribeTest = () => {
     })
 
     it('POST / valid email', async () => {
-        let res = await request.post(config.api.subscribe, {
+        let res = await helper.post(config.api.subscribe, {
             "email": faker.internet.email()
         })
         expect(res.statusCode).toEqual(200)

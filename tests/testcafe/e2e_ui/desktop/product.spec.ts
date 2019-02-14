@@ -1,10 +1,12 @@
 import { t, RequestMock } from 'testcafe'
 import { config } from '../../../../config'
 import * as Utils from '../../../../common/utils'
-let api = new Utils.ApiUtils()
 import * as model from '../../../../common/interface'
-let sales: model.SalesModel[]
 import { Pages } from '../page_objects'
+
+let sales: model.SalesModel[]
+
+let requestSale = new Utils.SaleUtils
 const page = new Pages()
 
 const mockRedirect = RequestMock()
@@ -20,7 +22,7 @@ fixture('Check product detail page ' + config.baseUrl)
 
 test.requestHooks(mockRedirect)
     ('Redirect to homepage when product API returns error', async () => {
-        sales = await api.getSales(config.api.featuredSales)
+        sales = await requestSale.getSales(config.api.featuredSales)
 
         await t.navigateTo(config.baseUrl + '/vn/sales/' + sales[0].slug)
         await t.click('.product-card')
@@ -31,7 +33,7 @@ test.requestHooks(mockRedirect)
 
 test.requestHooks(mockNonRedirect)
     ('Not redirect to homepage when product API returns error', async () => {
-        sales = await api.getSales(config.api.featuredSales)
+        sales = await requestSale.getSales(config.api.featuredSales)
 
         await t.navigateTo(config.baseUrl + '/vn/sales/' + sales[0].slug)
         await t.click('.product-card')

@@ -1,10 +1,9 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
 import Papa from 'papaparse'
 import convert from 'xml-js'
+
 let facebookFeeds: model.FacebookFeeds[]
 let googleFeeds: model.GoogleFeeds[]
 let googleDynamicFeeds: model.GoogleDynamicFeeds[]
@@ -14,15 +13,17 @@ let googleMerchantFeeds: model.GoogleMerchantFeeds
 let insiderFeeds: model.InsiderFeeds
 let googleCategories: string[] // mapping list: https://docs.google.com/spreadsheets/d/1cL4mK-oQCrf9K0o5o21t_ChU8yDVnppxNGJmNJ3rkgw/edit#gid=2031209736
 
+let helper = new Utils.Helper
+
 export const ProductFeedsTest = () => {
     beforeAll(async () => {
-        let res = await request.getPlain('https://www.google.com/basepages/producttype/taxonomy.en-US.txt')
+        let res = await helper.getPlain('https://www.google.com/basepages/producttype/taxonomy.en-US.txt')
         googleCategories = res.body.split('\n')
         jest.setTimeout(150000)
     })
 
     it('GET / get Facebook product feeds ' + config.baseUrl + config.api.feedFacebook, async () => {
-        let res = await request.getPlain(config.api.feedFacebook)
+        let res = await helper.getPlain(config.api.feedFacebook)
         expect(res.statusCode).toEqual(200)
 
         let parsed = Papa.parse(res.body, { header: true })
@@ -34,7 +35,7 @@ export const ProductFeedsTest = () => {
                 expect(feed.title).not.toBeEmpty()
                 expect(feed.description).not.toBeEmpty()
                 expect(feed.brand).not.toBeEmpty()
-                expect(feed.image_link.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.+\.jpg|\.jpeg|\.png/)
+                expect(helper.validateImage(feed.image_link)).toBeTrue()
 
                 let retail_price = parseInt(feed.price.split(' ')[0])
                 let sale_price = parseInt(feed.sale_price.split(' ')[0])
@@ -58,7 +59,7 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Google product feeds ' + config.baseUrl + config.api.feedGoogle, async () => {
-        let res = await request.getPlain(config.api.feedGoogle)
+        let res = await helper.getPlain(config.api.feedGoogle)
         expect(res.statusCode).toEqual(200)
 
         let parsed = Papa.parse(res.body, { header: true })
@@ -77,7 +78,7 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Google dynamic product feeds ' + config.baseUrl + config.api.feedGoogleDynamic, async () => {
-        let res = await request.getPlain(config.api.feedGoogleDynamic)
+        let res = await helper.getPlain(config.api.feedGoogleDynamic)
         expect(res.statusCode).toEqual(200)
 
         let parsed = Papa.parse(res.body, { header: true })
@@ -87,7 +88,7 @@ export const ProductFeedsTest = () => {
             try {
                 expect(feed["Final URL"]).toInclude(feed.ID)
                 expect(feed["Final mobile URL"]).toInclude(feed.ID)
-                expect(feed["Image URL"].toLowerCase()).toMatch(/leflair-assets.storage.googleapis.+\.jpg|\.jpeg|\.png/)
+                expect(helper.validateImage(feed["Image URL"])).toBeTrue()
                 expect(feed["Item category"]).not.toBeEmpty()
                 expect(feed["Item description"]).not.toBeEmpty()
                 expect(feed["Item title"]).not.toBeEmpty()
@@ -104,7 +105,7 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Criteo product feeds v1 ' + config.baseUrl + config.api.feedCriteo, async () => {
-        let res = await request.getPlain(config.api.feedCriteo)
+        let res = await helper.getPlain(config.api.feedCriteo)
         expect(res.statusCode).toEqual(200)
 
         let parsed = Papa.parse(res.body, { header: true })
@@ -113,7 +114,7 @@ export const ProductFeedsTest = () => {
         criteoFeeds.forEach(feed => {
             try {
                 expect(feed.producturl).toInclude(feed.id)
-                expect(feed.bigimage.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.+\.jpg|\.jpeg|\.png/)
+                expect(helper.validateImage(feed.bigimage)).toBeTrue()
                 expect(feed.category).not.toBeEmpty()
                 expect(feed.description).not.toBeEmpty()
                 expect(feed.instock).toEqual('true')
@@ -140,7 +141,7 @@ export const ProductFeedsTest = () => {
 
     // need to improve Criteo feeds format later
     it.skip('GET / get Criteo product feeds v2 ' + config.baseUrl + config.api.feedCriteo, async () => {
-        let res = await request.getPlain(config.api.feedCriteo)
+        let res = await helper.getPlain(config.api.feedCriteo)
         expect(res.statusCode).toEqual(200)
 
         let parsed = Papa.parse(res.body, { header: true })
@@ -164,7 +165,7 @@ export const ProductFeedsTest = () => {
                     expect(feed.link).toInclude(feed.size)
                 }
 
-                expect(feed.image_link.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.+\.jpg|\.jpeg|\.png/)
+                expect(helper.validateImage(feed.image_link)).toBeTrue()
 
                 expect(feed.availability).toEqual('in stock')
 
@@ -186,7 +187,7 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Google Merchant product feeds ' + config.baseUrl + config.api.feedGoogleMerchant, async () => {
-        let res = await request.getPlain(config.api.feedGoogleMerchant)
+        let res = await helper.getPlain(config.api.feedGoogleMerchant)
         expect(res.statusCode).toEqual(200)
 
         let result: any = convert.xml2js(res.body, { compact: true })
@@ -212,7 +213,7 @@ export const ProductFeedsTest = () => {
                     expect(entry["g:link"]._text).toInclude(entry["g:size"]._text.normalize())
                 }
 
-                expect(entry["g:image_link"]._text.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.+\.jpg|\.jpeg|\.png/)
+                expect(helper.validateImage(entry["g:image_link"]._text)).toBeTrue()
 
                 expect(entry["g:availability"]._text).toEqual('in stock')
 
@@ -251,7 +252,7 @@ export const ProductFeedsTest = () => {
     })
 
     it('GET / get Insider product feeds ' + config.baseUrl + config.api.feedInsider, async () => {
-        let res = await request.getPlain(config.api.feedInsider)
+        let res = await helper.getPlain(config.api.feedInsider)
         expect(res.statusCode).toEqual(200)
 
         let result: any = convert.xml2js(res.body, { compact: true })
@@ -265,7 +266,7 @@ export const ProductFeedsTest = () => {
             try {
                 expect(product.link._text).toInclude(product.id._text)
                 expect(product.title._text).not.toBeEmpty()
-                expect(product.image_url._text.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.+\.jpg|\.jpeg|\.png/)
+                expect(helper.validateImage(product.image_url._text)).toBeTrue()
                 expect(product.description._text).not.toBeEmpty()
                 expect(product.category._text).not.toBeEmpty()
                 expect(product.instock._text).toEqual('true')

@@ -1,9 +1,7 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let customer: Model.Customer
 let account: Model.Account
 let addresses: Model.Addresses
@@ -12,31 +10,38 @@ let cart: Model.Cart
 let cookie: string
 let checkoutInput: Model.CheckoutInput
 
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let request = new Utils.CheckoutUtils
+let access = new Utils.DbAccessUtils
+
 export const CheckoutErrorTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        await requestAddress.addAddresses(cookie)
+        addresses = await requestAddress.getAddresses(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
         checkoutInput = {}
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
     })
 
     afterAll(async () => {
-        await request.deleteAddresses(cookie)
+        await requestAddress.deleteAddresses(cookie)
     })
 
     // validate required data
 
     it('POST / cannot checkout with invalid cookie', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -84,7 +89,7 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with invalid phone and tax code', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         let res = await request.post(config.api.cart, {
             "productId": item.id
         }, cookie)
@@ -114,7 +119,7 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout without payment method', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         let res = await request.post(config.api.cart, {
             "productId": item.id
         }, cookie)
@@ -139,7 +144,7 @@ export const CheckoutErrorTest = () => {
     // validate cart
 
     it('POST / cannot checkout with mismatched cart', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         let res = await request.post(config.api.cart, {
             "productId": item.id
         }, cookie)
@@ -168,7 +173,7 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with mismatched quantity', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         let res = await request.post(config.api.cart, {
             "productId": item.id
         }, cookie)
@@ -192,7 +197,7 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with mismatched price', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         let res = await request.post(config.api.cart, {
             "productId": item.id
         }, cookie)
@@ -216,7 +221,7 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with invalid product', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         let res = await request.post(config.api.cart, {
             "productId": item.id
         }, cookie)
@@ -240,12 +245,12 @@ export const CheckoutErrorTest = () => {
     })
 
     it('POST / cannot checkout with more than 8 unique products', async () => {
-        let items = await request.getInStockProducts(config.api.todaySales, 1)
+        let items = await requestProduct.getInStockProducts(config.api.todaySales, 1)
 
         for (let item of items) {
-            await request.addToCart(item.id, cookie, false)
+            await requestCart.addToCart(item.id, cookie, false)
         }
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         if (account.cart.length <= 8) {
             throw 'Cart does not have more than 8 unique products!'
@@ -268,12 +273,12 @@ export const CheckoutErrorTest = () => {
     // validate availability
 
     it.skip('POST / cannot checkout with sold out product', async () => {
-        let soldOut = await request.getSoldOutProductInfo(config.api.currentSales)
-        await request.addToCart(soldOut.products[0].id, cookie)
+        let soldOut = await requestProduct.getSoldOutProductInfo(config.api.currentSales)
+        await requestCart.addToCart(soldOut.products[0].id, cookie)
         // after Netsuite integration, API does not allow to add sold out product to cart 
         // need another workaround
 
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -300,11 +305,11 @@ export const CheckoutErrorTest = () => {
             _id: endedSale.products[0].product
         })
 
-        await request.addToCart(item.variations[0]._id, cookie)
+        await requestCart.addToCart(item.variations[0]._id, cookie)
         // after Netsuite integration, API does not allow to add sale ended product to cart
         // need another workaround
 
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -330,9 +335,9 @@ export const CheckoutErrorTest = () => {
             numberOfItems: { $gte: 2 }
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -361,9 +366,9 @@ export const CheckoutErrorTest = () => {
             'specificDays.0': { $exists: true, $ne: today }
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -390,9 +395,9 @@ export const CheckoutErrorTest = () => {
             minimumPurchase: { $gte: 500000 }
         })
 
-        item = await request.getProductWithCountry('VN', 0, 500000)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getProductWithCountry('VN', 0, 500000)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -418,18 +423,18 @@ export const CheckoutErrorTest = () => {
             used: false
         }, customer)
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.voucherId = voucher._id
 
         await request.checkoutCod(checkoutInput, cookie)
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -454,9 +459,9 @@ export const CheckoutErrorTest = () => {
             used: false
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -481,9 +486,9 @@ export const CheckoutErrorTest = () => {
             used: true
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -509,9 +514,9 @@ export const CheckoutErrorTest = () => {
             minimumPurchase: { $lte: item.salePrice }
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -537,9 +542,9 @@ export const CheckoutErrorTest = () => {
             minimumPurchase: { $lte: item.salePrice }
         })
 
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         const stripeData = {
             "type": "card",
@@ -577,9 +582,9 @@ export const CheckoutErrorTest = () => {
             oncePerAccount: true
         }, customer)
 
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -604,9 +609,9 @@ export const CheckoutErrorTest = () => {
             customer: { $exists: true, $ne: customer._id }
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {
@@ -627,9 +632,9 @@ export const CheckoutErrorTest = () => {
     // validate account credit
 
     it('POST / cannot checkout with more than available credit', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         let res = await request.post(config.api.checkout, {
             "address": {

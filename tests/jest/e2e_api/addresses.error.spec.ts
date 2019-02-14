@@ -1,18 +1,19 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import faker from 'faker/locale/vi'
 import * as model from '../../../common/interface'
+
 let cookie: string
 let city: model.City
 let district: model.District
 let address: model.Shipping
 let addresses: model.Addresses
 
+let request = new Utils.AddressUtils
+
 export const AddressesErrorTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie(config.testAccount.email, config.testAccount.password)
         
         await request.addAddresses(cookie)
         addresses = await request.getAddresses(cookie)

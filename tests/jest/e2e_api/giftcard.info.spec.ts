@@ -1,20 +1,21 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+
 let cookie: string
 let giftCard: model.Giftcard
 let giftcardInfo: model.GiftcardModel
 
+let helper = new Utils.Helper
+let access = new Utils.DbAccessUtils
+
 export const GiftcardTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await helper.getLogInCookie(config.testAccount.email, config.testAccount.password)
     })
 
     it('GET / check invalid giftcard', async () => {
-        let res = await request.get(config.api.giftcard + 'INVALID-ID', cookie)
+        let res = await helper.get(config.api.giftcard + 'INVALID-ID', cookie)
 
         expect(res.statusCode).toEqual(500)
         expect(res.body.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
@@ -23,7 +24,7 @@ export const GiftcardTest = () => {
     it('GET / check redeemed giftcard', async () => {
         giftcardInfo = await access.getGiftCard({ redeemed: true })
 
-        let res = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
+        let res = await helper.get(config.api.giftcard + giftcardInfo.code, cookie)
 
         expect(res.statusCode).toEqual(500)
         expect(res.body.message).toEqual('COULD_NOT_LOAD_GIFTCARD_OR_INVALID')
@@ -32,7 +33,7 @@ export const GiftcardTest = () => {
     it('GET / check not redeemed giftcard', async () => {
         giftcardInfo = await access.getGiftCard({ redeemed: false })
 
-        let res = await request.get(config.api.giftcard + giftcardInfo.code, cookie)
+        let res = await helper.get(config.api.giftcard + giftcardInfo.code, cookie)
         giftCard = res.body
 
         expect(res.statusCode).toEqual(200)
@@ -42,15 +43,15 @@ export const GiftcardTest = () => {
     })
 
     it('GET / cannot check giftcard with invalid cookie', async () => {
-        let res = await request.get(config.api.giftcard + 'CARD-ID', 'leflair.connect2.sid=test')
+        let res = await helper.get(config.api.giftcard + 'CARD-ID', 'leflair.connect2.sid=test')
 
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')
     })
 
     it('GET / cannot check giftcard without login', async () => {
-        await request.get(config.api.signOut, cookie)
-        let res = await request.get(config.api.giftcard + 'CARD-ID', cookie)
+        await helper.get(config.api.signOut, cookie)
+        let res = await helper.get(config.api.giftcard + 'CARD-ID', cookie)
 
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Access denied.')

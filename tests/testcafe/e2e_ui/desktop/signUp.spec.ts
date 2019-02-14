@@ -2,6 +2,7 @@ import { t } from 'testcafe'
 import { config } from '../../../../config'
 import * as faker from 'faker/locale/vi'
 import { Pages } from '../page_objects'
+
 const page = new Pages()
 
 fixture('Sign up via email ' + config.baseUrl)

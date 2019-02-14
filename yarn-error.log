@@ -1,0 +1,91 @@
+Arguments: 
+  /usr/bin/node /usr/bin/yarn install
+
+PATH: 
+  /usr/local/bin:/usr/local/sbin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
+
+Yarn version: 
+  1.13.0
+
+Node version: 
+  11.9.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: EACCES: permission denied, mkdir '/home/hungtran/leflair/www-auto/node_modules/anymatch/node_modules/braces/node_modules/is-extendable'
+
+npm manifest: 
+  {
+    "name": "e2e-testing-with-jest",
+    "jest": {
+      "preset": "ts-jest",
+      "testEnvironment": "node",
+      "setupTestFrameworkScriptFile": "./jest.setup.js",
+      "reporters": [
+        "default",
+        "jest-junit",
+        "jest-stare"
+      ],
+      "testPathIgnorePatterns": [
+        "/node_modules/",
+        "/tests/testcafe/"
+      ]
+    },
+    "jest-stare": {
+      "resultDir": "report/jest-stare"
+    },
+    "version": "1.0.0",
+    "description": "Leflair website automation test",
+    "main": "index.js",
+    "scripts": {
+      "test_api": "JEST_JUNIT_OUTPUT=report/junit_api.xml ./node_modules/.bin/jest tests/jest/api.spec.ts --verbose --detectOpenHandles --runInBand",
+      "test_api_prod": "JEST_JUNIT_OUTPUT=report/junit_api.xml ./node_modules/.bin/jest -t '^((?!skip-prod).)*$' tests/jest/api.spec.ts --verbose --detectOpenHandles --runInBand",
+      "test_chromium": "./node_modules/.bin/testcafe \"chromium --no-sandbox\" tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml,html:report/junit_chromium.html",
+      "test_firefox": "./node_modules/.bin/testcafe firefox tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml,html:report/junit_firefox.html",
+      "test_mobile_emu": "./node_modules/.bin/testcafe \"chromium:emulation:device=iphone 6 --no-sandbox\" tests/testcafe/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml,html:report/junit_mobile_emu.html",
+      "test_desktop_remote": "./node_modules/.bin/testcafe remote tests/testcafe/e2e_ui/desktop --qr-code --selector-timeout 15000 --assertion-timeout 5000",
+      "test_mobile_remote": "./node_modules/.bin/testcafe remote tests/testcafe/e2e_ui/mobile --qr-code --selector-timeout 15000 --assertion-timeout 5000",
+      "test_api_ci": "NODE_ENV=$NODE_ENV JEST_JUNIT_OUTPUT=report/junit_api.xml ./node_modules/.bin/jest tests/jest/api.spec.ts --rootDir=/dockertests --verbose --detectOpenHandles --runInBand",
+      "test_api_prod_ci": "NODE_ENV=$NODE_ENV JEST_JUNIT_OUTPUT=report/junit_api.xml ./node_modules/.bin/jest -t '^((?!skip-prod).)*$' tests/jest/api.spec.ts --rootDir=/dockertests --verbose --detectOpenHandles --runInBand",
+      "test_chromium_ci": "NODE_ENV=$NODE_ENV ./node_modules/.bin/testcafe \"chromium:headless --no-sandbox\" /dockertests/tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml,html:report/junit_chromium.html",
+      "test_firefox_ci": "NODE_ENV=$NODE_ENV ./node_modules/.bin/testcafe firefox:headless /dockertests/tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml,html:report/junit_firefox.html",
+      "test_mobile_emu_ci": "NODE_ENV=$NODE_ENV ./node_modules/.bin/testcafe \"chromium:headless:emulation:device=iphone 6 --no-sandbox\" /dockertests/tests/testcafe/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml,html:report/junit_mobile_emu.html"
+    },
+    "author": "Hung Tran",
+    "license": "ISC",
+    "dependencies": {
+      "@types/faker": "^4.1.4",
+      "@types/got": "^9.4.0",
+      "@types/jest": "^23.3.12",
+      "@types/mongodb": "^3.1.18",
+      "@types/node": "^10.12.18",
+      "@types/papaparse": "^4.5.6",
+      "@types/qs": "^6.5.1",
+      "@types/stripe": "^6.19.1",
+      "faker": "^4.1.0",
+      "got": "^9.6.0",
+      "jest": "^23.6.0",
+      "jest-extended": "^0.11.0",
+      "jest-junit": "^5.2.0",
+      "jest-stare": "^1.9.1",
+      "mongodb": "^3.1.10",
+      "papaparse": "^4.6.2",
+      "testcafe": "^0.23.3",
+      "testcafe-live": "^0.1.4",
+      "testcafe-reporter-html": "^1.4.4",
+      "tough-cookie": "^2.5.0",
+      "ts-jest": "^23.10.5",
+      "ts-node": "^7.0.1",
+      "typescript": "^3.2.2",
+      "wait-for-expect": "^1.1.0",
+      "xml-js": "^1.6.8"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

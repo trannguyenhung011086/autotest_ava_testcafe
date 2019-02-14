@@ -1,33 +1,35 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let account: Model.Account
 let checkout: Model.Checkout
 let item: Model.Product
 let cart: Model.Cart
-let addresses: Model.Addresses
 let cookie: string
+
+let helper = new Utils.Helper
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
 
 export const CheckoutProceedLoggedInTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        cookie = await helper.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        account = await requestAccount.getAccountInfo(cookie)
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
     })
 
     afterAll(async () => {
-        await request.deleteAddresses(cookie)
+        await requestAddress.deleteAddresses(cookie)
     })
 
     it('GET / proceed checkout with empty cart', async () => {
-        let res = await request.get(config.api.checkout, cookie)
+        let res = await helper.get(config.api.checkout, cookie)
         checkout = res.body
 
         expect(res.statusCode).toEqual(200)
@@ -37,14 +39,14 @@ export const CheckoutProceedLoggedInTest = () => {
     })
 
     it('GET / proceed checkout with cart', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
 
-        let res = await request.post(config.api.cart, {
+        let res = await helper.post(config.api.cart, {
             "productId": item.id
         }, cookie)
         cart = res.body
 
-        res = await request.get(config.api.checkout, cookie)
+        res = await helper.get(config.api.checkout, cookie)
         checkout = res.body
 
         expect(res.statusCode).toEqual(200)
@@ -56,16 +58,16 @@ export const CheckoutProceedLoggedInTest = () => {
 
 export const CheckoutProceedGuestTest = () => {
     beforeAll(async () => {
-        cookie = await request.getGuestCookie()
-        account = await request.getAccountInfo(cookie)
+        cookie = await helper.getGuestCookie()
+        account = await requestAccount.getAccountInfo(cookie)
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
     })
 
     it('GET / proceed checkout with empty cart', async () => {
-        let res = await request.get(config.api.checkout, cookie)
+        let res = await helper.get(config.api.checkout, cookie)
         checkout = res.body
 
         expect(res.statusCode).toEqual(200)
@@ -74,14 +76,14 @@ export const CheckoutProceedGuestTest = () => {
     })
 
     it('GET / proceed checkout with cart', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
+        item = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
 
-        let res = await request.post(config.api.cart, {
+        let res = await helper.post(config.api.cart, {
             "productId": item.id
         }, cookie)
         cart = res.body
 
-        res = await request.get(config.api.checkout, cookie)
+        res = await helper.get(config.api.checkout, cookie)
         checkout = res.body
 
         expect(res.statusCode).toEqual(200)

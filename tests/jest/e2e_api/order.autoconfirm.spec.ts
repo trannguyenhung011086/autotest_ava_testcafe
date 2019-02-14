@@ -1,74 +1,80 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
-let cookie: string
 import * as Model from '../../../common/interface'
+
+let cookie: string
 let checkoutInput: Model.CheckoutInput
 let addresses: Model.Addresses
 
+let request = new Utils.CheckoutUtils
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let requestOrder = new Utils.OrderUtils
+
 export const OrdersConfirmTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        await requestAddress.addAddresses(cookie)
+        addresses = await requestAddress.getAddresses(cookie)
         checkoutInput = {}
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
     })
 
     afterAll(async () => {
-        await request.deleteAddresses(cookie)
+        await requestAddress.deleteAddresses(cookie)
     })
 
     it('Not auto-confirm order when value >= 5,000,000', async () => {
-        let items = await request.getInStockProducts(config.api.currentSales, 1, 1000000)
+        let items = await requestProduct.getInStockProducts(config.api.currentSales, 1, 1000000)
         for (let item of items.slice(0, 5)) {
-            await request.addToCart(item.id, cookie)
+            await requestCart.addToCart(item.id, cookie)
         }
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
 
         let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.status).toEqual('placed')
         expect(order.paymentSummary.total).toBeGreaterThanOrEqual(5000000)
     })
 
     it('Not auto-confirm order when quantity >= 2', async () => {
-        let item = await request.getInStockProduct(config.api.currentSales, 2)
-        await request.addToCart(item.id, cookie)
-        await request.addToCart(item.id, cookie)
+        let item = await requestProduct.getInStockProduct(config.api.currentSales, 2)
+        await requestCart.addToCart(item.id, cookie)
+        await requestCart.addToCart(item.id, cookie)
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
 
         let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.status).toEqual('placed')
         expect(order.products[0].quantity).toBeGreaterThanOrEqual(2)
     })
 
     it('Not auto-confirm order when sum quantiy >= 5', async () => {
-        let items = await request.getInStockProducts(config.api.currentSales, 2)
+        let items = await requestProduct.getInStockProducts(config.api.currentSales, 2)
         for (let item of items.slice(0, 6)) {
-            await request.addToCart(item.id, cookie)
+            await requestCart.addToCart(item.id, cookie)
         }
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
 
         let checkout = await request.checkoutCod(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.status).toEqual('placed')
 
         let sum = 0
@@ -79,8 +85,8 @@ export const OrdersConfirmTest = () => {
     })
 
     it('Not auto-confirm international order', async () => {
-        let item = await request.getInStockProduct(config.api.internationalSales, 2)
-        await request.addToCart(item.id, cookie)
+        let item = await requestProduct.getInStockProduct(config.api.internationalSales, 2)
+        await requestCart.addToCart(item.id, cookie)
 
         let stripeData = {
             "type": "card",
@@ -91,7 +97,7 @@ export const OrdersConfirmTest = () => {
             "key": config.stripeKey
         }
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
             cookie, config.stripeBase)
@@ -99,7 +105,7 @@ export const OrdersConfirmTest = () => {
         let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeTrue()
     })

@@ -1,11 +1,13 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let item: Model.Product
 let cart: Model.Cart
 let cookie: string
+
+let request = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
 
 export const CartSuccessTest = () => {
     beforeAll(async () => {
@@ -17,7 +19,7 @@ export const CartSuccessTest = () => {
     })
 
     it('POST / add product to cart as guest', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id
@@ -28,7 +30,7 @@ export const CartSuccessTest = () => {
         expect(cart.id).not.toBeEmpty()
         expect(cart.productId).toEqual(item.id)
         expect(cart.title).not.toBeEmpty()
-        expect(cart.image.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
+        expect(request.validateImage(cart.image)).toBeTrue()
         expect(cart.quantity).toEqual(1)
         expect(cart.retailPrice).toBeGreaterThan(cart.salePrice)
         expect(cart.availableQuantity).toBeGreaterThanOrEqual(1)
@@ -47,7 +49,7 @@ export const CartSuccessTest = () => {
     })
 
     it('POST / add same product to cart', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 2)
+        item = await requestProduct.getInStockProduct(config.api.currentSales, 2)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id
@@ -65,7 +67,7 @@ export const CartSuccessTest = () => {
     })
 
     it('DELETE / remove product from cart', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id
@@ -79,14 +81,14 @@ export const CartSuccessTest = () => {
     })
 
     it('PUT / remove multiple products from cart', async () => {
-        let itemA = await request.getInStockProduct(config.api.featuredSales, 1)
+        let itemA = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": itemA.id
         }, cookie)
         let cartA = res.body
 
-        let itemB = await request.getInStockProduct(config.api.potdSales, 1)
+        let itemB = await requestProduct.getInStockProduct(config.api.potdSales, 1)
 
         res = await request.post(config.api.cart, {
             "productId": itemB.id
@@ -102,7 +104,7 @@ export const CartSuccessTest = () => {
     })
 
     it('POST / update cart after sign in', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id

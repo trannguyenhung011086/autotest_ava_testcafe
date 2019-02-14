@@ -1,10 +1,11 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+
 let cookie: string
+
+let request = new Utils.SaleUtils
+let access = new Utils.DbAccessUtils
 
 export const SecretSaleTest = () => {
     beforeAll(async () => {

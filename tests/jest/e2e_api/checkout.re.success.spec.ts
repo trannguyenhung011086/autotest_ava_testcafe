@@ -1,9 +1,7 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let account: Model.Account
 let customer: Model.Customer
 let item: Model.Product
@@ -13,16 +11,25 @@ let failedAttemptOrder: Model.FailedAttempt
 let checkoutInput: Model.CheckoutInput
 let cookie: string
 
+let request = new Utils.CheckoutUtils
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let requestOrder = new Utils.OrderUtils
+let requestCreditcard = new Utils.CreditCardUtils
+let access = new Utils.DbAccessUtils
+
 export const ReCheckoutSuccessTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        await requestAddress.addAddresses(cookie)
+        addresses = await requestAddress.getAddresses(cookie)
 
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
 
         checkoutInput = {}
@@ -39,17 +46,17 @@ export const ReCheckoutSuccessTest = () => {
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
     })
 
     afterAll(async () => {
-        await request.deleteAddresses(cookie)
+        await requestAddress.deleteAddresses(cookie)
     })
 
     it('POST / recheckout with COD', async () => {
         let reCheckout = await request.checkoutCod(checkoutInput, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.code).toInclude(reCheckout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -62,7 +69,7 @@ export const ReCheckoutSuccessTest = () => {
 
         let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
@@ -85,7 +92,7 @@ export const ReCheckoutSuccessTest = () => {
         expect(parse.Ref).toEqual(reCheckout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
 
-        order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.status).toEqual('placed')
     })
 
@@ -94,7 +101,7 @@ export const ReCheckoutSuccessTest = () => {
 
         let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
@@ -117,17 +124,17 @@ export const ReCheckoutSuccessTest = () => {
         expect(parse.Ref).toEqual(reCheckout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
 
-        order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.status).toEqual('placed')
     })
 
     it('POST / recheckout with saved CC', async () => {
-        let matchedCard = await request.getCard('PayDollar')
+        let matchedCard = await requestCreditcard.getCard('PayDollar')
         checkoutInput.methodData = matchedCard
 
         let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
@@ -143,7 +150,7 @@ export const ReCheckoutSuccessTest = () => {
         expect(parse.Ref).toEqual(reCheckout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
 
-        order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.status).toEqual('placed')
     })
 
@@ -171,7 +178,7 @@ export const ReCheckoutSuccessTest = () => {
 
         let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.code).toInclude(reCheckout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeFalse()
@@ -191,14 +198,14 @@ export const ReCheckoutSuccessTest = () => {
             specificDays: []
         })
 
-        let matchedCard = await request.getCard('PayDollar')
+        let matchedCard = await requestCreditcard.getCard('PayDollar')
 
         checkoutInput.voucherId = voucher._id
         checkoutInput.methodData = matchedCard
 
         let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
 
-        let order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(reCheckout.creditCard.orderRef).toInclude(order.code)
         expect(order.status).toEqual('pending')
         expect(order.isCrossBorder).toBeFalse()
@@ -215,7 +222,7 @@ export const ReCheckoutSuccessTest = () => {
         expect(parse.Ref).toEqual(reCheckout.creditCard.orderRef)
         expect(parse.errMsg).toMatch(/Transaction completed/)
 
-        order = await request.getOrderInfo(reCheckout.orderId, cookie)
+        order = await requestOrder.getOrderInfo(reCheckout.orderId, cookie)
         expect(order.status).toEqual('placed')
     })
 }

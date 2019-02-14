@@ -1,10 +1,11 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+
 let product: model.ProductInfoModel
+
+let request = new Utils.ProductUtils
+let access = new Utils.DbAccessUtils
 
 export const ProductInfoTest = () => {
     it('GET / invalid product ID', async () => {
@@ -50,7 +51,7 @@ export const ProductInfoTest = () => {
                 expect(res.sale.categories.length).toBeGreaterThanOrEqual(1)
                 expect(res.sale.potd).toBeBoolean()
 
-                expect(res.brand.logo.toLowerCase()).toMatch(/leflair-assets.storage.googleapis.com\/.+\.jpg|\.jpeg|\.png/)
+                expect(request.validateImage(res.brand.logo)).toBeTrue()
                 expect(res.brand.name).not.toBeEmpty()
                 expect(res.brand.description).not.toBeEmpty()
 

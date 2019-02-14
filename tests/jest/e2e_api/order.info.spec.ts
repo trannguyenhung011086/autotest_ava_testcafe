@@ -1,17 +1,19 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+
 let cookie: string
 let account: model.Account
 let orders: model.OrderSummary[]
 let orderItem: model.Order
 
+let request = new Utils.OrderUtils
+let requestAccount = new Utils.AccountUtils
+
 export const OrdersInfoTest = () => {
     beforeAll(async () => {
         cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
         jest.setTimeout(120000)
     })
 
@@ -30,14 +32,14 @@ export const OrdersInfoTest = () => {
             try {
                 expect(order.id).not.toBeEmpty()
                 expect(order.code).toMatch(/^SG|HK|VN/)
-                expect(order.createdDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+                expect(request.validateDate(order.createdDate)).toBeTrue()
                 expect(order.status).toMatch(/pending|placed|confirmed|cancelled|shipped|delivered|return request|returned/)
-                
+
                 if (order.shippedDate != null) {
-                    expect(order.shippedDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+                    expect(request.validateDate(order.shippedDate)).toBeTrue()
                 }
                 if (order.deliveredDate != null) {
-                    expect(order.deliveredDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+                    expect(request.validateDate(order.deliveredDate)).toBeTrue()
                 }
             } catch (error) {
                 throw { failed_order: order, error: error }
@@ -56,14 +58,14 @@ export const OrdersInfoTest = () => {
 
                 expect(orderItem.id).toEqual(order.id)
                 expect(orderItem.code).toMatch(/^SG|HK|VN/)
-                expect(orderItem.createdDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+                expect(request.validateDate(orderItem.createdDate)).toBeTrue()
                 expect(order.status).toMatch(/pending|placed|confirmed|cancelled|shipped|delivered|return request|returned/)
-                
+
                 if (orderItem.shippedDate != null) {
-                    expect(orderItem.shippedDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+                    expect(request.validateDate(orderItem.shippedDate)).toBeTrue()
                 }
                 if (orderItem.deliveredDate != null) {
-                    expect(orderItem.deliveredDate).toMatch(/^(\d\d\/){2}\d{4}$/)
+                    expect(request.validateDate(orderItem.deliveredDate)).toBeTrue()
                 }
 
                 expect(orderItem.isBulky).toBeBoolean()
@@ -91,7 +93,7 @@ export const OrdersInfoTest = () => {
                 expect(orderItem.address.shipping.phone).not.toBeEmpty()
 
                 expect(orderItem.paymentSummary.method).toMatch(/COD|STRIPE|CC|FREE/)
-                
+
                 if (orderItem.paymentSummary.method == 'COD' ||
                     orderItem.paymentSummary.method == 'STRIPE') {
                     expect(orderItem.paymentSummary.card).toBeNull()
@@ -122,7 +124,7 @@ export const OrdersInfoTest = () => {
                         expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
                         expect(product.salePrice).toBeLessThanOrEqual(product.totalSalePrice)
                         expect(product.quantity).toBeNumber()
-                        expect(product.image.toLowerCase()).toMatch(/\.jpg|\.jpeg|\.png|\.jpe/)
+                        expect(request.validateImage(product.image)).toBeTrue()
                         expect(product.returnable).toBeBoolean()
                         expect(product.type).not.toBeEmpty()
                         expect(product.brand._id).not.toBeEmpty()
@@ -161,7 +163,7 @@ export const OrdersInfoTest = () => {
 
     it('GET / cannot access order info with invalid cookie', async () => {
         let res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', 'leflair.connect2.sid=test')
-        
+
         expect(res.statusCode).toEqual(401)
         expect(res.body.message).toEqual('Invalid request.')
     })

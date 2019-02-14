@@ -1,12 +1,13 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
-import faker from "faker/locale/vi"
+import faker from 'faker/locale/vi'
 import * as model from '../../../common/interface'
+
 let account: model.Account
 let signIn: model.SignIn
 let cookie: string
+
+let request = new Utils.AccountUtils
 
 export const AccountInfoTest = () => {
     beforeAll(async () => {
@@ -21,7 +22,7 @@ export const AccountInfoTest = () => {
         expect(account.id).not.toBeEmpty()
         expect(account.firstName).not.toBeEmpty()
         expect(account.lastName).not.toBeEmpty()
-        expect(account.email).toEqual(config.testAccount.email)
+        expect(account.email).toEqual('qa_tech@leflair.vn')
         expect(account.language).toMatch(/en|vn/)
         expect(account.accountCredit).toBeNumber()
         expect(account.provider).toEqual('local')
@@ -38,7 +39,7 @@ export const AccountInfoTest = () => {
 
 export const AccountUpdateInfoTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
     })
 
     it('PUT / can change name', async () => {
@@ -55,7 +56,7 @@ export const AccountUpdateInfoTest = () => {
         expect(signIn.id).not.toBeEmpty()
         expect(signIn.firstName).toEqual(firstName)
         expect(signIn.lastName).toEqual(lastName)
-        expect(signIn.email).toEqual(config.testAccount.email)
+        expect(signIn.email).toEqual('qa_tech@leflair.vn')
         expect(signIn.language).toMatch(/en|vn/)
         expect(signIn.accountCredit).toBeNumber()
         expect(signIn.provider).toEqual('local')
@@ -86,7 +87,7 @@ export const AccountUpdateInfoTest = () => {
 
 export const AccountUpdatePasswordTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
     })
 
     it('PUT / wrong current password', async () => {
@@ -114,7 +115,7 @@ export const AccountUpdatePasswordTest = () => {
     it('PUT / new password has length < 7', async () => {
         let res = await request.put(config.api.password,
             {
-                "currentPassword": config.testAccount.password,
+                "currentPassword": 'leflairqa',
                 "newPassword": "123456"
             }, cookie)
 
@@ -125,7 +126,7 @@ export const AccountUpdatePasswordTest = () => {
     it('PUT / empty new password', async () => {
         let res = await request.put(config.api.password,
             {
-                "currentPassword": config.testAccount.password,
+                "currentPassword": 'leflairqa',
                 "newPassword": ""
             }, cookie)
 
@@ -136,8 +137,8 @@ export const AccountUpdatePasswordTest = () => {
     it('PUT / can change password', async () => {
         let res = await request.put(config.api.password,
             {
-                "currentPassword": config.testAccount.password,
-                "newPassword": config.testAccount.password
+                "currentPassword": 'leflairqa',
+                "newPassword": 'leflairqa'
             }, cookie)
 
         expect(res.statusCode).toEqual(200)
@@ -147,8 +148,8 @@ export const AccountUpdatePasswordTest = () => {
     it('PUT / cannot update password with wrong cookie', async () => {
         let res = await request.put(config.api.password,
             {
-                "currentPassword": config.testAccount.password,
-                "newPassword": config.testAccount.password
+                "currentPassword": 'leflairqa',
+                "newPassword": 'leflairqa'
             }, 'leflair.connect2.sid=test')
 
         expect(res.statusCode).toEqual(401)

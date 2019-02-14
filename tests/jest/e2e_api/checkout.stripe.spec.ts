@@ -1,14 +1,21 @@
 import { config } from '../../../config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let account: Model.Account
 let item: Model.Product
 let addresses: Model.Addresses
 let cookie: string
 let checkoutInput: Model.CheckoutInput
+
+let request = new Utils.CheckoutUtils
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let requestOrder = new Utils.OrderUtils
+let requestCreditcard = new Utils.CreditCardUtils
+let access = new Utils.DbAccessUtils
 
 const stripeData = {
     "type": "card",
@@ -20,27 +27,27 @@ const stripeData = {
 
 export const CheckoutStripeTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        await requestAddress.addAddresses(cookie)
+        addresses = await requestAddress.getAddresses(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
         checkoutInput = {}
         jest.setTimeout(120000)
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
     })
 
     afterAll(async () => {
-        await request.deleteAddresses(cookie)
+        await requestAddress.deleteAddresses(cookie)
     })
 
     it('POST / cannot checkout with invalid Stripe', async () => {
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         stripeData['card[number]'] = '123456789'
         const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
@@ -64,10 +71,10 @@ export const CheckoutStripeTest = () => {
     })
 
     it('POST / cannot checkout with unsupported Stripe', async () => {
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         stripeData['card[number]'] = '3566002020360505' // JCB
         const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
@@ -91,12 +98,12 @@ export const CheckoutStripeTest = () => {
     })
 
     it('POST / checkout with new Stripe (not save card) - VISA', async () => {
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
         stripeData['card[number]'] = '4000000000000077'
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.saveNewCard = false
         checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
@@ -105,7 +112,7 @@ export const CheckoutStripeTest = () => {
         let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeTrue()
@@ -114,12 +121,12 @@ export const CheckoutStripeTest = () => {
     })
 
     it('POST / checkout with new Stripe (save card) - MASTER', async () => {
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
         stripeData['card[number]'] = '5555555555554444'
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.saveNewCard = true
         checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
@@ -128,7 +135,7 @@ export const CheckoutStripeTest = () => {
         let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeTrue()
@@ -146,8 +153,8 @@ export const CheckoutStripeTest = () => {
             specificDays: []
         })
 
-        item = await request.getInStockProduct(config.api.internationalSales, 2)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 2)
+        await requestCart.addToCart(item.id, cookie)
 
         let credit: number
         if (account.accountCredit < (item.salePrice - voucher.amount)) {
@@ -158,7 +165,7 @@ export const CheckoutStripeTest = () => {
 
         stripeData['card[number]'] = '5555555555554444'
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.voucherId = voucher._id
         checkoutInput.credit = credit
@@ -169,7 +176,7 @@ export const CheckoutStripeTest = () => {
         let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeTrue()
@@ -180,19 +187,19 @@ export const CheckoutStripeTest = () => {
     })
 
     it('POST / checkout with saved Stripe', async () => {
-        let matchedCard = await request.getCard('Stripe', cookie)
+        let matchedCard = await requestCreditcard.getCard('Stripe', cookie)
 
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.methodData = matchedCard
 
         let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeTrue()
@@ -210,12 +217,12 @@ export const CheckoutStripeTest = () => {
             specificDays: []
         })
 
-        let matchedCard = await request.getCard('Stripe', cookie)
+        let matchedCard = await requestCreditcard.getCard('Stripe', cookie)
 
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
-        checkoutInput.account = await request.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.voucherId = voucher._id
         checkoutInput.methodData = matchedCard
@@ -223,7 +230,7 @@ export const CheckoutStripeTest = () => {
         let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
 
-        let order = await request.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
         expect(order.code).toInclude(checkout.code)
         expect(order.status).toEqual('placed')
         expect(order.isCrossBorder).toBeTrue()
