@@ -1,4 +1,4 @@
-import { config } from '../../../config'
+import { config } from '../../config'
 import * as Model from '../../interface'
 import { Helper } from '../helper'
 import * as faker from 'faker/locale/vi'

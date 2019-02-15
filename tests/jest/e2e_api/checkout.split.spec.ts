@@ -1,4 +1,4 @@
-import { config } from '../../../config'
+import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
 import * as Model from '../../../common/interface'
 

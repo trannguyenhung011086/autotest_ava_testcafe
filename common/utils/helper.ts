@@ -1,4 +1,4 @@
-import { config } from '../../config'
+import { config } from '../config'
 import * as got from 'got'
 import { GotJSONOptions } from 'got'
 import { CookieJar } from 'tough-cookie'

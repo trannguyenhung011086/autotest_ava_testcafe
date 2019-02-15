@@ -1,5 +1,5 @@
 import { t, RequestMock } from 'testcafe'
-import { config } from '../../../../config'
+import { config } from '../../../../common/config'
 import * as Utils from '../../../../common/utils'
 import * as model from '../../../../common/interface'
 import { Pages } from '../page_objects'

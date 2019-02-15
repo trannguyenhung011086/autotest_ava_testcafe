@@ -1,4 +1,4 @@
-import { config } from '../../../config'
+import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
 import * as model from '../../../common/interface'
 import waitForExpect from 'wait-for-expect'
