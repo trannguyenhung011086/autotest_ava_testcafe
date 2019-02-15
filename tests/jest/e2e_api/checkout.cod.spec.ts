@@ -166,4 +166,4 @@ export const CheckoutCodTest = () => {
     })
 }
 
-describe('Checkout API - Logged in - COD ' + config.baseUrl + config.api.checkout, CheckoutCodTest)
+describe('Checkout API - Logged in - COD (skip-prod) ' + config.baseUrl + config.api.checkout, CheckoutCodTest)

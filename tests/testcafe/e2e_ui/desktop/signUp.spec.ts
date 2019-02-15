@@ -18,7 +18,7 @@ test('Cannot sign up with empty email and password', async () => {
 })
 
 test('Cannot sign up with wrong format email', async () => {
-    await page.signUp.submitData(faker.random.words(), faker.internet.password())
+    await page.signUp.submitData('.test%!@#$%^&*()_+<>?@mail.com', faker.internet.password())
     await t.expect(await page.signUp.getEmailError()).eql(config.notifyMsg.invalidEmailFormat)
 })
 

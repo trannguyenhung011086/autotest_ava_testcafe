@@ -45,7 +45,7 @@ export const CreditCardTest = () => {
         let res = await request.get(config.api.creditcard, cookie)
         creditcards = res.body
 
-        res = await request.delete(config.api.creditcard + '/INVALID-ID')
+        res = await request.delete(config.api.creditcard + '/INVALID-ID', cookie)
         await waitForExpect(() => {
             expect(res.statusCode).toEqual(500)
             expect(res.body.message).toEqual('INVALID_CREDIT_CARD_OR_CANNOT_DELETE')

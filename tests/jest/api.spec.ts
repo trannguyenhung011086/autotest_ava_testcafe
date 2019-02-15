@@ -1,3 +1,5 @@
+// Jest always run tests in parrallel so import test here to force running in sequence
+
 import {
     AccountForgotTest,
     AccountResetTest,
@@ -44,8 +46,8 @@ describe('Account Sign Up Test', AccountSignUpTest)
 describe('Account Update Info Test', AccountUpdateInfoTest)
 describe('Account Update Password Test', AccountUpdatePasswordTest)
 
-describe('Addresses Success Test', AddressesSuccessTest)
 describe('Addresses Error Test', AddressesErrorTest)
+describe('Addresses Success Test', AddressesSuccessTest)
 
 describe('Category Test', CategoryTest)
 
@@ -74,7 +76,7 @@ describe('Checkout PayDollar Test (skip-prod)', CheckoutPayDollarTest)
 describe('Checkout Stripe Test (skip-prod)', CheckoutStripeTest)
 describe('Checkout Split Order Test (skip-prod)', CheckoutSplitTest)
 
-describe('Re-checkout Error Test', ReCheckoutErrorTest)
+describe('Re-checkout Error Test (skip-prod)', ReCheckoutErrorTest)
 describe('Re-checkout Success Test (skip-prod)', ReCheckoutSuccessTest)
 
 describe('Creditcard Info Test', CreditCardTest)

@@ -24,7 +24,7 @@
   "main": "index.js",
   "scripts": {
     "test_api": "JEST_JUNIT_OUTPUT=report/junit_api.xml ./node_modules/.bin/jest tests/jest/api.spec.ts --verbose --detectOpenHandles --runInBand",
-    "test_api_prod": "JEST_JUNIT_OUTPUT=report/junit_api.xml ./node_modules/.bin/jest -t '^((?!skip-prod).)*$' tests/jest/api.spec.ts --verbose --detectOpenHandles --runInBand",
+    "test_api_prod": "NODE_ENV=prod JEST_JUNIT_OUTPUT=report/junit_api.xml ./node_modules/.bin/jest -t '^((?!skip-prod).)*$' tests/jest/api.spec.ts --verbose --detectOpenHandles --runInBand",
     "test_chromium": "./node_modules/.bin/testcafe \"chromium --no-sandbox\" tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml,html:report/junit_chromium.html",
     "test_firefox": "./node_modules/.bin/testcafe firefox tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml,html:report/junit_firefox.html",
     "test_mobile_emu": "./node_modules/.bin/testcafe \"chromium:emulation:device=iphone 6 --no-sandbox\" tests/testcafe/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml,html:report/junit_mobile_emu.html",

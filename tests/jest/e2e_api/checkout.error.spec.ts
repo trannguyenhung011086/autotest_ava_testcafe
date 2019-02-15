@@ -52,9 +52,7 @@ export const CheckoutErrorTest = () => {
             "method": "FREE"
         }, 'leflair.connect2.sid=test')
 
-        expect(res.statusCode).toEqual(400)
-        expect(res.body.message).toContainEqual('EMAIL_ADDRESS_REQUIRED')
-        expect(res.body.message).toContainEqual('EMAIL_ADDRESS_NOT_WELL_FORMAT')
+        expect(res.statusCode).toEqual(500)
     })
 
     it('POST / cannot checkout with empty data', async () => {
@@ -392,7 +390,7 @@ export const CheckoutErrorTest = () => {
             expiry: { $gte: new Date() },
             used: false,
             binRange: { $exists: false },
-            minimumPurchase: { $gte: 500000 }
+            minimumPurchase: { $gt: 500000 }
         })
 
         item = await requestProduct.getProductWithCountry('VN', 0, 500000)
