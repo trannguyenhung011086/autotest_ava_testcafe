@@ -108,12 +108,8 @@ export const CheckoutCodTest = () => {
         item = await requestProduct.getInStockProduct(config.api.todaySales, 2)
         await requestCart.addToCart(item.id, cookie)
 
-        let credit: number
-        if (account.accountCredit < (item.salePrice + 25000 - voucher.amount)) {
-            credit = account.accountCredit
-        } else if (account.accountCredit >= (item.salePrice + 25000 - voucher.amount)) {
-            credit = item.salePrice + 25000 - voucher.amount
-        }
+        const credit = request.calculateCredit(account.accountCredit,
+            item.salePrice + 25000, voucher.amount)
 
         checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses

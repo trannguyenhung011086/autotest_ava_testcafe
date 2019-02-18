@@ -156,12 +156,8 @@ export const CheckoutStripeTest = () => {
         item = await requestProduct.getInStockProduct(config.api.internationalSales, 2)
         await requestCart.addToCart(item.id, cookie)
 
-        let credit: number
-        if (account.accountCredit < (item.salePrice - voucher.amount)) {
-            credit = account.accountCredit
-        } else if (account.accountCredit >= (item.salePrice - voucher.amount)) {
-            credit = item.salePrice - voucher.amount
-        }
+        const credit = request.calculateCredit(account.accountCredit,
+            item.salePrice, voucher.amount)
 
         stripeData['card[number]'] = '5555555555554444'
 

@@ -75,13 +75,16 @@ export const CheckoutPayDollarTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
         expect(parse.successcode).toEqual('-1')
         expect(parse.Ref).toBeEmpty()
         expect(parse.errMsg).toMatch(/Parameter cardNo incorrect/)
+
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+        expect(order.status).toEqual('pending')
     })
 
     it.each([['3566002020360505', 'JCB'], ['378282246310005', 'AMEX']])
@@ -102,13 +105,16 @@ export const CheckoutPayDollarTest = () => {
             payDollarCreditCard.epYear = 2020
             payDollarCreditCard.securityCode = '123'
 
-            let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+            let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
                 cookie, config.payDollarBase)
             let parse = await request.parsePayDollarRes(result.body)
 
             expect(parse.successcode).toEqual('-1')
             expect(parse.Ref).toBeEmpty()
             expect(parse.errMsg).toMatch(/Your account doesn\'t support the payment method \((JCB|AMEX)\)/)
+
+            let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+            expect(order.status).toEqual('pending')
         })
 
     it('POST / checkout with new CC (not save card) - VISA', async () => {
@@ -136,7 +142,7 @@ export const CheckoutPayDollarTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
@@ -174,7 +180,7 @@ export const CheckoutPayDollarTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
@@ -187,7 +193,7 @@ export const CheckoutPayDollarTest = () => {
     })
 
     it('POST / checkout with saved CC', async () => {
-        let matchedCard = await requestCreditcard.getCard('PayDollar')
+        let matchedCard = await requestCreditcard.getCard('PayDollar', cookie)
 
         item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         await requestCart.addToCart(item.id, cookie)
@@ -207,7 +213,7 @@ export const CheckoutPayDollarTest = () => {
         expect(order.paymentSummary.shipping).toEqual(0)
 
         payDollarCreditCard = checkout.creditCard
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
@@ -231,12 +237,8 @@ export const CheckoutPayDollarTest = () => {
 
         item = await requestProduct.getInStockProduct(config.api.todaySales, 2)
 
-        let credit: number
-        if (account.accountCredit < (item.salePrice - voucher.amount)) {
-            credit = account.accountCredit
-        } else if (account.accountCredit >= (item.salePrice - voucher.amount)) {
-            credit = item.salePrice - voucher.amount
-        }
+        const credit = request.calculateCredit(account.accountCredit, 
+            item.salePrice, voucher.amount)
 
         await requestCart.addToCart(item.id, cookie)
 
@@ -266,7 +268,7 @@ export const CheckoutPayDollarTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
@@ -279,7 +281,7 @@ export const CheckoutPayDollarTest = () => {
     })
 
     it('POST / checkout with saved CC - voucher (percentage + max discount)', async () => {
-        let matchedCard = await requestCreditcard.getCard('PayDollar')
+        let matchedCard = await requestCreditcard.getCard('PayDollar', cookie)
 
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
@@ -310,7 +312,7 @@ export const CheckoutPayDollarTest = () => {
         expect(order.paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
 
         payDollarCreditCard = checkout.creditCard
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 

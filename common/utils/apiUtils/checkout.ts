@@ -156,7 +156,7 @@ export class CheckoutUtils extends Helper {
         payDollarCreditCard.failUrl = 'https://secure.leflair.vn/checkout'
         payDollarCreditCard.successUrl = 'https://secure.leflair.vn/checkout/thank-you/' + checkout.code
 
-        let res = await this.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let res = await this.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
 
         let parse = await this.parsePayDollarRes(res.body)

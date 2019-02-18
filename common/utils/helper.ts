@@ -87,12 +87,32 @@ export class Helper {
         let options: GotJSONOptions = {
             baseUrl: config.baseUrl,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36 OPR/58.0.3135.53'
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: data,
             throwHttpErrors: false,
             json: true,
+            form: true,
+            followRedirect: false,
+            // cookieJar: this.cookieJar
+        }
+        if (cookie) {
+            options.headers['Cookie'] = cookie
+        }
+        if (base) {
+            options.baseUrl = base
+        }
+        return await got.post(api, options)
+    }
+
+    public async postFormUrlPlain(api: string, data: any, cookie?: string, base?: string) {
+        let options = {
+            baseUrl: config.baseUrl,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data,
+            throwHttpErrors: false,
             form: true,
             followRedirect: false,
             // cookieJar: this.cookieJar
@@ -172,5 +192,17 @@ export class Helper {
 
     public validateDate(date: string) {
         return this.matchRegExp(date, /^(\d\d\/){2}\d{4}$/)
+    }
+
+    public calculateCredit(accountCredit: number, salePrice: number, voucher: number) {
+        let credit: number
+        const discount = salePrice - voucher
+
+        if (accountCredit >= discount) {
+            credit = discount
+        } else {
+            credit = accountCredit
+        }
+        return credit
     }
 }

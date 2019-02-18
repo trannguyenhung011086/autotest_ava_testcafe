@@ -3,7 +3,7 @@
         "target": "esnext",
         "lib": [
             "dom",
-            "esnext"
+            "es2017"
         ],
         "moduleResolution": "node",
         "module": "commonjs",

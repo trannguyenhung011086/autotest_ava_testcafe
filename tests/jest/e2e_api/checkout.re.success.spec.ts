@@ -84,7 +84,7 @@ export const ReCheckoutSuccessTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
@@ -116,7 +116,7 @@ export const ReCheckoutSuccessTest = () => {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
@@ -142,7 +142,7 @@ export const ReCheckoutSuccessTest = () => {
         expect(order.paymentSummary.shipping).toEqual(0)
 
         payDollarCreditCard = reCheckout.creditCard
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
@@ -166,12 +166,8 @@ export const ReCheckoutSuccessTest = () => {
             specificDays: []
         }, customer)
 
-        let credit: number
-        if (account.accountCredit < (item.salePrice + 25000 - voucher.amount)) {
-            credit = account.accountCredit
-        } else if (account.accountCredit >= (item.salePrice + 25000 - voucher.amount)) {
-            credit = item.salePrice + 25000 - voucher.amount
-        }
+        const credit = request.calculateCredit(account.accountCredit,
+            item.salePrice, voucher.amount)
 
         checkoutInput.voucherId = voucher._id
         checkoutInput.credit = credit
@@ -214,7 +210,7 @@ export const ReCheckoutSuccessTest = () => {
         expect(order.paymentSummary.voucherAmount).toBeLessThanOrEqual(voucher.maximumDiscountAmount)
 
         payDollarCreditCard = reCheckout.creditCard
-        let result = await request.postFormUrl(config.payDollarApi, payDollarCreditCard,
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
         let parse = await request.parsePayDollarRes(result.body)
 
