@@ -25,7 +25,7 @@ switch (process.env.NODE_ENV) {
 
 export const config = {
     stgDb: {
-        uri: 'mongodb://104.199.151.20',
+        uri: 'mongodb://35.187.252.42',
         name: 'admin-leflair'
     },
     baseUrl: baseUrl,
