@@ -11,8 +11,8 @@ export const ProductInfoTest = () => {
     it('GET / invalid product ID', async () => {
         let res = await request.get(config.api.product + 'INVALID-ID')
 
-        expect(res.statusCode).toEqual(404)
-        expect(res.body.message).toEqual('PRODUCT_NOT_FOUND')
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
     })
 
     it('GET / product of sale not started', async () => {
@@ -22,8 +22,8 @@ export const ProductInfoTest = () => {
         })
         let res = await request.get(config.api.product + futureSale.products[0].product)
 
-        expect(res.statusCode).toEqual(404)
-        expect(res.body.message).toEqual('PRODUCT_NOT_FOUND')
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
     })
 
     it('GET / product of sale ended', async () => {
@@ -33,8 +33,8 @@ export const ProductInfoTest = () => {
         })
         let res = await request.get(config.api.product + endedSale.products[0].product)
 
-        expect(res.statusCode).toEqual(404)
-        expect(res.body.message).toEqual('PRODUCT_NOT_FOUND')
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
     })
 
     it('GET / valid product ID', async () => {
@@ -72,6 +72,7 @@ export const ProductInfoTest = () => {
                 for (let product of res.products) {
                     try {
                         expect(product.id).not.toBeEmpty()
+                        expect(product.nsId).not.toBeEmpty()
                         expect(product.saleId).not.toBeEmpty()
                         expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
                         expect(product.inStock).toBeBoolean()

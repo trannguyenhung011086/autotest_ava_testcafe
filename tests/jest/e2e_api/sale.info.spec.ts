@@ -27,7 +27,8 @@ export const SaleInfoTest = () => {
             startDate: { $gt: new Date() }
         })
         let res = await request.get(config.api.sales + futureSale._id)
-        expect(res.statusCode).toEqual(500)
+        expect(res.statusCode).toEqual(404)
+        expect(res.body.message).toEqual('SALE_NOT_FOUND')
     })
 
     it('GET / sale has ended', async () => {
@@ -35,7 +36,8 @@ export const SaleInfoTest = () => {
             endDate: { $lt: new Date() }
         })
         let res = await request.get(config.api.sales + endedSale._id)
-        expect(res.statusCode).toEqual(500)
+        expect(res.statusCode).toEqual(410)
+        expect(res.body.message).toEqual('SALE_HAS_ENDED')
     })
 
     it('GET / invalid upcoming sale ID', async () => {
@@ -94,6 +96,8 @@ export const SaleInfoTest = () => {
                             expect(product.slug).toInclude(product.id)
                             expect(product.quantity).toBeNumber()
                             expect(product.numberOfVariations).toBeGreaterThanOrEqual(0)
+                            expect(product.nsId).not.toBeEmpty()
+                            expect(product.isSecretSale).toBeFalse()
                         } catch (error) {
                             // console.log(product)
                             throw { failed_product: product, failed_sale: sale.id, error: error }
@@ -105,7 +109,7 @@ export const SaleInfoTest = () => {
                     expect(res.filter.color).toBeArray()
                     expect(res.filter.size).toBeArray()
                     expect(res.filter.brand).toBeArray()
-                    expect(res.filter.category).toBeArray()
+                    expect(res.filter.category.length).toBeGreaterThan(0)
 
                     expect(res.sort).toContainAllValues(['RECOMMENDED',
                         'HIGHEST_DISCOUNT',
@@ -120,37 +124,64 @@ export const SaleInfoTest = () => {
             }
         })
 
-    it('GET / valid ongoing sale ID with filter', async () => {
-        let sales = await request.getSales(config.api.featuredSales)
-        let sale = await request.getSaleInfo(sales[0].id)
+    it('GET / valid ongoing sale ID with filter by category', async () => {
+        let sales = await request.getSales(config.api.todaySales)
 
-        for (let filter of Object.keys(sale.filter)) {
-            if (sale.filter[filter].length > 0) {
-                let filterValue = sale.filter[filter][0]['value']
-                let filteredSale = await request.getSaleInfo(sales[0].id + `?${filter}=${filterValue}`)
-                expect(filteredSale.products.length).toBeLessThanOrEqual(sale.products.length)
+        for (let sale of sales) {
+            let saleInfo = await request.getSaleInfo(sale.id)
+            let filteredSale = await request.getSaleInfo(saleInfo.id + '?category=' +
+                saleInfo.filter.category[0].value)
+
+            filteredSale.products.forEach(product => {
+                try {
+                    expect(product.category).toEqual(saleInfo.filter.category[0].display)
+                } catch (error) {
+                    throw { failed_product: product, error: error }
+                }
+            })
+        }
+    })
+
+    it('GET / valid ongoing sale ID with filter by size', async () => {
+        let sales = await request.getSales(config.api.currentSales)
+
+        for (let sale of sales) {
+            let saleInfo = await request.getSaleInfo(sale.id)
+
+            if (saleInfo.filter.size.length > 1) {
+                let filteredSale = await request.getSaleInfo(saleInfo.id + '?size=' +
+                    saleInfo.filter.size[0].value)
+
+                filteredSale.products.forEach(product => {
+                    try {
+                        expect(product.size).toEqual(saleInfo.filter.size[0].display)
+                    } catch (error) {
+                        throw { failed_product: product, error: error }
+                    }
+                })
             }
         }
     })
 
-    it('GET / valid ongoing sale ID with multiple filters', async () => {
-        let sales = await request.getSales(config.api.featuredSales)
-        let sale = await request.getSaleInfo(sales[0].id)
+    it('GET / valid ongoing sale ID with filter by brand', async () => {
+        let sales = await request.getSales(config.api.currentSales)
 
-        let filterList = []
-        for (let filter of Object.keys(sale.filter)) {
-            if (sale.filter[filter].length > 0) {
-                let filterValue = sale.filter[filter][0]['value']
-                filterList.push(`${filter}=${filterValue}`)
+        for (let sale of sales) {
+            let saleInfo = await request.getSaleInfo(sale.id)
+
+            if (saleInfo.filter.brand.length > 1) {
+                let filteredSale = await request.getSaleInfo(saleInfo.id + '?brand=' +
+                    saleInfo.filter.brand[0].value)
+
+                filteredSale.products.forEach(product => {
+                    try {
+                        expect(product.brand).toEqual(saleInfo.filter.brand[0].display)
+                    } catch (error) {
+                        throw { failed_product: product, error: error }
+                    }
+                })
             }
         }
-
-        let filterString = '?' + filterList[0]
-        filterList.shift()
-        filterString = filterString + '&' + filterList.join('&')
-
-        let filteredSale = await request.getSaleInfo(sales[0].id + filterString)
-        expect(filteredSale.products.length).toBeLessThanOrEqual(sale.products.length)
     })
 
     it('GET / valid upcoming sale ID', async () => {

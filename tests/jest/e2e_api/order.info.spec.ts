@@ -129,6 +129,8 @@ export const OrdersInfoTest = () => {
                         expect(product.type).not.toBeEmpty()
                         expect(product.brand._id).not.toBeEmpty()
                         expect(product.brand.name).not.toBeEmpty()
+                        expect(product.nsId).not.toBeEmpty()
+                        expect(product.productId).not.toBeEmpty()
                     } catch (error) {
                         throw { failed_product: product, order: orderItem.id, error: error }
                     }

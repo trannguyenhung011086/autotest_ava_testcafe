@@ -9,15 +9,19 @@ export type Products = {
     category: string,
     color: string,
     brand: string,
+    size: string,
     queryParams: string,
     slug: string,
     quantity: number,
     numberOfVariations: number,
-    product: string
+    product: string,
+    isSecretSale: boolean,
+    nsId: string
 }
 
 export type Product = {
     id: string,
+    nsId: string,
     name: string,
     size: string,
     color: string,
