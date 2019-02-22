@@ -7,12 +7,64 @@ let product: model.ProductInfoModel
 let request = new Utils.ProductUtils
 let accessRedis = new Utils.RedisAccessUtils
 
+export async function validateProductInfo(product: model.Products) {
+    try {
+        let res = await request.getProductInfo(product.id)
+        expect(res.id).toEqual(product.id)
+
+        expect(res.sale.slug).not.toBeEmpty()
+        expect(new Date(res.sale.startTime)).toBeBefore(new Date(res.sale.endTime))
+        expect(res.sale.categories.length).toBeGreaterThanOrEqual(1)
+        expect(res.sale.potd).toBeBoolean()
+
+        expect(request.validateImage(res.brand.logo)).toBeTrue()
+        expect(res.brand.name).not.toBeEmpty()
+        expect(res.brand.description).not.toBeEmpty()
+
+        expect(res.title).not.toBeEmpty()
+        expect(res.returnDays).toBeNumber()
+
+        if (res.returnable) {
+            expect(res.returnable).toBeBoolean()
+        }
+
+        expect(res.description.heading).not.toBeEmpty()
+        expect(res.description.secondary).toBeArray()
+
+        expect(res.images).toBeObject()
+
+        expect(res.products).toBeArray()
+
+        for (let product of res.products) {
+            try {
+                expect(product.id).not.toBeEmpty()
+                expect(product.nsId).not.toBeEmpty()
+                expect(product.saleId).not.toBeEmpty()
+                expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
+                expect(product.inStock).toBeBoolean()
+                // expect(product.quantity).toBeGreaterThanOrEqual(0)
+                expect(product.quantity).toBeNumber()
+                expect(Object.keys(res.images)).toContainEqual(product.imageKey)
+                expect(product.isVirtual).toBeBoolean()
+                expect(product.isBulky).toBeBoolean()
+            } catch (error) {
+                throw { failed_product_content: product, error: error }
+            }
+        }
+
+        expect(res.sizes).toBeArray()
+        expect(res.colors).toBeArray()
+    } catch (error) {
+        throw { failed_product: product, error: error }
+    }
+}
+
 export const ProductInfoTest = () => {
     it('GET / invalid product ID', async () => {
         let res = await request.get(config.api.product + 'INVALID-ID')
 
-        expect(res.statusCode).toEqual(404)
-        expect(res.body.message).toEqual('PRODUCT_NOT_FOUND')
+        expect(res.statusCode).toEqual(500)
+        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
     })
 
     it('GET / product of sale not started (skip-prod)', async () => {
@@ -69,59 +121,34 @@ export const ProductInfoTest = () => {
         }
     })
 
-    it('GET / valid product ID', async () => {
-        let products = await request.getProducts(config.api.featuredSales)
+    it.each([[config.api.currentSales],
+    [config.api.todaySales],
+    [config.api.featuredSales],
+    [config.api.internationalSales],
+    [config.api.cateAccessories + '/sales/current'],
+    [config.api.cateApparel + '/sales/current'],
+    [config.api.cateBagsShoes + '/sales/current'],
+    [config.api.cateHealthBeauty + '/sales/current'],
+    [config.api.cateHomeLifeStyle + '/sales/current']])
+        ('GET / valid product from sale %s', async (saleType) => {
+            let products = await request.getProducts(saleType)
+            expect(products.length).toBeGreaterThanOrEqual(1)
+
+            for (let i = 0; i < 15; i++) {
+                const random = Math.floor(Math.random() * products.length)
+                await validateProductInfo(products[random])
+            }
+        })
+
+    it('GET / valid product from POTD', async () => {
+        let products = await request.getProducts(config.api.potdSales)
         expect(products.length).toBeGreaterThanOrEqual(1)
 
         for (let product of products) {
-            try {
-                let res = await request.getProductInfo(product.id)
-                expect(res.id).toEqual(product.id)
+            let res = await request.getProductInfo(product.id)
+            expect(res.sale.potd).toBeTrue()
 
-                expect(res.sale.slug).not.toBeEmpty()
-                expect(new Date(res.sale.startTime)).toBeBefore(new Date(res.sale.endTime))
-                expect(res.sale.categories.length).toBeGreaterThanOrEqual(1)
-                expect(res.sale.potd).toBeBoolean()
-
-                expect(request.validateImage(res.brand.logo)).toBeTrue()
-                expect(res.brand.name).not.toBeEmpty()
-                expect(res.brand.description).not.toBeEmpty()
-
-                expect(res.title).not.toBeEmpty()
-                expect(res.returnDays).toBeNumber()
-
-                if (res.returnable) {
-                    expect(res.returnable).toBeBoolean()
-                }
-
-                expect(res.description.heading).not.toBeEmpty()
-                expect(res.description.secondary).toBeArray()
-
-                expect(res.images).toBeObject()
-
-                expect(res.products).toBeArray()
-
-                for (let product of res.products) {
-                    try {
-                        expect(product.id).not.toBeEmpty()
-                        expect(product.nsId).not.toBeEmpty()
-                        expect(product.saleId).not.toBeEmpty()
-                        expect(product.retailPrice).toBeGreaterThanOrEqual(product.salePrice)
-                        expect(product.inStock).toBeBoolean()
-                        expect(product.quantity).toBeGreaterThanOrEqual(0)
-                        expect(Object.keys(res.images)).toContainEqual(product.imageKey)
-                        expect(product.isVirtual).toBeBoolean()
-                        expect(product.isBulky).toBeBoolean()
-                    } catch (error) {
-                        throw { failed_product_content: product, error: error }
-                    }
-                }
-
-                expect(res.sizes).toBeArray()
-                expect(res.colors).toBeArray()
-            } catch (error) {
-                throw { failed_product: product, error: error }
-            }
+            await validateProductInfo(product)
         }
     })
 
