@@ -1,6 +1,7 @@
 export { Helper } from './helper'
 
 export { DbAccessUtils } from './mongoUtils/access'
+export { RedisAccessUtils } from './redisUtils/access'
 
 export { AccountUtils } from './apiUtils/account'
 export { AddressUtils } from './apiUtils/address'

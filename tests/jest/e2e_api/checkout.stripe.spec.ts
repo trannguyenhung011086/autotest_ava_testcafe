@@ -43,13 +43,13 @@ export const CheckoutStripeTest = () => {
         await requestAddress.deleteAddresses(cookie)
     })
 
-    it('POST / cannot checkout with invalid Stripe', async () => {
+    it('POST / cannot checkout with declined Stripe', async () => {
         item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
         await requestCart.addToCart(item.id, cookie)
 
         account = await requestAccount.getAccountInfo(cookie)
 
-        stripeData['card[number]'] = '123456789'
+        stripeData['card[number]'] = '4000000000000002'
         const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
             cookie, config.stripeBase).then(res => res.body)
 
@@ -65,9 +65,9 @@ export const CheckoutStripeTest = () => {
 
         expect(res.statusCode).toEqual(500)
         expect(res.body.message).toEqual('STRIPE_CUSTOMER_ERROR')
-        expect(res.body.error.type).toEqual('StripeInvalidRequestError')
-        expect(res.body.error.code).toEqual('parameter_missing')
-        expect(res.body.error.message).toEqual('Missing required param: source.')
+        expect(res.body.error.type).toEqual('StripeCardError')
+        expect(res.body.error.code).toEqual('card_declined')
+        expect(res.body.error.message).toEqual('Your card was declined.')
     })
 
     it('POST / cannot checkout with unsupported Stripe', async () => {
@@ -120,11 +120,34 @@ export const CheckoutStripeTest = () => {
         expect(order.paymentSummary.shipping).toEqual(0)
     })
 
-    it('POST / checkout with new Stripe (save card) - MASTER', async () => {
+    it('POST / checkout with new Stripe (not save card) - MASTER', async () => {
         item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
         await requestCart.addToCart(item.id, cookie)
 
         stripeData['card[number]'] = '5555555555554444'
+
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.saveNewCard = false
+        checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase).then(res => res.body)
+
+        let checkout = await request.checkoutStripe(checkoutInput, cookie)
+        expect(checkout.orderId).not.toBeEmpty()
+
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+        expect(order.code).toInclude(checkout.code)
+        expect(order.status).toEqual('placed')
+        expect(order.isCrossBorder).toBeTrue()
+        expect(order.paymentSummary.method).toEqual('STRIPE')
+        expect(order.paymentSummary.shipping).toEqual(0)
+    })
+
+    it('POST / checkout with new Stripe (save card) - VISA', async () => {
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
+
+        stripeData['card[number]'] = '4000000000000077'
 
         checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses

@@ -82,6 +82,7 @@ export const SaleInfoTest = () => {
                     expect(res.endTime).toEqual(sale.endTime)
                     expect(new Date(res.startTime)).toBeBefore(new Date())
 
+                    expect(res.products.length).toBeGreaterThan(0)
                     res.products.forEach(product => {
                         try {
                             expect(product.id).not.toBeEmpty()

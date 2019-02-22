@@ -46,6 +46,22 @@ export class DbAccessUtils {
         }
     }
 
+    public async updateDbData(collectionName: string, query: Object, update: Object) {
+        let client: MongoClient
+        try {
+            client = await MongoClient.connect(config.stgDb.uri, { useNewUrlParser: true })
+            const db = client.db(config.stgDb.name)
+            const collection = db.collection(collectionName)
+            return collection.updateOne(query, {
+                $set: update
+            })
+        } catch (err) {
+            throw { message: 'Error with database!', error: err }
+        } finally {
+            await client.close()
+        }
+    }
+
     public async getCustomerInfo(query: Object) {
         let info = await this.getDbData('customers', query)
         if (!info) {
@@ -174,5 +190,15 @@ export class DbAccessUtils {
             throw 'Cannot get campaign!'
         }
         return campaign
+    }
+
+    public async updateOrderStatus(orderCode: string, status: string) {
+        const res = await this.updateDbData('orders', { code: orderCode },
+            { status: status })
+
+        if (res.result.nModified == 0) {
+            throw 'Cannot update order status!'
+        }
+        return res.result
     }
 }

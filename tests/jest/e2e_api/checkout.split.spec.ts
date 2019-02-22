@@ -34,10 +34,13 @@ export const CheckoutSplitTest = () => {
         addresses = await requestAddress.getAddresses(cookie)
         account = await requestAccount.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
-        stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase).then(res => res.body)
         checkoutInput = {}
         jest.setTimeout(150000)
+    })
+
+    beforeEach(async () => {
+        stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase).then(res => res.body)
     })
 
     afterEach(async () => {
@@ -245,7 +248,7 @@ export const CheckoutSplitTest = () => {
         let itemSG1 = await requestProduct.getProductWithCountry('SG', 0, 800000)
         let itemSG2 = await requestProduct.getProductWithCountry('SG', 900000, 2000000)
         let itemVN1 = await requestProduct.getProductWithCountry('VN', 0, 800000)
-        let itemVN2 = await requestProduct.getProductWithCountry('VN', 1000000, 2000000)
+        let itemVN2 = await requestProduct.getProductWithCountry('VN', 0, 2000000)
 
         await requestCart.addToCart(itemSG1.id, cookie)
         await requestCart.addToCart(itemSG2.id, cookie)
@@ -288,7 +291,7 @@ export const CheckoutSplitTest = () => {
         let itemHK1 = await requestProduct.getProductWithCountry('HK', 0, 800000)
         let itemHK2 = await requestProduct.getProductWithCountry('HK', 900000, 2000000)
         let itemVN1 = await requestProduct.getProductWithCountry('VN', 0, 800000)
-        let itemVN2 = await requestProduct.getProductWithCountry('VN', 900000, 2000000)
+        let itemVN2 = await requestProduct.getProductWithCountry('VN', 0, 2000000)
 
         await requestCart.addToCart(itemHK1.id, cookie)
         await requestCart.addToCart(itemHK2.id, cookie)
@@ -372,7 +375,6 @@ export const CheckoutSplitTest = () => {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             used: false,
-            numberOfItems: { $exists: false },
             minimumPurchase: null,
             binRange: { $exists: false },
             discountType: 'amount',
@@ -424,8 +426,8 @@ export const CheckoutSplitTest = () => {
         })
 
         let itemSG1 = await requestProduct.getProductWithCountry('SG', 500000, 700000)
-        let itemSG2 = await requestProduct.getProductWithCountry('SG', 800000, 2000000)
-        let itemSG3 = await requestProduct.getProductWithCountry('SG', 2100000, 2000000)
+        let itemSG2 = await requestProduct.getProductWithCountry('SG', 800000, 1000000)
+        let itemSG3 = await requestProduct.getProductWithCountry('SG', 1100000, 2000000)
 
         await requestCart.addToCart(itemSG1.id, cookie)
         await requestCart.addToCart(itemSG2.id, cookie)

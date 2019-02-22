@@ -32,8 +32,18 @@ export class CheckoutUtils extends Helper {
         if (info.methodData) {
             data['methodData'] = info.methodData
         }
+        if (info.cart) {
+            data['cart'] = info.cart
+        }
 
-        let res = await this.post(config.api.checkout, data, cookie)
+        let api: string
+        if (info.orderCode) {
+            api = config.api.checkout + '/order/' + info.orderCode
+        } else {
+            api = config.api.checkout
+        }
+
+        let res = await this.post(api, data, cookie)
 
         if (res.statusCode != 200) {
             throw {
@@ -72,8 +82,18 @@ export class CheckoutUtils extends Helper {
         if (info.credit) {
             data['accountCredit'] = info.credit
         }
+        if (info.cart) {
+            data['cart'] = info.cart
+        }
 
-        let res = await this.post(config.api.checkout, data, cookie)
+        let api: string
+        if (info.orderCode) {
+            api = config.api.checkout + '/order/' + info.orderCode
+        } else {
+            api = config.api.checkout
+        }
+
+        let res = await this.post(api, data, cookie)
         if (res.statusCode != 200) {
             throw {
                 message: 'Cannot complete COD checkout',
@@ -106,8 +126,18 @@ export class CheckoutUtils extends Helper {
         if (info.methodData) {
             data['methodData'] = info.methodData
         }
+        if (info.cart) {
+            data['cart'] = info.cart
+        }
 
-        let res = await this.post(config.api.checkout, data, cookie)
+        let api: string
+        if (info.orderCode) {
+            api = config.api.checkout + '/order/' + info.orderCode
+        } else {
+            api = config.api.checkout
+        }
+
+        let res = await this.post(api, data, cookie)
 
         if (res.statusCode != 200) {
             throw {
@@ -152,9 +182,6 @@ export class CheckoutUtils extends Helper {
         payDollarCreditCard.epMonth = 7
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
-        payDollarCreditCard.transactionUrl = config.payDollarBase + config.payDollarApi
-        payDollarCreditCard.failUrl = 'https://secure.leflair.vn/checkout'
-        payDollarCreditCard.successUrl = 'https://secure.leflair.vn/checkout/thank-you/' + checkout.code
 
         let res = await this.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)

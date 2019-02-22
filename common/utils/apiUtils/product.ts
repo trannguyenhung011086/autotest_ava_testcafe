@@ -21,7 +21,15 @@ export class ProductUtils extends Helper {
     }
 
     public async getProducts(saleType: string, crossBorder?: string): Promise<Model.Products[]> {
-        const sales = await new SaleUtils().getSales(saleType)
+        let sales = await new SaleUtils().getSales(saleType)
+
+        sales = sales.reduce((result, value) => {
+            if (value.id != '5c6662dbd76f7144bf5872b5') {
+                result.push(value)
+            }
+            return result
+        }, [])
+
         let saleList = []
         let domestic = []
         let international = []
@@ -42,7 +50,7 @@ export class ProductUtils extends Helper {
         }
 
         for (let sale of saleList) {
-            const saleInfo = await new SaleUtils().getSaleInfo(sale['id'])
+            const saleInfo = await new SaleUtils().getSaleInfo(sale.id)
 
             for (let product of saleInfo.products) {
                 productList.push(product)
@@ -157,12 +165,40 @@ export class ProductUtils extends Helper {
         return result
     }
 
+    public async getInStockProductInfo(saleType: string): Promise<Model.ProductInfoModel> {
+        let products = await this.getProducts(saleType)
+        let matched: Model.Products[] = []
+
+        for (let product of products) {
+            if (product.soldOut !== true) {
+                matched.push(product)
+            }
+        }
+
+        let result: Model.ProductInfoModel
+        for (let item of matched) {
+            let info = await this.getProductInfo(item.id)
+            let inStock = info.products.every((input) => {
+                return input.inStock === true
+            })
+            if (inStock === true) {
+                result = info
+                break
+            }
+        }
+
+        if (!result) {
+            throw 'There is no in stock product from ' + saleType
+        }
+        return result
+    }
+
     public async getSoldOutProductInfo(saleType: string): Promise<Model.ProductInfoModel> {
         let products = await this.getProducts(saleType)
         let matched: Model.Products[] = []
 
         for (let product of products) {
-            if (product.soldOut == true) {
+            if (product.soldOut === true) {
                 matched.push(product)
             }
         }
@@ -171,9 +207,9 @@ export class ProductUtils extends Helper {
         for (let item of matched) {
             let info = await this.getProductInfo(item.id)
             let soldOut = info.products.every((input) => {
-                return input.inStock == false
+                return input.inStock === false
             })
-            if (soldOut == true) {
+            if (soldOut === true) {
                 result = info
                 break
             }
@@ -193,7 +229,7 @@ export class ProductUtils extends Helper {
         })
         let inStockList = []
 
-        for (let sale of sales) {
+        for (let sale of sales.slice(0, 3)) {
             let saleInfo = await new SaleUtils().getSaleInfo(sale._id)
 
             saleInfo.products.forEach(product => {

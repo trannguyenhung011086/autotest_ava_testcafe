@@ -15,6 +15,7 @@ let requestAccount = new Utils.AccountUtils
 let requestCart = new Utils.CartUtils
 let requestProduct = new Utils.ProductUtils
 let access = new Utils.DbAccessUtils
+let accessRedis = new Utils.RedisAccessUtils
 
 export const ReCheckoutErrorTest = () => {
     beforeAll(async () => {
@@ -23,8 +24,8 @@ export const ReCheckoutErrorTest = () => {
         addresses = await requestAddress.getAddresses(cookie)
         account = await requestAccount.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
-        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-        failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 2)
+        failedAttemptOrder = await request.createFailedAttemptOrder([item, item], cookie)
         jest.setTimeout(150000)
     })
 
@@ -235,6 +236,128 @@ export const ReCheckoutErrorTest = () => {
         expect(res.body.message[0].message).toEqual('CART_MISMATCH_CANT_FIND_PRODUCT')
     })
 
+    // validate availability
+
+    it('POST / cannot recheckout with sold out product (skip-prod)', async () => {
+        let originalQuantity: number
+        let redisItem: string
+
+        try {
+            redisItem = await accessRedis.getKey('nsId:' + failedAttemptOrder.products[0].nsId)
+            originalQuantity = redisItem['quantity']
+
+            // set quantity on Redis
+            redisItem['quantity'] = 0
+            await accessRedis.setValue('nsId:' + failedAttemptOrder.products[0].nsId, JSON.stringify(redisItem))
+
+            let res = await request.post(config.api.checkout + '/order/' +
+                failedAttemptOrder.code, {
+                    "address": {
+                        "shipping": addresses.shipping[0],
+                        "billing": addresses.billing[0]
+                    },
+                    "cart": [
+                        {
+                            "id": failedAttemptOrder.products[0].id,
+                            "quantity": failedAttemptOrder.products[0].quantity,
+                            "salePrice": failedAttemptOrder.products[0].salePrice
+                        }
+                    ],
+                    "method": "FREE"
+                }, cookie)
+
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('TITLE_IS_OUT_OF_STOCK')
+            expect(res.body.message[0].values.title).toEqual(failedAttemptOrder.products[0].title)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset quantity on Redis
+            redisItem['quantity'] = originalQuantity
+            await accessRedis.setValue('nsId:' + failedAttemptOrder.products[0].nsId, JSON.stringify(redisItem))
+        }
+    })
+
+    it('POST / cannot recheckout with limited stock product (skip-prod)', async () => {
+        let originalQuantity: number
+        let redisItem: string
+
+        try {
+            redisItem = await accessRedis.getKey('nsId:' + failedAttemptOrder.products[0].nsId)
+            originalQuantity = redisItem['quantity']
+
+            // set quantity on Redis
+            redisItem['quantity'] = 1
+            await accessRedis.setValue('nsId:' + failedAttemptOrder.products[0].nsId, JSON.stringify(redisItem))
+
+            let res = await request.post(config.api.checkout + '/order/' +
+                failedAttemptOrder.code, {
+                    "address": {
+                        "shipping": addresses.shipping[0],
+                        "billing": addresses.billing[0]
+                    },
+                    "cart": [
+                        {
+                            "id": failedAttemptOrder.products[0].id,
+                            "quantity": failedAttemptOrder.products[0].quantity,
+                            "salePrice": failedAttemptOrder.products[0].salePrice
+                        }
+                    ],
+                    "method": "FREE"
+                }, cookie)
+
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('ONLY_LIMITED_UNITS_IN_STOCK')
+            expect(res.body.message[0].values.title).toEqual(failedAttemptOrder.products[0].title)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset quantity on Redis
+            redisItem['quantity'] = originalQuantity
+            await accessRedis.setValue('nsId:' + failedAttemptOrder.products[0].nsId, JSON.stringify(redisItem))
+        }
+    })
+
+    it('POST / cannot recheckout with sale ended product (skip-prod)', async () => {
+        let originalEnd: string
+        let redisItem: string
+
+        try {
+            redisItem = await accessRedis.getKey('productId:' + failedAttemptOrder.products[0].productContentId)
+            originalEnd = redisItem['event']['endDate']
+
+            // set date on Redis
+            redisItem['event']['endDate'] = '2019-02-18T01:00:00.000Z'
+            await accessRedis.setValue('productId:' + failedAttemptOrder.products[0].productContentId, JSON.stringify(redisItem))
+
+            let res = await request.post(config.api.checkout + '/order/' +
+                failedAttemptOrder.code, {
+                    "address": {
+                        "shipping": addresses.shipping[0],
+                        "billing": addresses.billing[0]
+                    },
+                    "cart": [
+                        {
+                            "id": failedAttemptOrder.products[0].id,
+                            "quantity": failedAttemptOrder.products[0].quantity,
+                            "salePrice": failedAttemptOrder.products[0].salePrice
+                        }
+                    ],
+                    "method": "FREE"
+                }, cookie)
+
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('THE_SALE_FOR_TITLE_HAS_ENDED')
+            expect(res.body.message[0].values.title).toEqual(failedAttemptOrder.products[0].title)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset date on Redis
+            redisItem['event']['endDate'] = originalEnd
+            await accessRedis.setValue('productId:' + failedAttemptOrder.products[0].productContentId, JSON.stringify(redisItem))
+        }
+    })
+
     // validate address
 
     test.skip('POST / cannot recheckout with new address', async () => {
@@ -287,7 +410,7 @@ export const ReCheckoutErrorTest = () => {
 
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('NOT_MEET_MINIMUM_ITEMS')
-        expect(res.body.voucher.numberOfItems).toEqual(voucher.numberOfItems)
+        expect(res.body.data.voucher.numberOfItems).toEqual(voucher.numberOfItems)
     })
 
     it('POST / cannot recheckout with voucher not applied for today', async () => {
@@ -319,7 +442,7 @@ export const ReCheckoutErrorTest = () => {
 
         expect(res.statusCode).toEqual(400)
         expect(res.body.message).toEqual('VOUCHER_NOT_APPLY_FOR_TODAY')
-        expect(res.body.voucher.specificDays).toEqual(voucher.specificDays)
+        expect(res.body.data.voucher.specificDays).toEqual(voucher.specificDays)
     })
 
     it('POST / cannot recheckout with voucher not meeting min purchase', async () => {

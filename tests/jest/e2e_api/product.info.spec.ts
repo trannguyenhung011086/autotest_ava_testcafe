@@ -5,36 +5,68 @@ import * as model from '../../../common/interface'
 let product: model.ProductInfoModel
 
 let request = new Utils.ProductUtils
-let access = new Utils.DbAccessUtils
+let accessRedis = new Utils.RedisAccessUtils
 
 export const ProductInfoTest = () => {
     it('GET / invalid product ID', async () => {
         let res = await request.get(config.api.product + 'INVALID-ID')
 
-        expect(res.statusCode).toEqual(500)
-        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
+        expect(res.statusCode).toEqual(404)
+        expect(res.body.message).toEqual('PRODUCT_NOT_FOUND')
     })
 
-    it('GET / product of sale not started', async () => {
-        let futureSale = await access.getSale({
-            startDate: { $gt: new Date() },
-            products: { $ne: [] }
-        })
-        let res = await request.get(config.api.product + futureSale.products[0].product)
+    it('GET / product of sale not started (skip-prod)', async () => {
+        let products = await request.getProducts(config.api.todaySales)
 
-        expect(res.statusCode).toEqual(500)
-        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
+        let redisItem: string
+        let originalStart: string
+
+        try {
+            redisItem = await accessRedis.getKey('productId:' + products[0].id)
+            originalStart = redisItem['event']['startDate']
+
+            // set date on Redis
+            redisItem['event']['startDate'] = '2019-02-22T01:00:00.000Z'
+            await accessRedis.setValue('productId:' + products[0].id, JSON.stringify(redisItem))
+
+            let res = await request.get(config.api.product + products[0].id)
+
+            expect(res.statusCode).toEqual(404)
+            expect(res.body.message).toEqual('SALE_NOT_FOUND')
+        } catch (err) {
+            throw err
+        } finally {
+            // reset date on Redis
+            redisItem['event']['startDate'] = originalStart
+            await accessRedis.setValue('productId:' + products[0].id, JSON.stringify(redisItem))
+        }
     })
 
-    it('GET / product of sale ended', async () => {
-        let endedSale = await access.getSale({
-            endDate: { $lt: new Date() },
-            products: { $ne: [] }
-        })
-        let res = await request.get(config.api.product + endedSale.products[0].product)
+    it('GET / product of sale ended (skip-prod)', async () => {
+        let products = await request.getProducts(config.api.todaySales)
 
-        expect(res.statusCode).toEqual(500)
-        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
+        let redisItem: string
+        let originalEnd: string
+
+        try {
+            redisItem = await accessRedis.getKey('productId:' + products[0].id)
+            originalEnd = redisItem['event']['endDate']
+
+            // set date on Redis
+            redisItem['event']['endDate'] = '2019-02-18T01:00:00.000Z'
+            await accessRedis.setValue('productId:' + products[0].id, JSON.stringify(redisItem))
+
+            let res = await request.get(config.api.product + products[0].id)
+
+            expect(res.statusCode).toEqual(404)
+            expect(res.body.message).toEqual('SALE_HAS_ENDED')
+        } catch (err) {
+            throw err
+        } finally {
+            // reset date on Redis
+            redisItem['event']['endDate'] = originalEnd
+            await accessRedis.setValue('productId:' + products[0].id, JSON.stringify(redisItem))
+        }
     })
 
     it('GET / valid product ID', async () => {

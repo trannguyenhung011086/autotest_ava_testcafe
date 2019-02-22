@@ -13,7 +13,7 @@ switch (process.env.NODE_ENV) {
     case 'prod':
         baseUrl = 'https://www.leflair.vn'
         payDollarBase = 'https://www.paydollar.com'
-        payDollarApi = '/b2c2/eng/dPayment/payComp.jsp'
+        payDollarApi = '/b2c2/eng/directPay/payComp.jsp'
         stripeKey = 'pk_live_2oLGoFep9LLlvVMs1TroLmM1'
         break
     default:
@@ -27,6 +27,10 @@ export const config = {
     stgDb: {
         uri: 'mongodb://35.187.252.42',
         name: 'admin-leflair'
+    },
+    stgRedis: {
+        host: '35.240.182.63',
+        port: 6379
     },
     baseUrl: baseUrl,
     signIn: '/auth/signin',

@@ -12,6 +12,7 @@ let requestAccount = new Utils.AccountUtils
 let requestCart = new Utils.CartUtils
 let requestProduct = new Utils.ProductUtils
 let requestOrder = new Utils.OrderUtils
+let access = new Utils.DbAccessUtils
 
 export const OrdersConfirmTest = () => {
     beforeAll(async () => {
@@ -85,7 +86,7 @@ export const OrdersConfirmTest = () => {
     })
 
     it('Not auto-confirm international order', async () => {
-        let item = await requestProduct.getInStockProduct(config.api.internationalSales, 2)
+        let item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
         await requestCart.addToCart(item.id, cookie)
 
         let stripeData = {
@@ -100,7 +101,7 @@ export const OrdersConfirmTest = () => {
         checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase)
+            cookie, config.stripeBase).then(res => res.body)
 
         let checkout = await request.checkoutStripe(checkoutInput, cookie)
         expect(checkout.orderId).not.toBeEmpty()
@@ -110,9 +111,32 @@ export const OrdersConfirmTest = () => {
         expect(order.isCrossBorder).toBeTrue()
     })
 
-    // it('Auto-confirm order for regular customer', async () => {
+    it('Auto-confirm order for regular customer (skip-prod)', async () => {
+        // regular customer has at least 1 order with status 'delivered'/'return request'/'returned'
+        // new order must use same address with old order
 
-    // })
+        // 1st checkout to get placed order
+        let item = await requestProduct.getInStockProduct(config.api.currentSales, 2)
+        await requestCart.addToCart(item.id, cookie)
+
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+
+        let checkout = await request.checkoutCod(checkoutInput, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+        expect(order.status).toEqual('placed')
+
+        // update 1st checkout order status
+        await access.updateOrderStatus(order.code, 'delivered')
+
+        // 2nd checkout
+        await requestCart.addToCart(item.id, cookie)
+
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+        checkout = await request.checkoutCod(checkoutInput, cookie)
+        order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+        expect(order.status).toEqual('confirmed')
+    })
 }
 
 describe('Verify auto-confirm order (skip-prod) ' + config.baseUrl + config.api.checkout, OrdersConfirmTest)

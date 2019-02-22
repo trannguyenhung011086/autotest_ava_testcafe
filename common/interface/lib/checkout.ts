@@ -115,4 +115,5 @@ export interface CheckoutInput {
     saveNewCard?: boolean
     methodData?: string
     cart?: any[]
+    orderCode?: string
 }

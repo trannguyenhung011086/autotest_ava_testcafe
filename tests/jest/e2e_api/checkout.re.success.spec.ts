@@ -33,14 +33,16 @@ export const ReCheckoutSuccessTest = () => {
         failedAttemptOrder = await request.createFailedAttemptOrder([item], cookie)
 
         checkoutInput = {}
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
         checkoutInput.addresses = addresses
         checkoutInput.cart = [
             {
-                id: failedAttemptOrder.products[0].id,
-                quantity: failedAttemptOrder.products[0].quantity,
-                salePrice: failedAttemptOrder.products[0].salePrice,
+                "id": failedAttemptOrder.products[0].id,
+                "quantity": failedAttemptOrder.products[0].quantity,
+                "salePrice": failedAttemptOrder.products[0].salePrice
             }
         ]
+        checkoutInput.orderCode = failedAttemptOrder.code
 
         jest.setTimeout(150000)
     })
@@ -129,7 +131,7 @@ export const ReCheckoutSuccessTest = () => {
     })
 
     it('POST / recheckout with saved CC', async () => {
-        let matchedCard = await requestCreditcard.getCard('PayDollar')
+        let matchedCard = await requestCreditcard.getCard('PayDollar', cookie)
         checkoutInput.methodData = matchedCard
 
         let reCheckout = await request.checkoutPayDollar(checkoutInput, cookie)
@@ -194,7 +196,7 @@ export const ReCheckoutSuccessTest = () => {
             specificDays: []
         })
 
-        let matchedCard = await requestCreditcard.getCard('PayDollar')
+        let matchedCard = await requestCreditcard.getCard('PayDollar', cookie)
 
         checkoutInput.voucherId = voucher._id
         checkoutInput.methodData = matchedCard

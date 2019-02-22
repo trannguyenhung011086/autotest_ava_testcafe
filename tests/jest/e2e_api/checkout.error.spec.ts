@@ -16,6 +16,7 @@ let requestCart = new Utils.CartUtils
 let requestProduct = new Utils.ProductUtils
 let request = new Utils.CheckoutUtils
 let access = new Utils.DbAccessUtils
+let accessRedis = new Utils.RedisAccessUtils
 
 export const CheckoutErrorTest = () => {
     beforeAll(async () => {
@@ -270,58 +271,120 @@ export const CheckoutErrorTest = () => {
 
     // validate availability
 
-    it.skip('POST / cannot checkout with sold out product', async () => {
-        let soldOut = await requestProduct.getSoldOutProductInfo(config.api.currentSales)
-        await requestCart.addToCart(soldOut.products[0].id, cookie)
-        // after Netsuite integration, API does not allow to add sold out product to cart 
-        // need another workaround
+    it('POST / cannot checkout with sold out product (skip-prod)', async () => {
+        let redisItem: string
+        let originalQuantity: number
 
-        account = await requestAccount.getAccountInfo(cookie)
+        try {
+            let item = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
+            await requestCart.addToCart(item.id, cookie)
+            account = await requestAccount.getAccountInfo(cookie)
 
-        let res = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "FREE"
-        }, cookie)
+            redisItem = await accessRedis.getKey('nsId:' + item.nsId)
+            originalQuantity = redisItem['quantity']
 
-        expect(res.statusCode).toEqual(400)
-        expect(res.body.message[0].message).toEqual('TITLE_IS_OUT_OF_STOCK')
-        expect(res.body.message[0].values.title).toEqual(soldOut.title)
-        expect(res.body.cart).toBeArrayOfSize(0)
+            // set quantity on Redis
+            redisItem['quantity'] = 0
+            await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
+
+            let res = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "FREE"
+            }, cookie)
+
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('TITLE_IS_OUT_OF_STOCK')
+            expect(res.body.message[0].values.title).toEqual(item.name)
+            expect(res.body.data.cart).toBeArrayOfSize(0)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset quantity on Redis
+            redisItem['quantity'] = originalQuantity
+            await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
+        }
     })
 
-    it.skip('POST / cannot checkout with sale ended product', async () => {
-        let endedSale = await access.getSale({
-            startDate: { $gte: new Date('2018-11-11 01:00:00.000Z') },
-            endDate: { $lt: new Date() }
-        })
+    it('POST / cannot checkout with limited stock product (skip-prod)', async () => {
+        let redisItem: string
+        let originalQuantity: number
 
-        let item = await access.getProduct({
-            _id: endedSale.products[0].product
-        })
+        try {
+            let item = await requestProduct.getInStockProduct(config.api.featuredSales, 2)
+            await requestCart.addToCart(item.id, cookie)
+            await requestCart.addToCart(item.id, cookie)
+            account = await requestAccount.getAccountInfo(cookie)
 
-        await requestCart.addToCart(item.variations[0]._id, cookie)
-        // after Netsuite integration, API does not allow to add sale ended product to cart
-        // need another workaround
+            redisItem = await accessRedis.getKey('nsId:' + item.nsId)
+            originalQuantity = redisItem['quantity']
 
-        account = await requestAccount.getAccountInfo(cookie)
+            // set quantity on Redis
+            redisItem['quantity'] = 1
+            await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
 
-        let res = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "FREE"
-        }, cookie)
+            let res = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "FREE"
+            }, cookie)
 
-        expect(res.statusCode).toEqual(400)
-        expect(res.body.message[0].message).toEqual('THE_SALE_FOR_TITLE_HAS_ENDED')
-        expect(res.body.message[0].values.title).toEqual(item.name)
-        expect(res.body.cart).toBeArrayOfSize(0)
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('ONLY_LIMITED_UNITS_IN_STOCK')
+            expect(res.body.message[0].values.title).toEqual(item.name)
+            expect(res.body.data.cart[0].quantity).toEqual(1)
+            expect(res.body.data.cart[0].availableQuantity).toEqual(1)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset quantity on Redis
+            redisItem['quantity'] = originalQuantity
+            await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
+        }
+    })
+
+    it('POST / cannot checkout with sale ended product (skip-prod)', async () => {
+        let redisItem: string
+        let originalEnd: string
+
+        try {
+            let item = await requestProduct.getInStockProductInfo(config.api.todaySales)
+            await requestCart.addToCart(item.products[0].id, cookie)
+            account = await requestAccount.getAccountInfo(cookie)
+
+            redisItem = await accessRedis.getKey('productId:' + item.id)
+            originalEnd = redisItem['event']['endDate']
+
+            // set date on Redis
+            redisItem['event']['endDate'] = '2019-02-18T01:00:00.000Z'
+            await accessRedis.setValue('productId:' + item.id, JSON.stringify(redisItem))
+
+            let res = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "FREE"
+            }, cookie)
+
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('THE_SALE_FOR_TITLE_HAS_ENDED')
+            expect(res.body.message[0].values.title).toEqual(item.title)
+            expect(res.body.data.cart).toBeArrayOfSize(0)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset date on Redis
+            redisItem['event']['endDate'] = originalEnd
+            await accessRedis.setValue('productId:' + item.id, JSON.stringify(redisItem))
+        }
     })
 
     // validate voucher
