@@ -58,7 +58,7 @@ export const CheckoutPayDollarTest = () => {
         expect(res.body.message).toEqual('International orders must be paid by credit card. Please refresh the page and try again.')
     })
 
-    it.only('POST / cannot checkout with invalid CC', async () => {
+    it('POST / cannot checkout with invalid CC', async () => {
         item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
         await requestCart.addToCart(item.id, cookie)
 

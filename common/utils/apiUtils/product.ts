@@ -23,6 +23,7 @@ export class ProductUtils extends Helper {
     public async getProducts(saleType: string, crossBorder?: string): Promise<Model.Products[]> {
         let sales = await new SaleUtils().getSales(saleType)
 
+        // filter out invalid sale on staging
         sales = sales.reduce((result, value) => {
             if (value.id != '5c6662dbd76f7144bf5872b5') {
                 result.push(value)
