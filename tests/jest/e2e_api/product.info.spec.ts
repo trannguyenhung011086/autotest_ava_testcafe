@@ -7,39 +7,36 @@ let product: model.ProductInfoModel
 let request = new Utils.ProductUtils
 let accessRedis = new Utils.RedisAccessUtils
 
-export async function validateProductInfo(product: model.Products) {
+export function validateProductInfo(info: model.ProductInfoModel) {
     try {
-        let res = await request.getProductInfo(product.id)
-        expect(res.id).toEqual(product.id)
+        expect(info.id).not.toBeEmpty()
 
-        expect(res.sale.slug).not.toBeEmpty()
-        expect(new Date(res.sale.startTime)).toBeBefore(new Date(res.sale.endTime))
-        expect(res.sale.categories.length).toBeGreaterThanOrEqual(1)
-        expect(res.sale.potd).toBeBoolean()
+        expect(info.sale.slug).not.toBeEmpty()
+        expect(new Date(info.sale.startTime)).toBeBefore(new Date(info.sale.endTime))
+        expect(info.sale.categories.length).toBeGreaterThanOrEqual(1)
+        expect(info.sale.potd).toBeBoolean()
 
-        expect(request.validateImage(res.brand.logo)).toBeTrue()
-        expect(res.brand.name).not.toBeEmpty()
-        expect(res.brand.description).not.toBeEmpty()
+        expect(request.validateImage(info.brand.logo)).toBeTrue()
+        expect(info.brand.name).not.toBeEmpty()
+        expect(info.brand.description).not.toBeEmpty()
 
-        expect(res.title).not.toBeEmpty()
-        expect(res.returnDays).toBeNumber()
+        expect(info.title).not.toBeEmpty()
+        expect(info.returnDays).toBeNumber()
 
-        if (res.returnable) {
-            expect(res.returnable).toBeBoolean()
+        if (info.returnable) {
+            expect(info.returnable).toBeBoolean()
         }
 
-        expect(res.description.heading).not.toBeEmpty()
-        expect(res.description.secondary).toBeArray()
+        expect(info.description.heading).not.toBeEmpty()
+        expect(info.description.secondary).toBeArray()
 
-        for (const [key, value] of Object.entries(res.images)) {
+        for (const [key, value] of Object.entries(info.images)) {
             value.forEach(value => {
                 request.validateImage(value)
             })
         }
 
-        expect(res.products).toBeArray()
-
-        for (let product of res.products) {
+        for (let product of info.products) {
             try {
                 expect(product.id).not.toBeEmpty()
                 expect(product.nsId).not.toBeEmpty()
@@ -48,7 +45,7 @@ export async function validateProductInfo(product: model.Products) {
                 expect(product.inStock).toBeBoolean()
                 // expect(product.quantity).toBeGreaterThanOrEqual(0)
                 expect(product.quantity).toBeNumber()
-                expect(Object.keys(res.images)).toContainEqual(product.imageKey)
+                expect(Object.keys(info.images)).toContainEqual(product.imageKey)
                 expect(product.isVirtual).toBeBoolean()
                 expect(product.isBulky).toBeBoolean()
             } catch (error) {
@@ -56,20 +53,20 @@ export async function validateProductInfo(product: model.Products) {
             }
         }
 
-        expect(res.sizes).toBeArray()
-        expect(res.colors).toBeArray()
+        expect(info.sizes).toBeArray()
+        expect(info.colors).toBeArray()
     } catch (error) {
         throw { failed_product: product, error: error }
     }
 }
 
 export const ProductInfoTest = () => {
-    it('GET / invalid product ID', async () => {
+    it.skip('GET / invalid product ID', async () => {
         let res = await request.get(config.api.product + 'INVALID-ID')
 
-        expect(res.statusCode).toEqual(500)
-        expect(res.body.message).toEqual('COULD_NOT_LOAD_PRODUCT')
-    })
+        expect(res.statusCode).toEqual(404)
+        expect(res.body.message).toEqual('PRODUCT_NOT_FOUND')
+    }) // wait for WWW-561
 
     it('GET / product of sale not started (skip-prod)', async () => {
         let products = await request.getProducts(config.api.todaySales)
@@ -140,7 +137,8 @@ export const ProductInfoTest = () => {
 
             for (let i = 0; i < 15; i++) {
                 const random = Math.floor(Math.random() * products.length)
-                await validateProductInfo(products[random])
+                let res = await request.getProductInfo(products[random].id)
+                await validateProductInfo(res)
             }
         })
 
@@ -150,14 +148,14 @@ export const ProductInfoTest = () => {
 
         for (let product of products) {
             let res = await request.getProductInfo(product.id)
+            await validateProductInfo(res)
             expect(res.sale.potd).toBeTrue()
-
-            await validateProductInfo(product)
         }
     })
 
     it('GET / sold out product', async () => {
         let product = await request.getSoldOutProductInfo(config.api.currentSales)
+        await validateProductInfo(product)
 
         for (let item of product.products) {
             expect(item.inStock).toBeFalse()
@@ -177,6 +175,7 @@ export const ProductInfoTest = () => {
 
     it('GET / product with sizes', async () => {
         product = await request.getProductInfoWithSizes(config.api.cateApparel + '/sales/current')
+        await validateProductInfo(product)
 
         for (let size of product.sizes) {
             expect(size.availableColors).toBeArray()
@@ -188,6 +187,7 @@ export const ProductInfoTest = () => {
 
     it('GET / product with colors', async () => {
         product = await request.getProductInfoWithColors(config.api.cateApparel + '/sales/current')
+        await validateProductInfo(product)
 
         for (let color of product.colors) {
             expect(color.availableSizes).toBeArray()
@@ -203,6 +203,7 @@ export const ProductInfoTest = () => {
 
     it('GET / product with no color and size', async () => {
         product = await request.getProductInfoNoColorSize(config.api.currentSales)
+        await validateProductInfo(product)
 
         expect(request.validateImage(product.images['All'][0])).toBeTrue()
         expect(product.products[0].imageKey).toEqual('All')
