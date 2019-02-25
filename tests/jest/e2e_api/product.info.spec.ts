@@ -61,12 +61,12 @@ export function validateProductInfo(info: model.ProductInfoModel) {
 }
 
 export const ProductInfoTest = () => {
-    it.skip('GET / invalid product ID', async () => {
+    it('GET / invalid product ID', async () => {
         let res = await request.get(config.api.product + 'INVALID-ID')
 
         expect(res.statusCode).toEqual(404)
         expect(res.body.message).toEqual('PRODUCT_NOT_FOUND')
-    }) // wait for WWW-561
+    })
 
     it('GET / product of sale not started (skip-prod)', async () => {
         let products = await request.getProducts(config.api.todaySales)
