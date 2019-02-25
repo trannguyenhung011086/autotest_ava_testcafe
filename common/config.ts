@@ -29,7 +29,7 @@ export const config = {
         name: 'admin-leflair'
     },
     stgRedis: {
-        host: '35.240.182.63',
+        host: '35.240.219.41',
         port: 6379
     },
     baseUrl: baseUrl,

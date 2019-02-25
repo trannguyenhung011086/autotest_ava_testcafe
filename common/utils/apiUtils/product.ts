@@ -97,6 +97,24 @@ export class ProductUtils extends Helper {
         return result
     }
 
+    public async getProductInfoNoColorSize(saleType: string): Promise<Model.ProductInfoModel> {
+        let products = await this.getProducts(saleType)
+
+        let result: Model.ProductInfoModel
+        for (let product of products) {
+            let res = await this.getProductInfo(product.id)
+            if (res.colors.length == 0 && res.sizes.length == 0) {
+                result = res
+                break
+            }
+        }
+
+        if (!result) {
+            throw 'Cannot get product with no color and size from ' + saleType
+        }
+        return result
+    }
+
     public async getInStockProduct(saleType: string, quantity: number, price?: number): Promise<Model.Product> {
         let products = await this.getProducts(saleType)
         let matched: Model.Products[] = []

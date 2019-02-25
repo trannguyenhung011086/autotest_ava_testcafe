@@ -31,7 +31,11 @@ export async function validateProductInfo(product: model.Products) {
         expect(res.description.heading).not.toBeEmpty()
         expect(res.description.secondary).toBeArray()
 
-        expect(res.images).toBeObject()
+        for (const [key, value] of Object.entries(res.images)) {
+            value.forEach(value => {
+                request.validateImage(value)
+            })
+        }
 
         expect(res.products).toBeArray()
 
@@ -192,9 +196,16 @@ export const ProductInfoTest = () => {
             expect(color.soldOut).toBeBoolean()
 
             let res = await request.get(config.api.product + 'view-product/' +
-                product.id + '/' + color.name)
+                product.id + '/' + encodeURIComponent(color.name))
             expect(res.statusCode).toEqual(200)
         }
+    })
+
+    it('GET / product with no color and size', async () => {
+        product = await request.getProductInfoNoColorSize(config.api.currentSales)
+
+        expect(request.validateImage(product.images['All'][0])).toBeTrue()
+        expect(product.products[0].imageKey).toEqual('All')
     })
 }
 
