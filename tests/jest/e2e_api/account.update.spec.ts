@@ -1,28 +1,62 @@
-import config from '../../../config'
+import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
-import faker from "faker/locale/vi"
+import faker from 'faker/locale/vi'
 import * as model from '../../../common/interface'
+
+let account: model.Account
 let signIn: model.SignIn
 let cookie: string
 
-describe('Update info API ' + config.baseUrl + config.api.account, () => {
+let request = new Utils.AccountUtils
+
+export const AccountInfoTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+    })
+
+    it('GET / get account info', async () => {
+        let res = await request.get(config.api.account, cookie)
+        account = res.body
+
+        expect(res.statusCode).toEqual(200)
+        expect(account.id).not.toBeEmpty()
+        expect(account.firstName).not.toBeEmpty()
+        expect(account.lastName).not.toBeEmpty()
+        expect(account.email).toEqual('qa_tech@leflair.vn')
+        expect(account.language).toMatch(/en|vn/)
+        expect(account.accountCredit).toBeNumber()
+        expect(account.provider).toEqual('local')
+        expect(account.state).toEqual('confirmed')
+        expect(account.gender).toBeString()
+        expect(account.nsId).not.toBeEmpty()
+        expect(account.cart).toBeArray()
+
+        if (account.stripe && Object.keys(account.stripe).length > 0) {
+            expect(account.stripe.customerId).not.toBeEmpty()
+        }
+    })
+}
+
+export const AccountUpdateInfoTest = () => {
+    beforeAll(async () => {
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
     })
 
     it('PUT / can change name', async () => {
-        let firstName = faker.name.firstName()
-        let lastName = faker.name.lastName()
-        let response = await request.put(config.api.account,
-            { "firstName": firstName, "lastName": lastName })
-        signIn = response.data
-        expect(response.status).toEqual(200)
+        let firstName = 'QA_' + faker.name.firstName()
+        let lastName = 'QA_' + faker.name.lastName()
+
+        let res = await request.put(config.api.account, {
+            "firstName": firstName,
+            "lastName": lastName
+        }, cookie)
+        signIn = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(signIn.id).not.toBeEmpty()
         expect(signIn.firstName).toEqual(firstName)
         expect(signIn.lastName).toEqual(lastName)
-        expect(signIn.email).toEqual(config.testAccount.email)
+        expect(signIn.email).toEqual('qa_tech@leflair.vn')
         expect(signIn.language).toMatch(/en|vn/)
         expect(signIn.accountCredit).toBeNumber()
         expect(signIn.provider).toEqual('local')
@@ -32,82 +66,97 @@ describe('Update info API ' + config.baseUrl + config.api.account, () => {
     })
 
     test.skip('PUT / cannot change email', async () => {
-        let response = await request.put(config.api.account,
-            { "email": 'new-' + config.testAccount.email })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('USER_UPDATE_ERROR')
+        let res = await request.put(config.api.account, {
+            "email": 'new-' + config.testAccount.email
+        }, cookie)
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('USER_UPDATE_ERROR')
     }) // wait for WWW-335
 
     it('PUT / cannot update with wrong cookie', async () => {
-        let response = await request.put(config.api.account,
-            { "firstName": "first", "lastName": "last" }, 'connect-id=assdfds')
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('Access denied.')
-    })
-})
+        let res = await request.put(config.api.account, {
+            "firstName": "first",
+            "lastName": "last"
+        }, 'leflair.connect2.sid=test')
 
-describe('Update password API ' + config.baseUrl + config.api.password, () => {
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('Access denied.')
+    })
+}
+
+export const AccountUpdatePasswordTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
     })
 
     it('PUT / wrong current password', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
                 "currentPassword": faker.internet.password(),
                 "newPassword": faker.internet.password()
-            })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('COULD_NOT_CHANGE_PASSWORD')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('COULD_NOT_CHANGE_PASSWORD')
     })
 
     it('PUT / empty current password', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
                 "currentPassword": "",
                 "newPassword": faker.internet.password()
-            })
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('COULD_NOT_CHANGE_PASSWORD')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('COULD_NOT_CHANGE_PASSWORD')
     })
 
     it('PUT / new password has length < 7', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
-                "currentPassword": config.testAccount.password,
+                "currentPassword": 'leflairqa',
                 "newPassword": "123456"
-            })
-        expect(response.status).toEqual(500)
-        expect(response.data).toMatch('ValidationError: User validation failed: password: Password should be longer')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(500)
+        expect(res.body).toMatch('Internal Server Error')
     })
 
     it('PUT / empty new password', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
-                "currentPassword": config.testAccount.password,
+                "currentPassword": 'leflairqa',
                 "newPassword": ""
-            })
-        expect(response.status).toEqual(500)
-        expect(response.data).toMatch('ValidationError: User validation failed: password: Password should be longer')
+            }, cookie)
+
+        expect(res.statusCode).toEqual(500)
+        expect(res.body).toMatch('Internal Server Error')
     })
 
     it('PUT / can change password', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
-                "currentPassword": config.testAccount.password,
-                "newPassword": config.testAccount.password
-            })
-        expect(response.status).toEqual(200)
-        expect(response.data.message).toEqual('PASSWORD_CHANGED')
+                "currentPassword": 'leflairqa',
+                "newPassword": 'leflairqa'
+            }, cookie)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.message).toEqual('PASSWORD_CHANGED')
     })
 
     it('PUT / cannot update password with wrong cookie', async () => {
-        let response = await request.put(config.api.password,
+        let res = await request.put(config.api.password,
             {
-                "currentPassword": config.testAccount.password,
-                "newPassword": config.testAccount.password
-            }, 'connect-id=assdfds')
-        expect(response.status).toEqual(401)
-        expect(response.data.message).toEqual('Access denied.')
+                "currentPassword": 'leflairqa',
+                "newPassword": 'leflairqa'
+            }, 'leflair.connect2.sid=test')
+
+        expect(res.statusCode).toEqual(401)
+        expect(res.body.message).toEqual('Access denied.')
     })
-})
+}
+
+describe('Get account info API ' + config.baseUrl + config.api.account, AccountInfoTest)
+describe('Update info API ' + config.baseUrl + config.api.account, AccountUpdateInfoTest)
+describe('Update password API ' + config.baseUrl + config.api.password, AccountUpdatePasswordTest)

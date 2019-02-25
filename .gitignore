@@ -5,6 +5,7 @@ report.html
 /.vscode
 /report/jest-stare
 /report/*.xml
+/report/*.html
 /.cache
 /.config
 /.mozilla

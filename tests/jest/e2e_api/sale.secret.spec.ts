@@ -1,33 +1,39 @@
-import config from '../../../config'
+import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
 
-describe('Secret sale API ' + config.baseUrl + config.api.secretSales, () => {
+let cookie: string
+
+let request = new Utils.SaleUtils
+let access = new Utils.DbAccessUtils
+
+export const SecretSaleTest = () => {
+    beforeAll(async () => {
+        cookie = await request.getGuestCookie()
+    })
+
     it('GET / cannot get secret sale when not call campaign API', async () => {
-        let response = await request.get(config.api.secretSales)
-        expect(response.status).toEqual(200)
-        expect(response.data).toBeArrayOfSize(0)
+        let res = await request.get(config.api.secretSales, cookie)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toBeArrayOfSize(0)
     })
 
     it('GET / check secret sale when not call campaign API', async () => {
-        let response = await request.get(config.api.secretSales + '/check')
-        expect(response.status).toEqual(200)
-        expect(response.data).toBeFalse()
+        let res = await request.get(config.api.secretSales + '/check', cookie)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toBeFalse()
     })
 
     it('GET / get secret sale when call campaign API', async () => {
         let campaign: model.Campaign = await access.getCampaign({
             endDate: { $gt: new Date() }
         })
-        await request.get(config.api.campaigns + campaign.name)
+        await request.get(config.api.campaigns + campaign.name, cookie)
 
-        let response = await request.get(config.api.secretSales)
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.secretSales, cookie)
+        expect(res.statusCode).toEqual(200)
 
-        let sales: model.SalesModel[] = response.data
+        let sales: model.SalesModel[] = res.body
         expect(sales.length).toBeGreaterThan(0)
 
         for (let sale of sales) {
@@ -50,10 +56,12 @@ describe('Secret sale API ' + config.baseUrl + config.api.secretSales, () => {
         let campaign: model.Campaign = await access.getCampaign({
             endDate: { $gt: new Date() }
         })
-        await request.get(config.api.campaigns + campaign.name)
+        await request.get(config.api.campaigns + campaign.name, cookie)
 
-        let response = await request.get(config.api.secretSales + '/check')
-        expect(response.status).toEqual(200)
-        expect(response.data).toBeTrue()
+        let res = await request.get(config.api.secretSales + '/check', cookie)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toBeTrue()
     })
-})
+}
+
+describe('Secret sale API ' + config.baseUrl + config.api.secretSales, SecretSaleTest)

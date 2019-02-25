@@ -1,14 +1,8 @@
-import BasePage from './basePage'
-import SignInPage from './signInPage'
-import SignUpPage from './signUpPage'
+import { BasePage } from './basePage'
+import { SignInPage } from './signInPage'
+import { SignUpPage } from './signUpPage'
 
-export {
-    BasePage,
-    SignInPage,
-    SignUpPage
-}
-
-export default class Pages {
+export class Pages {
     base: BasePage
     signIn: SignInPage
     signUp: SignUpPage

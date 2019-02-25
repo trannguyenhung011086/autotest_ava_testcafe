@@ -1,71 +1,81 @@
-import config from '../../../config'
+import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-let access = new Utils.MongoUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let customer: Model.Customer
 let account: Model.Account
 let addresses: Model.Addresses
 let item: Model.Product
 let cart: Model.Cart
 let cookie: string
+let checkoutInput: Model.CheckoutInput
 
-describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let request = new Utils.CheckoutUtils
+let access = new Utils.DbAccessUtils
+let accessRedis = new Utils.RedisAccessUtils
+
+export const CheckoutErrorTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
-        await request.addAddresses(cookie)
-        addresses = await request.getAddresses(cookie)
-        account = await request.getAccountInfo(cookie)
+        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        await requestAddress.addAddresses(cookie)
+        addresses = await requestAddress.getAddresses(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
         customer = await access.getCustomerInfo({ email: account.email })
+        checkoutInput = {}
     })
 
     afterEach(async () => {
-        await request.emptyCart(cookie)
+        await requestCart.emptyCart(cookie)
+    })
+
+    afterAll(async () => {
+        await requestAddress.deleteAddresses(cookie)
     })
 
     // validate required data
 
-    it('POST / cannot checkout with invalid email', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+    it('POST / cannot checkout with invalid cookie', async () => {
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
             },
             "cart": account.cart,
             "method": "FREE"
-        }, 'abc')
+        }, 'leflair.connect2.sid=test')
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toContainEqual('EMAIL_ADDRESS_REQUIRED')
-        expect(response.data.message).toContainEqual('EMAIL_ADDRESS_NOT_WELL_FORMAT')
+        expect(res.statusCode).toEqual(500)
     })
 
     it('POST / cannot checkout with empty data', async () => {
-        let response = await request.post(config.api.checkout, {}, cookie)
-        expect(response.status).toEqual(500)
+        let res = await request.post(config.api.checkout, {}, cookie)
+        expect(res.statusCode).toEqual(500)
     })
 
     it('POST / cannot checkout without address', async () => {
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": {},
                 "billing": {}
             }
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toContainEqual('SHIPPING_ADDRESS_REQUIRED')
-        expect(response.data.message).toContainEqual('BILLING_ADDRESS_REQUIRED')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toContainEqual('SHIPPING_ADDRESS_REQUIRED')
+        expect(res.body.message).toContainEqual('BILLING_ADDRESS_REQUIRED')
     })
 
     it('POST / cannot checkout with empty cart', async () => {
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -73,16 +83,18 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "cart": []
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toContainEqual('THERE_ARE_NO_ITEMS_IN_YOUR_ORDER')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toContainEqual('THERE_ARE_NO_ITEMS_IN_YOUR_ORDER')
     })
 
     it('POST / cannot checkout with invalid phone and tax code', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
-        response = await request.post(config.api.checkout, {
+        res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": {
                     "phone": "35955"
@@ -99,18 +111,20 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             }]
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toContainEqual('SHIPPING_PHONE_NUMBER_IS_NOT_VALID')
-        expect(response.data.message).toContainEqual('BILLING_PHONE_NUMBER_IS_NOT_VALID')
-        expect(response.data.message).toContainEqual('INVALID_BILLING_TAX_CODE')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toContainEqual('SHIPPING_PHONE_NUMBER_IS_NOT_VALID')
+        expect(res.body.message).toContainEqual('BILLING_PHONE_NUMBER_IS_NOT_VALID')
+        expect(res.body.message).toContainEqual('INVALID_BILLING_TAX_CODE')
     })
 
     it('POST / cannot checkout without payment method', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
-        response = await request.post(config.api.checkout, {
+        res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -122,18 +136,20 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             }]
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toContainEqual('PLEASE_SELECT_A_PAYMENT_METHOD')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toContainEqual('PLEASE_SELECT_A_PAYMENT_METHOD')
     })
 
     // validate cart
 
     it('POST / cannot checkout with mismatched cart', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
-        response = await request.post(config.api.checkout, {
+        res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -151,16 +167,18 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "method": "FREE"
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('CART_MISMATCH')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('CART_MISMATCH')
     })
 
     it('POST / cannot checkout with mismatched quantity', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
-        response = await request.post(config.api.checkout, {
+        res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -173,16 +191,18 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "method": "FREE"
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message[0].message).toEqual('QUANTITY_SUBMITTED_NOT_MATCH_IN_THE_CART')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message[0].message).toEqual('QUANTITY_SUBMITTED_NOT_MATCH_IN_THE_CART')
     })
 
     it('POST / cannot checkout with mismatched price', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
-        response = await request.post(config.api.checkout, {
+        res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -195,16 +215,18 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "method": "FREE"
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message[0].message).toEqual('PRICE_MISMATCH')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message[0].message).toEqual('PRICE_MISMATCH')
     })
 
     it('POST / cannot checkout with invalid product', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id }, cookie)
-        cart = response.data
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        let res = await request.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
-        response = await request.post(config.api.checkout, {
+        res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -217,23 +239,23 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "method": "FREE"
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message[0].message).toEqual('CART_MISMATCH_CANT_FIND_PRODUCT')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message[0].message).toEqual('CART_MISMATCH_CANT_FIND_PRODUCT')
     })
 
     it('POST / cannot checkout with more than 8 unique products', async () => {
-        let items = await request.getInStockProducts(config.api.todaySales, 1)
+        let items = await requestProduct.getInStockProducts(config.api.todaySales, 1)
 
         for (let item of items) {
-            await request.addToCart(item.id, cookie, false)
+            await requestCart.addToCart(item.id, cookie, false)
         }
-        account = await request.getAccountInfo(cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         if (account.cart.length <= 8) {
             throw 'Cart does not have more than 8 unique products!'
         }
 
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -242,58 +264,127 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "method": "FREE"
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('CART_EXCEEDS_THE_MAXIMUM_SIZE')
-        expect(response.data.values.quantity).toEqual(8)
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('CART_EXCEEDS_THE_MAXIMUM_SIZE')
+        expect(res.body.values.quantity).toEqual(8)
     })
 
     // validate availability
 
-    it('POST / cannot checkout with sold out product', async () => {
-        let soldOut = await request.getSoldOutProduct(config.api.todaySales)
-        await request.addToCart(soldOut.products[0].id, cookie)
-        account = await request.getAccountInfo(cookie)
+    it('POST / cannot checkout with sold out product (skip-prod)', async () => {
+        let redisItem: string
+        let originalQuantity: number
 
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "FREE"
-        }, cookie)
+        try {
+            let item = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
+            await requestCart.addToCart(item.id, cookie)
+            account = await requestAccount.getAccountInfo(cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message[0].message).toEqual('TITLE_IS_OUT_OF_STOCK')
-        expect(response.data.message[0].values.title).toEqual(soldOut.title)
-        expect(response.data.data.cart).toBeArrayOfSize(0)
+            redisItem = await accessRedis.getKey('nsId:' + item.nsId)
+            originalQuantity = redisItem['quantity']
+
+            // set quantity on Redis
+            redisItem['quantity'] = 0
+            await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
+
+            let res = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "FREE"
+            }, cookie)
+
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('TITLE_IS_OUT_OF_STOCK')
+            expect(res.body.message[0].values.title).toEqual(item.name)
+            expect(res.body.data.cart).toBeArrayOfSize(0)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset quantity on Redis
+            redisItem['quantity'] = originalQuantity
+            await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
+        }
     })
 
-    it('POST / cannot checkout with sale ended product', async () => {
-        let endedSale = await access.getSale({
-            startDate: { $gte: new Date('2018-11-11 01:00:00.000Z') },
-            endDate: { $lt: new Date() }
-        })
-        let item = await access.getProduct({
-            _id: endedSale.products[0].product
-        })
+    it('POST / cannot checkout with limited stock product (skip-prod)', async () => {
+        let redisItem: string
+        let originalQuantity: number
 
-        await request.addToCart(item.variations[0]._id, cookie)
-        account = await request.getAccountInfo(cookie)
+        try {
+            let item = await requestProduct.getInStockProduct(config.api.featuredSales, 2)
+            await requestCart.addToCart(item.id, cookie)
+            await requestCart.addToCart(item.id, cookie)
+            account = await requestAccount.getAccountInfo(cookie)
 
-        let response = await request.post(config.api.checkout, {
-            "address": {
-                "shipping": addresses.shipping[0],
-                "billing": addresses.billing[0]
-            },
-            "cart": account.cart,
-            "method": "FREE"
-        }, cookie)
+            redisItem = await accessRedis.getKey('nsId:' + item.nsId)
+            originalQuantity = redisItem['quantity']
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message[0].message).toEqual('THE_SALE_FOR_TITLE_HAS_ENDED')
-        expect(response.data.message[0].values.title).toEqual(item.name)
-        expect(response.data.data.cart).toBeArrayOfSize(0)
+            // set quantity on Redis
+            redisItem['quantity'] = 1
+            await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
+
+            let res = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "FREE"
+            }, cookie)
+
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('ONLY_LIMITED_UNITS_IN_STOCK')
+            expect(res.body.message[0].values.title).toEqual(item.name)
+            expect(res.body.data.cart[0].quantity).toEqual(1)
+            expect(res.body.data.cart[0].availableQuantity).toEqual(1)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset quantity on Redis
+            redisItem['quantity'] = originalQuantity
+            await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
+        }
+    })
+
+    it('POST / cannot checkout with sale ended product (skip-prod)', async () => {
+        let redisItem: string
+        let originalEnd: string
+
+        try {
+            let item = await requestProduct.getInStockProductInfo(config.api.todaySales)
+            await requestCart.addToCart(item.products[0].id, cookie)
+            account = await requestAccount.getAccountInfo(cookie)
+
+            redisItem = await accessRedis.getKey('productId:' + item.id)
+            originalEnd = redisItem['event']['endDate']
+
+            // set date on Redis
+            redisItem['event']['endDate'] = '2019-02-18T01:00:00.000Z'
+            await accessRedis.setValue('productId:' + item.id, JSON.stringify(redisItem))
+
+            let res = await request.post(config.api.checkout, {
+                "address": {
+                    "shipping": addresses.shipping[0],
+                    "billing": addresses.billing[0]
+                },
+                "cart": account.cart,
+                "method": "FREE"
+            }, cookie)
+
+            expect(res.statusCode).toEqual(400)
+            expect(res.body.message[0].message).toEqual('THE_SALE_FOR_TITLE_HAS_ENDED')
+            expect(res.body.message[0].values.title).toEqual(item.title)
+            expect(res.body.data.cart).toBeArrayOfSize(0)
+        } catch (err) {
+            throw err
+        } finally {
+            // reset date on Redis
+            redisItem['event']['endDate'] = originalEnd
+            await accessRedis.setValue('productId:' + item.id, JSON.stringify(redisItem))
+        }
     })
 
     // validate voucher
@@ -305,12 +396,11 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             numberOfItems: { $gte: 2 }
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -322,9 +412,9 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('NOT_MEET_MINIMUM_ITEMS')
-        expect(response.data.data.voucher.numberOfItems).toEqual(voucher.numberOfItems)
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('NOT_MEET_MINIMUM_ITEMS')
+        expect(res.body.data.voucher.numberOfItems).toEqual(voucher.numberOfItems)
 
     })
 
@@ -337,12 +427,11 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             'specificDays.0': { $exists: true, $ne: today }
         })
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -354,24 +443,24 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('VOUCHER_NOT_APPLY_FOR_TODAY')
-        expect(response.data.data.voucher.specificDays).toEqual(voucher.specificDays)
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('VOUCHER_NOT_APPLY_FOR_TODAY')
+        expect(res.body.data.voucher.specificDays).toEqual(voucher.specificDays)
     })
 
     it('POST / cannot checkout with voucher not meeting min purchase', async () => {
-        item = await request.getProductWithCountry('VN', 0, 500000, 1)
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
             binRange: { $exists: false },
-            minimumPurchase: { $gte: 500000 }
+            minimumPurchase: { $gt: 500000 }
         })
 
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getProductWithCountry('VN', 0, 500000)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -383,29 +472,32 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM')
     })
 
-    it('POST / cannot checkout with voucher exceeding number of usage', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
+    it('POST / cannot checkout with voucher exceeding number of usage (skip-prod)', async () => {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             multipleUser: true,
             numberOfUsage: 1,
             used: false
         }, customer)
-        
-        await request.createCodOrder([item], voucher._id)
 
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
 
-        let response = await request.post(config.api.checkout, {
+        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+        checkoutInput.addresses = addresses
+        checkoutInput.voucherId = voucher._id
+
+        await request.checkoutCod(checkoutInput, cookie)
+
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
+
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -417,22 +509,22 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('EXCEED_TIME_OF_USAGE')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('EXCEED_TIME_OF_USAGE')
     })
 
     it('POST / cannot checkout with expired voucher', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $lt: new Date() },
             binRange: { $exists: false },
             used: false
         })
 
-        let response = await request.post(config.api.checkout, {
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
+
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -444,22 +536,22 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('VOUCHER_OR_NOT_VALID')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('VOUCHER_OR_NOT_VALID')
     })
 
     it('POST / cannot checkout with redeemed voucher', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $lt: new Date() },
             binRange: { $exists: false },
             used: true
         })
 
-        let response = await request.post(config.api.checkout, {
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
+
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -471,15 +563,11 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('VOUCHER_OR_NOT_VALID')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('VOUCHER_OR_NOT_VALID')
     })
 
     it('POST / cannot checkout with COD using voucher for CC', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
@@ -487,7 +575,11 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             minimumPurchase: { $lte: item.salePrice }
         })
 
-        let response = await request.post(config.api.checkout, {
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
+
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -499,21 +591,21 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('REQUIRES_CC_PAYMENT')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('REQUIRES_CC_PAYMENT')
     })
 
-    it('POST / cannot checkout with voucher for Stripe using wrong bin range', async () => {
-        item = await request.getInStockProduct(config.api.internationalSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
+    it('POST / cannot checkout with voucher for Stripe using wrong bin range (skip-prod)', async () => {
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
             used: false,
             minimumPurchase: { $lte: item.salePrice }
         })
+
+        item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
         const stripeData = {
             "type": "card",
@@ -523,46 +615,39 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "card[exp_year]": "22",
             "key": config.stripeKey
         }
-        const stripeSource = await request.postFormUrl(config.stripeApi, '/v1/sources', stripeData)
+        const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
+            cookie, config.stripeBase).then(res => res.body)
 
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
             },
             "cart": account.cart,
             "method": "STRIPE",
-            "methodData": stripeSource.data,
+            "methodData": stripeSource,
             "shipping": 0,
             "voucher": voucher._id,
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('THIS_CC_NOT_ACCEPTABLE')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('THIS_CC_NOT_ACCEPTABLE')
     })
 
     it('POST / cannot checkout with already used voucher', async () => {
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        let voucher = await access.getNotUsedVoucher({
+        let voucher = await access.getUsedVoucher({
             expiry: { $gte: new Date() },
+            binRange: { $exists: false },
             used: false,
-            discountType: 'amount',
-            minimumPurchase: 0,
-            numberOfItems: 0,
             oncePerAccount: true
         }, customer)
 
-        await request.createCodOrder([item], voucher._id)
+        item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
-        item = await request.getInStockProduct(config.api.currentSales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -574,22 +659,22 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('YOU_ALREADY_USED_THIS_VOUCHER')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('YOU_ALREADY_USED_THIS_VOUCHER')
     })
 
     it('POST / cannot checkout with voucher only used for other customer', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
-
         let voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             used: false,
             customer: { $exists: true, $ne: customer._id }
         })
 
-        let response = await request.post(config.api.checkout, {
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
+
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -601,18 +686,18 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('NOT_ALLOWED_TO_USE_VOUCHER')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('NOT_ALLOWED_TO_USE_VOUCHER')
     })
 
     // validate account credit
 
     it('POST / cannot checkout with more than available credit', async () => {
-        item = await request.getInStockProduct(config.api.todaySales, 1)
-        await request.addToCart(item.id, cookie)
-        account = await request.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        await requestCart.addToCart(item.id, cookie)
+        account = await requestAccount.getAccountInfo(cookie)
 
-        let response = await request.post(config.api.checkout, {
+        let res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -623,7 +708,9 @@ describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, () => {
             "accountCredit": account.accountCredit + 1
         }, cookie)
 
-        expect(response.status).toEqual(400)
-        expect(response.data.message).toEqual('USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE')
+        expect(res.statusCode).toEqual(400)
+        expect(res.body.message).toEqual('USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE')
     })
-})
+}
+
+describe('Checkout API - Error ' + config.baseUrl + config.api.checkout, CheckoutErrorTest)

@@ -1,6 +1,7 @@
 *Precondition*
 - Install latest node version
-- Run `npm install` to install all dependencies specified in package.json (if have permission issue: use flag `--unsafe-perm=true`)
+- Install `yarn`
+- Run `yarn install` to install all dependencies specified in package.json
 - *optional* Set up debug node js for jest with Visual Studio Code https://github.com/Microsoft/vscode-recipes/tree/master/debugging-jest-tests
 
 ## E2E API testing
@@ -10,11 +11,11 @@ Structure:
 - common/utils: store GET/POST/PUT/DELETE class
 - tests/jest/e2e_api: API test cases
 
-Example test command: `jest tests/jest/e2e_api`
+Example test command: `NODE_ENV=stg jest tests/jest/e2e_api`
 
 Note: 
-- to run certain test based on name, use: `jest -t <testName> tests/jest/e2e_api`
-- to exclude certain tests on production, use: `jest -t '^((?!skip-prod).)*$' tests/jest/e2e_api`
+- to run certain test based on name, use: `NODE_ENV=stg jest -t <testName> tests/jest/e2e_api`
+- to exclude certain tests on production, use: `NODE_ENV=prod jest -t '^((?!skip-prod).)*$' tests/jest/e2e_api`
 
 ## E2E UI testing
 Use Testcafe framework to test web application
@@ -34,11 +35,6 @@ Example test command: `testcafe chromium tests/testcafe/desktop/ --fixture-meta 
         - use url: https://gitlab.leflair.io/
         - use token: jAHUz_91yJUkRJm8m_gG
     - start Gitlab runner on local
-
-## Run with BuddyWorks CI (buddy.works):
-- Due to limited share gitlab runner for multiple projects, we can trigger pipelines with BuddyWorks CI via buddy.yml
-- BuddyWorks is Docker-based environment so we can make use of prepared images on their platform.
-- Tests will be triggered automatically for every commit to Gitlab repo thanks to webhook with BuddyWorks.
 
 ## TO-DO
 Integrate test result with reportportal dashboard http://reportportal.io/

@@ -1,51 +1,59 @@
-import config from '../../../config'
+import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as model from '../../../common/interface'
+import waitForExpect from 'wait-for-expect'
+
 let cookie: string
 let cities: model.City[]
 let addresses: model.Addresses
-import waitForExpect from 'wait-for-expect'
 
-describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
+let request = new Utils.AddressUtils
+
+export const AddressesSuccessTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie()
+        cookie = await request.getLogInCookie(config.testAccount.email, config.testAccount.password)
         cities = await request.getCities()
-        await request.deleteAddresses()
+        jest.setTimeout(120000)
+    })
+
+    afterAll(async () => {
+        await request.deleteAddresses(cookie)
     })
 
     it('GET / get all cities', async () => {
-        let response = await request.get(config.api.addresses + '/cities')
+        let res = await request.get(config.api.addresses + '/cities')
         let cities: model.City[]
-        cities = response.data
-        expect(response.status).toEqual(200)
 
-        for (let city of cities) {
+        cities = res.body
+        expect(res.statusCode).toEqual(200)
+
+        cities.forEach(city => {
             expect(city.id).not.toBeEmpty()
             expect(city.name).not.toBeEmpty()
-        }
+        })
     })
 
     it('GET / get all districts of each city', async () => {
         for (let city of cities) {
-            let response = await request.get(config.api.addresses + '/cities/' + city.id +
+            let res = await request.get(config.api.addresses + '/cities/' + city.id +
                 '/districts')
             let districts: model.District[]
-            districts = response.data
-            expect(response.status).toEqual(200)
 
-            for (let district of districts) {
+            districts = res.body
+            expect(res.statusCode).toEqual(200)
+
+            districts.forEach(district => {
                 expect(district.id).not.toBeEmpty()
                 expect(district.name).not.toBeEmpty()
-            }
+            })
         }
     })
 
     it('GET / get all addresses', async () => {
-        let response = await request.get(config.api.addresses)
-        addresses = response.data
-        expect(response.status).toEqual(200)
+        let res = await request.get(config.api.addresses, cookie)
+        addresses = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(addresses.billing).toBeArray()
         expect(addresses.shipping).toBeArray()
     })
@@ -54,10 +62,11 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let shipping = await request.generateAddress('shipping', cities)
         shipping.duplicateBilling = false
 
-        let response = await request.post(config.api.addresses, shipping)
-        addresses = response.data
+        let res = await request.post(config.api.addresses, shipping, cookie)
+        addresses = res.body
+
         await waitForExpect(() => {
-            expect(response.status).toEqual(200)
+            expect(res.statusCode).toEqual(200)
             expect(addresses.shipping[0].id).not.toBeEmpty()
             expect(addresses.shipping[0].address).toEqual(shipping.address)
             expect(addresses.shipping[0].city).toEqual(shipping.city)
@@ -73,11 +82,11 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
         let shipping = await request.generateAddress('shipping', cities)
         shipping.duplicateBilling = true
 
-        let response = await request.post(config.api.addresses, shipping)
-        addresses = response.data
+        let res = await request.post(config.api.addresses, shipping, cookie)
+        addresses = res.body
 
         await waitForExpect(() => {
-            expect(response.status).toEqual(200)
+            expect(res.statusCode).toEqual(200)
 
             expect(addresses.shipping[0].id).not.toBeEmpty()
             expect(addresses.shipping[0].address).toEqual(shipping.address)
@@ -101,11 +110,11 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
 
     it('POST / add new billing address', async () => {
         let billing = await request.generateAddress('billing', cities)
-        let response = await request.post(config.api.addresses, billing)
-        addresses = response.data
+        let res = await request.post(config.api.addresses, billing, cookie)
+        addresses = res.body
 
         await waitForExpect(() => {
-            expect(response.status).toEqual(200)
+            expect(res.statusCode).toEqual(200)
             expect(addresses.billing[0].id).not.toBeEmpty()
             expect(addresses.billing[0].address).toEqual(billing.address)
             expect(addresses.billing[0].city).toEqual(billing.city)
@@ -120,23 +129,24 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
     })
 
     it('PUT / update shipping address', async () => {
-        addresses = await request.getAddresses()
+        addresses = await request.getAddresses(cookie)
 
         let newShipping = await request.generateAddress('shipping', cities)
         newShipping.id = addresses.shipping[0].id
 
-        let response = await request.put(config.api.addresses + '/' + addresses.shipping[0].id,
-            newShipping)
-        addresses = response.data
+        let res = await request.put(config.api.addresses + '/' + addresses.shipping[0].id,
+            newShipping, cookie)
+        addresses = res.body
 
         await waitForExpect(() => {
-            expect(response.status).toEqual(200)
+            expect(res.statusCode).toEqual(200)
         })
 
-        response = await request.get(config.api.addresses + '/' + addresses.shipping[0].id)
+        res = await request.get(config.api.addresses + '/' + addresses.shipping[0].id, cookie)
         let address: model.Shipping
-        address = response.data
-        expect(response.status).toEqual(200)
+        address = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(address.id).toEqual(newShipping.id)
         expect(address.address).toEqual(newShipping.address)
         expect(address.city).toEqual(newShipping.city)
@@ -148,24 +158,25 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
     })
 
     it('PUT / update billing address', async () => {
-        addresses = await request.getAddresses()
+        addresses = await request.getAddresses(cookie)
 
         let newBilling = await request.generateAddress('billing', cities)
         newBilling.id = addresses.billing[0].id
         newBilling.taxCode = '0789456321'
 
-        let response = await request.put(config.api.addresses + '/' + addresses.billing[0].id,
-            newBilling)
-        addresses = response.data
+        let res = await request.put(config.api.addresses + '/' + addresses.billing[0].id,
+            newBilling, cookie)
+        addresses = res.body
 
         await waitForExpect(() => {
-            expect(response.status).toEqual(200)
+            expect(res.statusCode).toEqual(200)
         })
 
-        response = await request.get(config.api.addresses + '/' + addresses.billing[0].id)
+        res = await request.get(config.api.addresses + '/' + addresses.billing[0].id, cookie)
         let address: model.Billing
-        address = response.data
-        expect(response.status).toEqual(200)
+        address = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(address.id).toEqual(newBilling.id)
         expect(address.address).toEqual(newBilling.address)
         expect(address.city).toEqual(newBilling.city)
@@ -179,13 +190,15 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
     })
 
     it('DELETE / delete shipping address', async () => {
-        addresses = await request.getAddresses()
+        addresses = await request.getAddresses(cookie)
         let toDeleteId = addresses.shipping[0].id
+
         if (addresses.shipping.length > 0) {
-            await request.delete(config.api.addresses + '/' + toDeleteId)
+            await request.delete(config.api.addresses + '/' + toDeleteId, cookie)
         }
 
-        addresses = await request.getAddresses()
+        addresses = await request.getAddresses(cookie)
+
         for (let shipping of addresses.shipping) {
             await waitForExpect(() => {
                 expect(shipping.id).not.toEqual(toDeleteId)
@@ -194,17 +207,21 @@ describe('Addresses API ' + config.baseUrl + config.api.addresses, () => {
     })
 
     it('DELETE / delete billing address', async () => {
-        addresses = await request.getAddresses()
+        addresses = await request.getAddresses(cookie)
         let toDeleteId = addresses.billing[0].id
+
         if (addresses.billing.length > 0) {
-            await request.delete(config.api.addresses + '/' + toDeleteId)
+            await request.delete(config.api.addresses + '/' + toDeleteId, cookie)
         }
 
-        addresses = await request.getAddresses()
+        addresses = await request.getAddresses(cookie)
+
         for (let billing of addresses.billing) {
             await waitForExpect(() => {
                 expect(billing.id).not.toEqual(toDeleteId)
             })
         }
     })
-})
+}
+
+describe('Addresses success API ' + config.baseUrl + config.api.addresses, AddressesSuccessTest)

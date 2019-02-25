@@ -1,7 +1,8 @@
 import { t } from 'testcafe'
-import config from '../../../../config'
+import { config } from '../../../../common/config'
 import * as faker from 'faker/locale/vi'
-import Pages from '../page_objects'
+import { Pages } from '../page_objects'
+
 const page = new Pages()
 
 fixture('Sign in via email ' + config.baseUrl)
@@ -11,23 +12,24 @@ fixture('Sign in via email ' + config.baseUrl)
 
 test('Cannot sign in with empty email and password', async () => {
     await page.signIn.submitEmpty()
-    await t.expect(await page.signIn.getEmailError()).eql('Vui lòng nhập email.')
-    await t.expect(await page.signIn.getPasswordError()).eql('Vui lòng nhập password.')
+    await t
+        .expect(await page.signIn.getEmailError()).eql(config.notifyMsg.missingEmail)
+        .expect(await page.signIn.getPasswordError()).eql(config.notifyMsg.missingPassword)
 })
 
 test('Cannot sign in with non-existing email', async () => {
     await page.signIn.submitData(faker.internet.email(), faker.internet.password())
-    await t.expect(await page.signIn.getCommonError()).eql('Email hoặc mật khẩu không đúng. Vui lòng thử lại')
+    await t.expect(await page.signIn.getCommonError()).eql(config.notifyMsg.invalidEmailPassword)
 })
 
 test('Cannot sign in with incorrect password', async () => {
     await page.signIn.submitData(config.testAccount.email, faker.internet.password())
-    await t.expect(await page.signIn.getCommonError()).eql('Email hoặc mật khẩu không đúng. Vui lòng thử lại')
+    await t.expect(await page.signIn.getCommonError()).eql(config.notifyMsg.invalidEmailPassword)
 })
 
 test('Cannot sign in with Facebook email', async () => {
     await page.signIn.submitData(config.testAccount.facebook, faker.internet.password())
-    await t.expect(await page.signIn.getCommonError()).eql('Email hoặc mật khẩu không đúng. Vui lòng thử lại')
+    await t.expect(await page.signIn.getCommonError()).eql(config.notifyMsg.invalidEmailPassword)
 })
 
 test('Can sign in with existing email', async () => {

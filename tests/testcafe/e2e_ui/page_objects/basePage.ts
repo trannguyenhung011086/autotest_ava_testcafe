@@ -1,6 +1,6 @@
 import { Selector, t, RequestMock } from 'testcafe'
 
-export default class BasePage {
+export class BasePage {
     blockPopup: RequestMock
 
     constructor() {

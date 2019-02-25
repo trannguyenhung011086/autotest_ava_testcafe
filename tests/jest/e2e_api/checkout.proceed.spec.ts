@@ -1,48 +1,99 @@
-import config from '../../../config'
+import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
-let request = new Utils.ApiUtils()
-import 'jest-extended'
 import * as Model from '../../../common/interface'
+
 let account: Model.Account
 let checkout: Model.Checkout
 let item: Model.Product
 let cart: Model.Cart
-let addresses: Model.Addresses
 let cookie: string
 
-describe('Checkout API - Logged in - Proceed ' + config.baseUrl + config.api.checkout, () => {
+let helper = new Utils.Helper
+let requestAddress = new Utils.AddressUtils
+let requestAccount = new Utils.AccountUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+
+export const CheckoutProceedLoggedInTest = () => {
     beforeAll(async () => {
-        cookie = await request.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
-        await request.addAddresses()
-        addresses = await request.getAddresses()
-        account = await request.getAccountInfo()
+        cookie = await helper.getLogInCookie('qa_tech@leflair.vn', 'leflairqa')
+        account = await requestAccount.getAccountInfo(cookie)
     })
 
     afterEach(async () => {
-        await request.emptyCart()
+        await requestCart.emptyCart(cookie)
+    })
+
+    afterAll(async () => {
+        await requestAddress.deleteAddresses(cookie)
     })
 
     it('GET / proceed checkout with empty cart', async () => {
-        let response = await request.get(config.api.checkout)
-        checkout = response.data
+        let res = await helper.get(config.api.checkout, cookie)
+        checkout = res.body
 
-        expect(response.status).toEqual(200)
+        expect(res.statusCode).toEqual(200)
         expect(checkout.accountCredit).toEqual(account.accountCredit)
         expect(checkout.cart).toBeArrayOfSize(0)
         expect(checkout.creditCards).toBeArray()
     })
 
     it('GET / proceed checkout with cart', async () => {
-        item = await request.getInStockProduct(config.api.featuredSales, 1)
-        let response = await request.post(config.api.cart, { "productId": item.id })
-        cart = response.data
+        item = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
 
-        response = await request.get(config.api.checkout)
-        checkout = response.data
+        let res = await helper.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
 
-        expect(response.status).toEqual(200)
+        res = await helper.get(config.api.checkout, cookie)
+        checkout = res.body
+
+        expect(res.statusCode).toEqual(200)
         expect(checkout.accountCredit).toEqual(account.accountCredit)
         expect(checkout.creditCards).toBeArray()
         expect(checkout.cart).toContainEqual(cart)
     })
-})
+}
+
+export const CheckoutProceedGuestTest = () => {
+    beforeAll(async () => {
+        cookie = await helper.getGuestCookie()
+        account = await requestAccount.getAccountInfo(cookie)
+    })
+
+    afterEach(async () => {
+        await requestCart.emptyCart(cookie)
+    })
+
+    it('GET / proceed checkout with empty cart', async () => {
+        let res = await helper.get(config.api.checkout, cookie)
+        checkout = res.body
+
+        expect(res.statusCode).toEqual(200)
+        expect(checkout.cart).toBeArrayOfSize(0)
+        expect(checkout.creditCards).toBeArray()
+    })
+
+    it('GET / proceed checkout with cart', async () => {
+        item = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
+
+        let res = await helper.post(config.api.cart, {
+            "productId": item.id
+        }, cookie)
+        cart = res.body
+
+        res = await helper.get(config.api.checkout, cookie)
+        checkout = res.body
+
+        expect(res.statusCode).toEqual(200)
+        expect(checkout.creditCards).toBeArray()
+        expect(checkout.cart).toContainEqual(cart)
+    })
+}
+
+describe('Checkout API - Proceed (Logged In) ' + config.baseUrl
+    + config.api.checkout, CheckoutProceedLoggedInTest)
+
+describe('Checkout API - Proceed (Guest) ' + config.baseUrl
+    + config.api.checkout, CheckoutProceedGuestTest)
