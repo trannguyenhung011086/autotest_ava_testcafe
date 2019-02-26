@@ -28,7 +28,11 @@ export function validateProductInfo(info: model.ProductInfoModel) {
         }
 
         expect(info.description.heading).not.toBeEmpty()
-        expect(info.description.secondary).toBeArray()
+
+        info.description.secondary.forEach(item => {
+            expect(item.header).toBeNull()
+            expect(item.data).not.toBeEmpty()
+        })
 
         for (const [key, value] of Object.entries(info.images)) {
             value.forEach(value => {
