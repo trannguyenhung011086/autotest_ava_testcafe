@@ -17,9 +17,9 @@ build:
 test_api_non_checkout_staging:
   stage: test_stg
   script:
-    - docker run --name api_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_api_non_checkout_ci
+    - docker run --name api_non_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_api_non_checkout_ci
   after_script:
-    - docker cp api_stg:/home/tester/report/junit_api_non_checkout.xml junit_api_non_checkout.xml
+    - docker cp api_non_checkout_stg:/home/tester/report/junit_api_non_checkout.xml junit_api_non_checkout.xml
   except:
     - schedules
   artifacts:
@@ -30,9 +30,9 @@ test_api_non_checkout_staging:
 test_api_checkout_staging:
   stage: test_stg
   script:
-    - docker run --name api_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_api_checkout_ci
+    - docker run --name api_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_api_checkout_ci
   after_script:
-    - docker cp api_stg:/home/tester/report/junit_api_checkout.xml junit_api_checkout.xml
+    - docker cp api_checkout_stg:/home/tester/report/junit_api_checkout.xml junit_api_checkout.xml
   except:
     - schedules
   artifacts:
@@ -82,9 +82,9 @@ test_mobile_emu_staging:
 test_api_non_checkout_prod:
   stage: test_prod
   script:
-    - docker run --name api_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe yarn run test_api_non_checkout_prod_ci
+    - docker run --name api_non_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe yarn run test_api_non_checkout_prod_ci
   after_script:
-    - docker cp api_prod:/home/tester/report/junit_api_non_checkout.xml junit_api_non_checkout.xml
+    - docker cp api_non_checkout_prod:/home/tester/report/junit_api_non_checkout.xml junit_api_non_checkout.xml
   artifacts:
     expire_in: 1 week
     reports:
@@ -95,9 +95,9 @@ test_api_non_checkout_prod:
 test_api_checkout_prod:
   stage: test_prod
   script:
-    - docker run --name api_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe yarn run test_api_checkout_prod_ci
+    - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe yarn run test_api_checkout_prod_ci
   after_script:
-    - docker cp api_prod:/home/tester/report/junit_api_checkout.xml junit_api_checkout.xml
+    - docker cp api_checkout_prod:/home/tester/report/junit_api_checkout.xml junit_api_checkout.xml
   artifacts:
     expire_in: 1 week
     reports:

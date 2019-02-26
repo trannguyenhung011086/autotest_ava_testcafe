@@ -22,15 +22,16 @@ describe('Cart Error Test', CartErrorTest)
 describe('Checkout Proceed (Logged In) Test', CheckoutProceedLoggedInTest)
 describe('Checkout Proceed (Guest) Test', CheckoutProceedGuestTest)
 
-describe('Checkout Error Test', CheckoutErrorTest)
 describe('Checkout COD Test (skip-prod)', CheckoutCodTest)
 describe('Checkout PayDollar Test (skip-prod)', CheckoutPayDollarTest)
-
 describe('Checkout Stripe Test (skip-prod)', CheckoutStripeTest)
+
+describe('Checkout Error Test', CheckoutErrorTest)
+
 describe('Checkout Split Order Test (skip-prod)', CheckoutSplitTest)
 
-describe('Re-checkout Error Test (skip-prod)', ReCheckoutErrorTest)
 describe('Re-checkout Success Test (skip-prod)', ReCheckoutSuccessTest)
+describe('Re-checkout Error Test (skip-prod)', ReCheckoutErrorTest)
 
 describe('Order Info Test', OrdersInfoTest)
 describe('Auto-confirm Order Test (skip-prod)', OrdersConfirmTest)
