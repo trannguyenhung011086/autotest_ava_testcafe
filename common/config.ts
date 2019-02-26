@@ -23,13 +23,18 @@ switch (process.env.NODE_ENV) {
         stripeKey = 'pk_test_zrI3lNk5K5ttTT5LumHpDZWy'
 }
 
+let stgRedisHost = '35.240.219.41'
+if (process.env.MODE == 'ci') {
+    stgRedisHost = '10.148.0.45'
+}
+
 export const config = {
     stgDb: {
         uri: 'mongodb://35.187.252.42',
         name: 'admin-leflair'
     },
     stgRedis: {
-        host: '35.240.219.41',
+        host: stgRedisHost,
         port: 6379
     },
     baseUrl: baseUrl,
