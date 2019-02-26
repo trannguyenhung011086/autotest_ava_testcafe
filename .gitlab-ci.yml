@@ -12,6 +12,7 @@ build:
   stage: build
   script:
     - docker build -t hung/testcafe .
+    - npm install
 
 test_api_staging:
   stage: test_stg
