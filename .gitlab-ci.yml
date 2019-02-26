@@ -12,8 +12,6 @@ build:
   stage: build
   script:
     - docker build -t hung/testcafe .
-    - npm install -g yarn
-    - yarn install
 
 test_api_staging:
   stage: test_stg
