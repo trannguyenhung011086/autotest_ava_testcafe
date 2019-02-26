@@ -41,7 +41,7 @@ export const CartErrorTest = () => {
         }, cookie)
 
         expect(res.statusCode).toEqual(500)
-        expect(res.body.message).toEqual('COULD_NOT_ADD_ITEM_TO_CART')
+        expect(res.body.message).toEqual('TITLE_IS_OUT_OF_STOCK')
     })
 
     it('POST / cannot add sale ended product to cart', async () => {
@@ -58,11 +58,11 @@ export const CartErrorTest = () => {
         }, cookie)
 
         expect(res.statusCode).toEqual(500)
-        expect(res.body.message).toEqual('COULD_NOT_ADD_ITEM_TO_CART')
+        expect(res.body.message).toEqual('THE_SALE_FOR_TITLE_HAS_ENDED')
     })
 
     it('PUT / cannot update quantity in cart to 0', async () => {
-        item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+        item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
 
         let res = await request.post(config.api.cart, {
             "productId": item.id

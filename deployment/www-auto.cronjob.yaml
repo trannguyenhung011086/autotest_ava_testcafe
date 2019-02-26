@@ -1,0 +1,22 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: www-auto
+  namespace: www-{{ENV}}
+spec:
+  schedule: "5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          dnsPolicy: ClusterFirst
+          restartPolicy: OnFailure
+          schedulerName: default-scheduler
+          containers:
+          - name: www-auto
+            image: asia.gcr.io/{{PROJECT_ID}}/www-auto:{{RELEASE}}
+            imagePullPolicy: IfNotPresent
+            command:  ["/bin/sh", "-c", "npm run {{COMMAND}}"]
+            env:
+            - name: NODE_ENV
+              value: {{NODE_ENV}}
