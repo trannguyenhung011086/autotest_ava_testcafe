@@ -3,7 +3,7 @@ junit.xml
 xunit.xml
 report.html
 /.vscode
-/report/jest-stare
+/report/*.txt
 /report/*.xml
 /report/*.html
 /.cache

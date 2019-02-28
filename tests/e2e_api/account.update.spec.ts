@@ -1,0 +1,141 @@
+import { config } from '../../common/config'
+import * as Utils from '../../common/utils'
+import faker from 'faker/locale/vi'
+import * as Model from '../../common/interface'
+
+let account: Model.Account
+let signIn: Model.SignIn
+let cookie: string
+
+let request = new Utils.AccountUtils
+
+import test from 'ava'
+
+test.before(async t => {
+    cookie = await request.getLogInCookie(config.testAccount.email_ex_3,
+        config.testAccount.password_ex_3)
+})
+
+test('GET / get account info', async t => {
+    let res = await request.get(config.api.account, cookie)
+    account = res.body
+
+    t.deepEqual(res.statusCode, 200)
+    t.truthy(account.id)
+    t.true(account.hasOwnProperty('firstName'))
+    t.true(account.hasOwnProperty('lastName'))
+    t.deepEqual(account.email, config.testAccount.email_ex_3)
+    t.regex(account.language, /en|vn/)
+    t.deepEqual(typeof (account.accountCredit), 'number')
+    t.deepEqual(account.provider, 'local')
+    t.deepEqual(account.state, 'confirmed')
+    t.truthy(account.gender)
+    t.truthy(account.cart)
+
+    if (account.stripe && Object.keys(account.stripe).length > 0) {
+        t.truthy(account.stripe.customerId)
+    }
+    if (account.nsId) {
+        t.truthy(account.nsId)
+    }
+})
+
+test('PUT / can change name', async t => {
+    let firstName = 'QA_' + faker.name.firstName()
+    let lastName = 'QA_' + faker.name.lastName()
+
+    let res = await request.put(config.api.account, {
+        "firstName": firstName,
+        "lastName": lastName
+    }, cookie)
+    signIn = res.body
+
+    t.deepEqual(res.statusCode, 200)
+    t.deepEqual(signIn.firstName, firstName)
+    t.deepEqual(signIn.lastName, lastName)
+})
+
+test.skip('PUT / cannot change email', async t => {
+    let res = await request.put(config.api.account, {
+        "email": 'new-' + config.testAccount.email_ex_3
+    }, cookie)
+
+    t.deepEqual(res.statusCode, 400)
+    t.deepEqual(res.body.message, 'USER_UPDATE_ERROR')
+}) // wait for WWW-335
+
+test('PUT / cannot update with wrong cookie', async t => {
+    let res = await request.put(config.api.account, {
+        "firstName": "first",
+        "lastName": "last"
+    }, 'leflair.connect2.sid=test')
+
+    t.deepEqual(res.statusCode, 401)
+    t.deepEqual(res.body.message, 'Access denied.')
+})
+
+test('PUT / wrong current password', async t => {
+    let res = await request.put(config.api.password,
+        {
+            "currentPassword": faker.internet.password(),
+            "newPassword": faker.internet.password()
+        }, cookie)
+
+    t.deepEqual(res.statusCode, 400)
+    t.deepEqual(res.body.message, 'COULD_NOT_CHANGE_PASSWORD')
+})
+
+test('PUT / empty current password', async t => {
+    let res = await request.put(config.api.password,
+        {
+            "currentPassword": "",
+            "newPassword": faker.internet.password()
+        }, cookie)
+
+    t.deepEqual(res.statusCode, 400)
+    t.deepEqual(res.body.message, 'COULD_NOT_CHANGE_PASSWORD')
+})
+
+test('PUT / new password has length < 7', async t => {
+    let res = await request.put(config.api.password,
+        {
+            "currentPassword": 'leflairqa',
+            "newPassword": "123456"
+        }, cookie)
+
+    t.deepEqual(res.statusCode, 400)
+    t.deepEqual(res.body.message, 'COULD_NOT_CHANGE_PASSWORD')
+})
+
+test('PUT / empty new password', async t => {
+    let res = await request.put(config.api.password,
+        {
+            "currentPassword": 'leflairqa',
+            "newPassword": ""
+        }, cookie)
+
+    t.deepEqual(res.statusCode, 400)
+    t.deepEqual(res.body.message, 'COULD_NOT_CHANGE_PASSWORD')
+})
+
+test('PUT / can change password', async t => {
+    let res = await request.put(config.api.password,
+        {
+            "currentPassword": config.testAccount.password_ex_3,
+            "newPassword": config.testAccount.password_ex_3
+        }, cookie)
+
+    t.deepEqual(res.statusCode, 200)
+    t.deepEqual(res.body.message, 'PASSWORD_CHANGED')
+})
+
+test('PUT / cannot update password with wrong cookie', async t => {
+    let res = await request.put(config.api.password,
+        {
+            "currentPassword": 'leflairqa',
+            "newPassword": 'leflairqa'
+        }, 'leflair.connect2.sid=test')
+
+    t.deepEqual(res.statusCode, 401)
+    t.deepEqual(res.body.message, 'Access denied.')
+})

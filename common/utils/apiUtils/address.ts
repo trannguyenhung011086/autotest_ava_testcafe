@@ -40,7 +40,7 @@ export class AddressUtils extends Helper {
         } catch (e) {
             throw {
                 message: 'Cannot get district list!',
-                ererror: JSON.stringify(e, null, '\t')
+                error: JSON.stringify(e, null, '\t')
             }
         }
     }
@@ -75,7 +75,7 @@ export class AddressUtils extends Helper {
         } catch (e) {
             throw {
                 message: 'Cannot delete address!',
-                ererror: JSON.stringify(e, null, '\t')
+                error: JSON.stringify(e, null, '\t')
             }
         }
     }
@@ -83,8 +83,10 @@ export class AddressUtils extends Helper {
     public async addAddresses(cookie?: string) {
         let cities = await this.getCities()
         let shipping = await this.generateAddress('shipping', cities)
+        
         shipping.duplicateBilling = true
         let res = await this.post(config.api.addresses, shipping, cookie)
+
         if (res.statusCode != 200) {
             throw {
                 message: 'Cannot add address!',

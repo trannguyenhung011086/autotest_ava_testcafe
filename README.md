@@ -2,20 +2,15 @@
 - Install latest node version
 - Install `yarn`
 - Run `yarn install` to install all dependencies specified in package.json
-- *optional* Set up debug node js for jest with Visual Studio Code https://github.com/Microsoft/vscode-recipes/tree/master/debugging-jest-tests
 
 ## E2E API testing
-Use axios http request libray and Jest framework to test APIs
+Use GOT http request library and AVA framework to test APIs
 
 Structure:
 - common/utils: store GET/POST/PUT/DELETE class
-- tests/jest/e2e_api: API test cases
+- tests/e2e_api: API test cases
 
-Example test command: `NODE_ENV=stg jest tests/jest/e2e_api`
-
-Note: 
-- to run certain test based on name, use: `NODE_ENV=stg jest -t <testName> tests/jest/e2e_api`
-- to exclude certain tests on production, use: `NODE_ENV=prod jest -t '^((?!skip-prod).)*$' tests/jest/e2e_api`
+Example test command: `NODE_ENV=stg ava --verbose tests/e2e_api/`
 
 ## E2E UI testing
 Use Testcafe framework to test web application

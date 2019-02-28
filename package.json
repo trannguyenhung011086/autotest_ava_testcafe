@@ -1,41 +1,26 @@
 {
-  "name": "e2e-testing-with-jest",
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": [
-      "./jest.setup.js"
+  "name": "e2e-testing-leflair",
+  "ava": {
+    "compileEnhancements": false,
+    "extensions": [
+      "ts"
     ],
-    "reporters": [
-      "default",
-      "jest-junit",
-      "jest-stare"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/tests/testcafe/"
+    "require": [
+      "ts-node/register"
     ]
-  },
-  "jest-stare": {
-    "resultDir": "report/jest-stare"
   },
   "version": "1.0.0",
   "description": "Leflair website automation test",
   "main": "index.js",
   "scripts": {
-    "test_api_non_checkout": "JEST_JUNIT_OUTPUT=report/junit_api_non_checkout.xml ./node_modules/.bin/jest tests/jest/api.non-checkout.spec.ts --verbose --detectOpenHandles --runInBand",
-    "test_api_checkout": "JEST_JUNIT_OUTPUT=report/junit_api_checkout.xml ./node_modules/.bin/jest tests/jest/api.checkout.spec.ts --verbose --detectOpenHandles --runInBand",
-    "test_api_non_checkout_prod": "NODE_ENV=prod JEST_JUNIT_OUTPUT=report/junit_api_non_checkout.xml ./node_modules/.bin/jest -t '^((?!skip-prod).)*$' tests/jest/api.non-checkout.spec.ts --verbose --detectOpenHandles --runInBand",
-    "test_api_checkout_prod": "NODE_ENV=prod JEST_JUNIT_OUTPUT=report/junit_api_checkout.xml ./node_modules/.bin/jest -t '^((?!skip-prod).)*$' tests/jest/api.checkout.spec.ts --verbose --detectOpenHandles --runInBand",
+    "ava": "ava --verbose",
+    "test_api": "./node_modules/.bin/ava tests/e2e_api/ --verbose > report/test_api.txt",
     "test_chromium": "./node_modules/.bin/testcafe \"chromium --no-sandbox\" tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml,html:report/junit_chromium.html",
     "test_firefox": "./node_modules/.bin/testcafe firefox tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml,html:report/junit_firefox.html",
     "test_mobile_emu": "./node_modules/.bin/testcafe \"chromium:emulation:device=iphone 6 --no-sandbox\" tests/testcafe/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml,html:report/junit_mobile_emu.html",
     "test_desktop_remote": "./node_modules/.bin/testcafe remote tests/testcafe/e2e_ui/desktop --qr-code --selector-timeout 15000 --assertion-timeout 5000",
     "test_mobile_remote": "./node_modules/.bin/testcafe remote tests/testcafe/e2e_ui/mobile --qr-code --selector-timeout 15000 --assertion-timeout 5000",
-    "test_api_non_checkout_ci": "NODE_ENV=$NODE_ENV MODE=ci JEST_JUNIT_OUTPUT=report/junit_api_non_checkout.xml ./node_modules/.bin/jest tests/jest/api.non-checkout.spec.ts --rootDir=/dockertests --verbose --detectOpenHandles --runInBand",
-    "test_api_checkout_ci": "NODE_ENV=$NODE_ENV MODE=ci JEST_JUNIT_OUTPUT=report/junit_api_checkout.xml ./node_modules/.bin/jest tests/jest/api.checkout.spec.ts --rootDir=/dockertests --verbose --detectOpenHandles --runInBand",
-    "test_api_non_checkout_prod_ci": "NODE_ENV=$NODE_ENV MODE=ci JEST_JUNIT_OUTPUT=report/junit_api_non_checkout.xml ./node_modules/.bin/jest -t '^((?!skip-prod).)*$' tests/jest/api.non-checkout.spec.ts --rootDir=/dockertests --verbose --detectOpenHandles --runInBand",
-    "test_api_checkout_prod_ci": "NODE_ENV=$NODE_ENV MODE=ci JEST_JUNIT_OUTPUT=report/junit_api_checkout.xml ./node_modules/.bin/jest -t '^((?!skip-prod).)*$' tests/jest/api.checkout.spec.ts --rootDir=/dockertests --verbose --detectOpenHandles --runInBand",
+    "test_api_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/ava tests/e2e_api/ --verbose > report/test_api.txt",
     "test_chromium_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless --no-sandbox\" /dockertests/tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml,html:report/junit_chromium.html",
     "test_firefox_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe firefox:headless /dockertests/tests/testcafe/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml,html:report/junit_firefox.html",
     "test_mobile_emu_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless:emulation:device=iphone 6 --no-sandbox\" /dockertests/tests/testcafe/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml,html:report/junit_mobile_emu.html"
@@ -43,31 +28,25 @@
   "author": "Hung Tran",
   "license": "ISC",
   "dependencies": {
-    "@babel/core": "^7.3.3",
+    "@babel/core": "^7.3.4",
     "@types/faker": "^4.1.5",
-    "@types/got": "^9.4.0",
-    "@types/jest": "^24.0.6",
+    "@types/got": "^9.4.1",
     "@types/mongodb": "^3.1.19",
-    "@types/node": "^11.9.4",
-    "@types/papaparse": "^4.5.7",
+    "@types/node": "^11.9.5",
+    "@types/papaparse": "^4.5.9",
     "@types/qs": "^6.5.1",
+    "ava": "^1.2.1",
     "faker": "^4.1.0",
     "got": "^9.6.0",
     "handy-redis": "^1.5.2",
-    "jest": "^24.1.0",
-    "jest-extended": "^0.11.1",
-    "jest-junit": "^6.3.0",
-    "jest-stare": "^1.11.2",
     "mongodb": "^3.1.13",
     "papaparse": "^4.6.3",
     "testcafe": "^1.0.1",
     "testcafe-live": "^0.1.4",
     "testcafe-reporter-html": "^1.4.4",
     "tough-cookie": "^3.0.1",
-    "ts-jest": "^24.0.0",
     "ts-node": "^8.0.2",
     "typescript": "^3.3.3",
-    "wait-for-expect": "^1.1.0",
     "xml-js": "^1.6.11"
   }
 }

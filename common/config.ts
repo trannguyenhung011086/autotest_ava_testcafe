@@ -91,8 +91,14 @@ export const config = {
     payDollarBase: payDollarBase,
     payDollarApi: payDollarApi,
     testAccount: {
-        email: 'test1234@test.com',
-        password: '123456789',
+        email_ex_1: 'test1234@test.com',
+        password_ex_1: '123456789',
+        email_ex_2: 'test1234@mail.com',
+        password_ex_2: '123456789',
+        email_in: 'qa_tech@leflair.vn',
+        email_ex_3: 'test1234leflair@mailinator.com',
+        password_ex_3: '123456789',
+        password_in: 'leflairqa',
         facebook: 'trannguyenhung011086@protonmail.com',
         passwordFacebook: '0944226282',
         usedVoucher: 'VCB150'

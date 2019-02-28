@@ -15,7 +15,6 @@ WORKDIR /home/tester
 
 # copy required files
 COPY package.json /home/tester
-COPY jest.setup.js /home/tester
 
 # install packages
 RUN yarn install \

@@ -14,33 +14,20 @@ build:
     - docker build -t hung/testcafe .
     - npm install
 
-test_api_non_checkout_staging:
+test_api_stg:
   stage: test_stg
   script:
-    - docker run --name api_non_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_api_non_checkout_ci
+    - docker run --name api_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_api_ci
   after_script:
-    - docker cp api_non_checkout_stg:/home/tester/report/junit_api_non_checkout.xml junit_api_non_checkout.xml
+    - docker cp api_stg:/home/tester/report/test_api.txt test_api.txt
   except:
     - schedules
   artifacts:
     expire_in: 1 week
     reports:
-      junit: junit_api_non_checkout.xml
+      junit: test_api.txt
 
-test_api_checkout_staging:
-  stage: test_stg
-  script:
-    - docker run --name api_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_api_checkout_ci
-  after_script:
-    - docker cp api_checkout_stg:/home/tester/report/junit_api_checkout.xml junit_api_checkout.xml
-  except:
-    - schedules
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_api_checkout.xml
-
-test_chromium_staging:
+test_chromium_stg:
   stage: test_stg
   script:
     - docker run --name chromium_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_chromium_ci
@@ -53,7 +40,7 @@ test_chromium_staging:
   except:
     - schedules
 
-test_firefox_staging:
+test_firefox_stg:
   stage: test_stg
   script:
     - docker run --name firefox_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_firefox_ci
@@ -66,7 +53,7 @@ test_firefox_staging:
   except:
     - schedules
 
-test_mobile_emu_staging:
+test_mobile_emu_stg:
   stage: test_stg
   script:
     - docker run --name mobile_emu_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
@@ -79,29 +66,16 @@ test_mobile_emu_staging:
   except:
     - schedules
 
-test_api_non_checkout_prod:
+test_api_prod:
   stage: test_prod
   script:
-    - docker run --name api_non_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe yarn run test_api_non_checkout_prod_ci
+    - docker run --name api_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe yarn run test_api_ci
   after_script:
-    - docker cp api_non_checkout_prod:/home/tester/report/junit_api_non_checkout.xml junit_api_non_checkout.xml
+    - docker cp api_prod:/home/tester/report/test_api.txt test_api.txt
   artifacts:
     expire_in: 1 week
     reports:
-      junit: junit_api_non_checkout.xml
-  only:
-    - schedules
-
-test_api_checkout_prod:
-  stage: test_prod
-  script:
-    - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/testcafe yarn run test_api_checkout_prod_ci
-  after_script:
-    - docker cp api_checkout_prod:/home/tester/report/junit_api_checkout.xml junit_api_checkout.xml
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_api_checkout.xml
+      junit: test_api.txt
   only:
     - schedules
 

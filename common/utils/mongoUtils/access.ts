@@ -71,11 +71,7 @@ export class DbAccessUtils {
     }
 
     public async getVoucher(query: Object): Promise<Model.VoucherModel> {
-        let voucher = await this.getDbData('vouchers', query)
-        if (!voucher) {
-            throw 'Cannot get voucher!'
-        }
-        return voucher
+        return await this.getDbData('vouchers', query)
     }
 
     public async getVoucherList(query: Object): Promise<Model.VoucherModel[]> {
@@ -151,19 +147,12 @@ export class DbAccessUtils {
     public async getUsedVoucher(query: Object, customer: Model.Customer): Promise<Model.VoucherModel> {
         let vouchers = await this.getVoucherList(query)
 
-        let result: Model.VoucherModel
         for (let voucher of vouchers) {
             const checkUsed = await this.checkUsedVoucher(voucher._id, customer._id)
             if (checkUsed) {
-                result = voucher
-                break
+                return voucher
             }
         }
-
-        if (!result) {
-            throw 'Cannot get voucher!'
-        }
-        return result
     }
 
     public async getNotUsedVoucher(query: Object, customer: Model.Customer): Promise<Model.VoucherModel> {
@@ -185,11 +174,7 @@ export class DbAccessUtils {
     }
 
     public async getCampaign(query: Object): Promise<Model.Campaign> {
-        let campaign = await this.getDbData('campaigns', query)
-        if (!campaign) {
-            throw 'Cannot get campaign!'
-        }
-        return campaign
+        return await this.getDbData('campaigns', query)
     }
 
     public async updateOrderStatus(orderCode: string, status: string) {
