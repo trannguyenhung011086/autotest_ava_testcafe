@@ -7,7 +7,7 @@ let request = new Utils.AccountUtils
 import test from 'ava'
 
 test('POST / empty email', async t => {
-    let res = await request.post(config.api.forgot, {
+    const res = await request.post(config.api.forgot, {
         "email": ""
     })
 
@@ -16,14 +16,14 @@ test('POST / empty email', async t => {
 })
 
 test('POST / missing email field', async t => {
-    let res = await request.post(config.api.forgot, {})
+    const res = await request.post(config.api.forgot, {})
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'EMAIL_ADDRESS_REQUIRED')
 })
 
 test('POST / non-existing email', async t => {
-    let res = await request.post(config.api.forgot, {
+    const res = await request.post(config.api.forgot, {
         "email": 'QA_' + faker.internet.email()
     })
 
@@ -32,7 +32,7 @@ test('POST / non-existing email', async t => {
 })
 
 test('POST / wrong format email', async t => {
-    let res = await request.post(config.api.forgot, {
+    const res = await request.post(config.api.forgot, {
         "email": ".test%!@#$%^&*()_+<>?@mail.com"
     })
 
@@ -41,7 +41,7 @@ test('POST / wrong format email', async t => {
 })
 
 test('POST / Facebook email', async t => {
-    let res = await request.post(config.api.forgot, {
+    const res = await request.post(config.api.forgot, {
         "email": "trannguyenhung011086@gmail.com"
     })
 
@@ -55,8 +55,8 @@ test('POST / Facebook email', async t => {
 })
 
 test('POST / existing email', async t => {
-    let res = await request.post(config.api.forgot, {
-        "email": config.testAccount.email_ex_1
+    const res = await request.post(config.api.forgot, {
+        "email": config.testAccount.email_ex[0]
     })
 
     if (process.env.NODE_ENV == 'prod') {

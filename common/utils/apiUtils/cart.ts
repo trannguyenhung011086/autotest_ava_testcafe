@@ -17,7 +17,7 @@ export class CartUtils extends Helper {
                 deletedList.push(item.id)
             }
 
-            let res = await this.put(config.api.cart + 'delete-multiple',
+            const res = await this.put(config.api.cart + 'delete-multiple',
                 { "cartItemIds": deletedList }, cookie)
 
             if (res.statusCode != 200) {
@@ -31,7 +31,7 @@ export class CartUtils extends Helper {
     }
 
     public async addToCart(productId: string, cookie?: string, check?: boolean): Promise<Model.Cart> {
-        let res = await this.post(config.api.cart, {
+        const res = await this.post(config.api.cart, {
             "productId": productId
         }, cookie)
 
@@ -45,7 +45,7 @@ export class CartUtils extends Helper {
     }
 
     public async updateQuantityCart(cartId: string, quantity: number, cookie?: string): Promise<Model.Cart> {
-        let res = await this.put(config.api.cart + cartId, {
+        const res = await this.put(config.api.cart + cartId, {
             "quantity": quantity
         }, cookie)
 

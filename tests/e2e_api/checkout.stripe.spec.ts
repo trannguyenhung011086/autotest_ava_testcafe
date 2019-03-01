@@ -5,7 +5,6 @@ import * as Model from '../../common/interface'
 let account: Model.Account
 let item: Model.Product
 let addresses: Model.Addresses
-let cookie: string
 let checkoutInput: Model.CheckoutInput = {}
 
 let request = new Utils.CheckoutUtils
@@ -28,32 +27,27 @@ const stripeData = {
 import test from 'ava'
 
 test.before(async t => {
-    cookie = await request.getLogInCookie(config.testAccount.email_in,
-        config.testAccount.password_in)
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[9],
+        config.testAccount.password_ex)
         
-    await requestAddress.addAddresses(cookie)
-    addresses = await requestAddress.getAddresses(cookie)
+    addresses = await requestAddress.getAddresses(t.context['cookie'])
 })
 
 test.beforeEach(async t => {
-    await requestCart.emptyCart(cookie)
-})
-
-test.after.always(async t => {
-    await requestAddress.deleteAddresses(cookie)
+    await requestCart.emptyCart(t.context['cookie'])
 })
 
 test.serial('POST / cannot checkout with declined Stripe', async t => {
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
-    account = await requestAccount.getAccountInfo(cookie)
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
     stripeData['card[number]'] = '4000000000000002'
     const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-        cookie, config.stripeBase).then(res => res.body)
+        t.context['cookie'], config.stripeBase).then(res => res.body)
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -61,7 +55,7 @@ test.serial('POST / cannot checkout with declined Stripe', async t => {
         "cart": account.cart,
         "method": "STRIPE",
         "methodData": stripeSource
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 500)
     t.deepEqual(res.body.message, 'STRIPE_CUSTOMER_ERROR')
@@ -72,15 +66,15 @@ test.serial('POST / cannot checkout with declined Stripe', async t => {
 
 test.serial('POST / cannot checkout with unsupported Stripe', async t => {
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
-    account = await requestAccount.getAccountInfo(cookie)
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
     stripeData['card[number]'] = '3566002020360505' // JCB
     const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-        cookie, config.stripeBase).then(res => res.body)
+        t.context['cookie'], config.stripeBase).then(res => res.body)
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -88,7 +82,7 @@ test.serial('POST / cannot checkout with unsupported Stripe', async t => {
         "cart": account.cart,
         "method": "STRIPE",
         "methodData": stripeSource
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 500)
     t.deepEqual(res.body.message, 'STRIPE_CUSTOMER_ERROR')
@@ -99,20 +93,20 @@ test.serial('POST / cannot checkout with unsupported Stripe', async t => {
 
 test.serial('POST / checkout with new Stripe (not save card) - VISA', async t => {
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
     stripeData['card[number]'] = '4000000000000077'
 
-    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
     checkoutInput.saveNewCard = false
     checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-        cookie, config.stripeBase).then(res => res.body)
+        t.context['cookie'], config.stripeBase).then(res => res.body)
 
-    let checkout = await request.checkoutStripe(checkoutInput, cookie)
+    let checkout = await request.checkoutStripe(checkoutInput, t.context['cookie'])
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
     t.true(order.code.includes(checkout.code))
     t.deepEqual(order.status, 'placed')
@@ -123,20 +117,20 @@ test.serial('POST / checkout with new Stripe (not save card) - VISA', async t =>
 
 test.serial('POST / checkout with new Stripe (not save card) - MASTER', async t => {
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
     stripeData['card[number]'] = '5555555555554444'
 
-    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
     checkoutInput.saveNewCard = false
     checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-        cookie, config.stripeBase).then(res => res.body)
+        t.context['cookie'], config.stripeBase).then(res => res.body)
 
-    let checkout = await request.checkoutStripe(checkoutInput, cookie)
+    let checkout = await request.checkoutStripe(checkoutInput, t.context['cookie'])
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
     t.true(order.code.includes(checkout.code))
     t.deepEqual(order.status, 'placed')
@@ -147,20 +141,20 @@ test.serial('POST / checkout with new Stripe (not save card) - MASTER', async t 
 
 test.serial('POST / checkout with new Stripe (save card) - VISA', async t => {
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
     stripeData['card[number]'] = '4000000000000077'
 
-    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
     checkoutInput.saveNewCard = true
     checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-        cookie, config.stripeBase).then(res => res.body)
+        t.context['cookie'], config.stripeBase).then(res => res.body)
 
-    let checkout = await request.checkoutStripe(checkoutInput, cookie)
+    let checkout = await request.checkoutStripe(checkoutInput, t.context['cookie'])
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
     t.true(order.code.includes(checkout.code))
     t.deepEqual(order.status, 'placed')
@@ -170,19 +164,19 @@ test.serial('POST / checkout with new Stripe (save card) - VISA', async t => {
 })
 
 test.serial('POST / checkout with saved Stripe', async t => {
-    let matchedCard = await requestCreditcard.getCard('Stripe', cookie)
+    let matchedCard = await requestCreditcard.getCard('Stripe', t.context['cookie'])
 
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
-    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
     checkoutInput.methodData = matchedCard
 
-    let checkout = await request.checkoutStripe(checkoutInput, cookie)
+    let checkout = await request.checkoutStripe(checkoutInput, t.context['cookie'])
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
     t.true(order.code.includes(checkout.code))
     t.deepEqual(order.status, 'placed')
@@ -192,7 +186,7 @@ test.serial('POST / checkout with saved Stripe', async t => {
 })
 
 test.serial('POST / checkout with new Stripe (save card) - MASTER - voucher (amount) + credit', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         binRange: '433590,542288,555555,400000',
@@ -202,27 +196,27 @@ test.serial('POST / checkout with new Stripe (save card) - MASTER - voucher (amo
     })
 
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 2)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
-    account = await requestAccount.getAccountInfo(cookie)
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
     const credit = request.calculateCredit(account.accountCredit,
         item.salePrice, voucher.amount)
 
     stripeData['card[number]'] = '5555555555554444'
 
-    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
     checkoutInput.voucherId = voucher._id
     checkoutInput.credit = credit
     checkoutInput.saveNewCard = true
     checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-        cookie, config.stripeBase).then(res => res.body)
+        t.context['cookie'], config.stripeBase).then(res => res.body)
 
-    let checkout = await request.checkoutStripe(checkoutInput, cookie)
+    let checkout = await request.checkoutStripe(checkoutInput, t.context['cookie'])
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
     t.true(order.code.includes(checkout.code))
     t.deepEqual(order.status, 'placed')
@@ -234,7 +228,7 @@ test.serial('POST / checkout with new Stripe (save card) - MASTER - voucher (amo
 })
 
 test.serial('POST / checkout with saved Stripe - voucher (percentage + max discount)', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         binRange: '433590,542288,555555,400000',
@@ -243,20 +237,20 @@ test.serial('POST / checkout with saved Stripe - voucher (percentage + max disco
         specificDays: []
     })
 
-    let matchedCard = await requestCreditcard.getCard('Stripe', cookie)
+    let matchedCard = await requestCreditcard.getCard('Stripe', t.context['cookie'])
 
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
-    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
     checkoutInput.voucherId = voucher._id
     checkoutInput.methodData = matchedCard
 
-    let checkout = await request.checkoutStripe(checkoutInput, cookie)
+    let checkout = await request.checkoutStripe(checkoutInput, t.context['cookie'])
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
     t.true(order.code.includes(checkout.code))
     t.deepEqual(order.status, 'placed')

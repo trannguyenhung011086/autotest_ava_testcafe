@@ -9,7 +9,7 @@ let request = new Utils.BrandUtils
 import test from 'ava'
 
 test('GET / get brands directory', async t => {
-    let res = await request.get(config.api.brands)
+    const res = await request.get(config.api.brands)
     brands = res.body
 
     t.deepEqual(res.statusCode, 200)

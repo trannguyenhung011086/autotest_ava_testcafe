@@ -79,6 +79,8 @@ export const config = {
         cateHomeLifeStyle: '/api/menus/items/5b62d1008f0dd7c0480acd5b',
         cart: '/api/v2/cart-items/',
         checkout: '/api/v2/checkout',
+        mailchimp: '/api/v2/news/mailchimp-report',
+        accesstrade: '/api/v2/user-orders/accesstrade',
         feedFacebook: '/api/v1/fb-product-feeds',
         feedGoogle: '/api/v1/google-product-feeds',
         feedGoogleDynamic: '/api/v1/google-dynamic-product-feeds',
@@ -91,17 +93,24 @@ export const config = {
     payDollarBase: payDollarBase,
     payDollarApi: payDollarApi,
     testAccount: {
-        email_ex_1: 'test1234@test.com',
-        password_ex_1: '123456789',
-        email_ex_2: 'test1234@mail.com',
-        password_ex_2: '123456789',
         email_in: 'qa_tech@leflair.vn',
-        email_ex_3: 'test1234leflair@mailinator.com',
-        password_ex_3: '123456789',
         password_in: 'leflairqa',
+        email_ex: [
+            'QA_test1234_leflair_0@mailinator.com',
+            'QA_test1234_leflair_1@mailinator.com',
+            'QA_test1234_leflair_2@mailinator.com',
+            'QA_test1234_leflair_3@mailinator.com',
+            'QA_test1234_leflair_4@mailinator.com',
+            'QA_test1234_leflair_5@mailinator.com',
+            'QA_test1234_leflair_6@mailinator.com',
+            'QA_test1234_leflair_7@mailinator.com',
+            'QA_test1234_leflair_8@mailinator.com',
+            'QA_test1234_leflair_9@mailinator.com',
+            'QA_test1234_leflair_10@mailinator.com'
+        ],
+        password_ex: '123456789',
         facebook: 'trannguyenhung011086@protonmail.com',
-        passwordFacebook: '0944226282',
-        usedVoucher: 'VCB150'
+        passwordFacebook: '0944226282'
     },
     notifyMsg: {
         missingEmail: 'Vui lòng nhập email.',

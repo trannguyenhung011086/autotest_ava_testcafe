@@ -7,7 +7,6 @@ let account: Model.Account
 let addresses: Model.Addresses
 let item: Model.Product
 let cart: Model.Cart
-let cookie: string
 let checkoutInput: Model.CheckoutInput = {}
 
 let requestAddress = new Utils.AddressUtils
@@ -21,22 +20,17 @@ let accessRedis = new Utils.RedisAccessUtils
 import test from 'ava'
 
 test.before(async t => {
-    cookie = await request.getLogInCookie(config.testAccount.email_ex_3,
-        config.testAccount.password_ex_3)
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[4],
+        config.testAccount.password_ex)
 
-    await requestAddress.addAddresses(cookie)
-    addresses = await requestAddress.getAddresses(cookie)
+    addresses = await requestAddress.getAddresses(t.context['cookie'])
 
-    account = await requestAccount.getAccountInfo(cookie)
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
     customer = await access.getCustomerInfo({ email: account.email })
 })
 
 test.beforeEach(async t => {
-    await requestCart.emptyCart(cookie)
-})
-
-test.after.always(async t => {
-    await requestAddress.deleteAddresses(cookie)
+    await requestCart.emptyCart(t.context['cookie'])
 })
 
 // validate required data
@@ -44,10 +38,10 @@ test.after.always(async t => {
 test.serial('POST / cannot checkout with invalid cookie', async t => {
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -60,18 +54,18 @@ test.serial('POST / cannot checkout with invalid cookie', async t => {
 })
 
 test.serial('POST / cannot checkout with empty data', async t => {
-    let res = await request.post(config.api.checkout, {}, cookie)
+    const res = await request.post(config.api.checkout, {}, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 500)
 })
 
 test.serial('POST / cannot checkout without address', async t => {
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": {},
             "billing": {}
         }
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.true(res.body.message.includes('SHIPPING_ADDRESS_REQUIRED'))
@@ -79,13 +73,13 @@ test.serial('POST / cannot checkout without address', async t => {
 })
 
 test.serial('POST / cannot checkout with empty cart', async t => {
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
         },
         "cart": []
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.true(res.body.message.includes('THERE_ARE_NO_ITEMS_IN_YOUR_ORDER'))
@@ -95,7 +89,7 @@ test.serial('POST / cannot checkout with invalid phone and tax code', async t =>
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
     let res = await request.post(config.api.cart, {
         "productId": item.id
-    }, cookie)
+    }, t.context['cookie'])
     cart = res.body
 
     res = await request.post(config.api.checkout, {
@@ -113,7 +107,7 @@ test.serial('POST / cannot checkout with invalid phone and tax code', async t =>
             "quantity": cart.quantity,
             "salePrice": cart.salePrice
         }]
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.true(res.body.message.includes('SHIPPING_PHONE_NUMBER_IS_NOT_VALID'))
@@ -125,7 +119,7 @@ test.serial('POST / cannot checkout without payment method', async t => {
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
     let res = await request.post(config.api.cart, {
         "productId": item.id
-    }, cookie)
+    }, t.context['cookie'])
     cart = res.body
 
     res = await request.post(config.api.checkout, {
@@ -138,7 +132,7 @@ test.serial('POST / cannot checkout without payment method', async t => {
             "quantity": cart.quantity,
             "salePrice": cart.salePrice
         }]
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.true(res.body.message.includes('PLEASE_SELECT_A_PAYMENT_METHOD'))
@@ -150,7 +144,7 @@ test.serial('POST / cannot checkout with mismatched cart', async t => {
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
     let res = await request.post(config.api.cart, {
         "productId": item.id
-    }, cookie)
+    }, t.context['cookie'])
     cart = res.body
 
     res = await request.post(config.api.checkout, {
@@ -169,7 +163,7 @@ test.serial('POST / cannot checkout with mismatched cart', async t => {
             "salePrice": cart.salePrice
         }],
         "method": "FREE"
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'CART_MISMATCH')
@@ -179,7 +173,7 @@ test.serial('POST / cannot checkout with mismatched quantity', async t => {
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
     let res = await request.post(config.api.cart, {
         "productId": item.id
-    }, cookie)
+    }, t.context['cookie'])
     cart = res.body
 
     res = await request.post(config.api.checkout, {
@@ -193,7 +187,7 @@ test.serial('POST / cannot checkout with mismatched quantity', async t => {
             "salePrice": cart.salePrice
         }],
         "method": "FREE"
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message[0].message, 'QUANTITY_SUBMITTED_NOT_MATCH_IN_THE_CART')
@@ -203,7 +197,7 @@ test.serial('POST / cannot checkout with mismatched price', async t => {
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
     let res = await request.post(config.api.cart, {
         "productId": item.id
-    }, cookie)
+    }, t.context['cookie'])
     cart = res.body
 
     res = await request.post(config.api.checkout, {
@@ -217,7 +211,7 @@ test.serial('POST / cannot checkout with mismatched price', async t => {
             "salePrice": cart.salePrice - 1
         }],
         "method": "FREE"
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message[0].message, 'PRICE_MISMATCH')
@@ -227,7 +221,7 @@ test.serial('POST / cannot checkout with invalid product', async t => {
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
     let res = await request.post(config.api.cart, {
         "productId": item.id
-    }, cookie)
+    }, t.context['cookie'])
     cart = res.body
 
     res = await request.post(config.api.checkout, {
@@ -241,7 +235,7 @@ test.serial('POST / cannot checkout with invalid product', async t => {
             "salePrice": cart.salePrice
         }],
         "method": "FREE"
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message[0].message, 'CART_MISMATCH_CANT_FIND_PRODUCT')
@@ -251,22 +245,22 @@ test.serial('POST / cannot checkout with more than 8 unique products', async t =
     let items = await requestProduct.getInStockProducts(config.api.todaySales, 1)
 
     for (let item of items) {
-        await requestCart.addToCart(item.id, cookie, false)
+        await requestCart.addToCart(item.id, t.context['cookie'], false)
     }
-    account = await requestAccount.getAccountInfo(cookie)
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
     if (account.cart.length <= 8) {
         throw 'Cart does not have more than 8 unique products!'
     }
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
         },
         "cart": account.cart,
         "method": "FREE"
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'CART_EXCEEDS_THE_MAXIMUM_SIZE')
@@ -284,8 +278,8 @@ test.serial('POST / cannot checkout with sold out product', async t => {
 
         try {
             let item = await requestProduct.getInStockProduct(config.api.featuredSales, 1)
-            await requestCart.addToCart(item.id, cookie)
-            account = await requestAccount.getAccountInfo(cookie)
+            await requestCart.addToCart(item.id, t.context['cookie'])
+            account = await requestAccount.getAccountInfo(t.context['cookie'])
 
             redisItem = await accessRedis.getKey('nsId:' + item.nsId)
             originalQuantity = redisItem['quantity']
@@ -294,14 +288,14 @@ test.serial('POST / cannot checkout with sold out product', async t => {
             redisItem['quantity'] = 0
             await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
 
-            let res = await request.post(config.api.checkout, {
+            const res = await request.post(config.api.checkout, {
                 "address": {
                     "shipping": addresses.shipping[0],
                     "billing": addresses.billing[0]
                 },
                 "cart": account.cart,
                 "method": "FREE"
-            }, cookie)
+            }, t.context['cookie'])
 
             t.deepEqual(res.statusCode, 400)
             t.deepEqual(res.body.message[0].message, 'TITLE_IS_OUT_OF_STOCK')
@@ -325,9 +319,9 @@ test.serial('POST / cannot checkout with limited stock product', async t => {
 
         try {
             let item = await requestProduct.getInStockProduct(config.api.featuredSales, 2)
-            await requestCart.addToCart(item.id, cookie)
-            await requestCart.addToCart(item.id, cookie)
-            account = await requestAccount.getAccountInfo(cookie)
+            await requestCart.addToCart(item.id, t.context['cookie'])
+            await requestCart.addToCart(item.id, t.context['cookie'])
+            account = await requestAccount.getAccountInfo(t.context['cookie'])
 
             redisItem = await accessRedis.getKey('nsId:' + item.nsId)
             originalQuantity = redisItem['quantity']
@@ -336,14 +330,14 @@ test.serial('POST / cannot checkout with limited stock product', async t => {
             redisItem['quantity'] = 1
             await accessRedis.setValue('nsId:' + item.nsId, JSON.stringify(redisItem))
 
-            let res = await request.post(config.api.checkout, {
+            const res = await request.post(config.api.checkout, {
                 "address": {
                     "shipping": addresses.shipping[0],
                     "billing": addresses.billing[0]
                 },
                 "cart": account.cart,
                 "method": "FREE"
-            }, cookie)
+            }, t.context['cookie'])
 
             t.deepEqual(res.statusCode, 400)
             t.deepEqual(res.body.message[0].message, 'ONLY_LIMITED_UNITS_IN_STOCK')
@@ -369,8 +363,8 @@ test.serial('POST / cannot checkout with sale ended product', async t => {
 
         try {
             let item = await requestProduct.getInStockProductInfo(config.api.todaySales)
-            await requestCart.addToCart(item.products[0].id, cookie)
-            account = await requestAccount.getAccountInfo(cookie)
+            await requestCart.addToCart(item.products[0].id, t.context['cookie'])
+            account = await requestAccount.getAccountInfo(t.context['cookie'])
 
             redisItem = await accessRedis.getKey('productId:' + item.id)
             originalEnd = redisItem['event']['endDate']
@@ -379,14 +373,14 @@ test.serial('POST / cannot checkout with sale ended product', async t => {
             redisItem['event']['endDate'] = '2019-02-18T01:00:00.000Z'
             await accessRedis.setValue('productId:' + item.id, JSON.stringify(redisItem))
 
-            let res = await request.post(config.api.checkout, {
+            const res = await request.post(config.api.checkout, {
                 "address": {
                     "shipping": addresses.shipping[0],
                     "billing": addresses.billing[0]
                 },
                 "cart": account.cart,
                 "method": "FREE"
-            }, cookie)
+            }, t.context['cookie'])
 
             t.deepEqual(res.statusCode, 400)
             t.deepEqual(res.body.message[0].message, 'THE_SALE_FOR_TITLE_HAS_ENDED')
@@ -404,7 +398,7 @@ test.serial('POST / cannot checkout with sale ended product', async t => {
 // validate voucher
 
 test.serial('POST / cannot checkout with voucher not meeting min items', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         numberOfItems: { $gte: 2 }
@@ -413,10 +407,10 @@ test.serial('POST / cannot checkout with voucher not meeting min items', async t
     t.truthy(voucher)
 
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -426,7 +420,7 @@ test.serial('POST / cannot checkout with voucher not meeting min items', async t
         "shipping": 25000,
         "voucher": voucher._id,
         "accountCredit": account.accountCredit
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'NOT_MEET_MINIMUM_ITEMS')
@@ -436,7 +430,7 @@ test.serial('POST / cannot checkout with voucher not meeting min items', async t
 
 test.serial('POST / cannot checkout with voucher not applied for today', async t => {
     const today = new Date().getDay()
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         specificDays: { $size: 1 },
@@ -446,10 +440,10 @@ test.serial('POST / cannot checkout with voucher not applied for today', async t
     t.truthy(voucher)
 
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -459,7 +453,7 @@ test.serial('POST / cannot checkout with voucher not applied for today', async t
         "shipping": 25000,
         "voucher": voucher._id,
         "accountCredit": account.accountCredit
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_NOT_APPLY_FOR_TODAY')
@@ -467,7 +461,7 @@ test.serial('POST / cannot checkout with voucher not applied for today', async t
 })
 
 test.serial('POST / cannot checkout with voucher not meeting min purchase', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         binRange: { $exists: false },
@@ -477,10 +471,10 @@ test.serial('POST / cannot checkout with voucher not meeting min purchase', asyn
     t.truthy(voucher)
 
     item = await requestProduct.getProductWithCountry('VN', 0, 500000)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -490,7 +484,7 @@ test.serial('POST / cannot checkout with voucher not meeting min purchase', asyn
         "shipping": 25000,
         "voucher": voucher._id,
         "accountCredit": account.accountCredit
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM')
@@ -500,7 +494,7 @@ test.serial('POST / cannot checkout with voucher exceeding number of usage', asy
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
-        let voucher = await access.getNotUsedVoucher({
+        const voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             multipleUser: true,
             numberOfUsage: 1,
@@ -510,19 +504,19 @@ test.serial('POST / cannot checkout with voucher exceeding number of usage', asy
         t.truthy(voucher)
 
         item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-        await requestCart.addToCart(item.id, cookie)
+        await requestCart.addToCart(item.id, t.context['cookie'])
 
-        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
         checkoutInput.addresses = addresses
         checkoutInput.voucherId = voucher._id
 
-        await request.checkoutCod(checkoutInput, cookie)
+        await request.checkoutCod(checkoutInput, t.context['cookie'])
 
         item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-        await requestCart.addToCart(item.id, cookie)
-        account = await requestAccount.getAccountInfo(cookie)
+        await requestCart.addToCart(item.id, t.context['cookie'])
+        account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-        let res = await request.post(config.api.checkout, {
+        const res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -532,7 +526,7 @@ test.serial('POST / cannot checkout with voucher exceeding number of usage', asy
             "shipping": 25000,
             "voucher": voucher._id,
             "accountCredit": account.accountCredit
-        }, cookie)
+        }, t.context['cookie'])
 
         t.deepEqual(res.statusCode, 400)
         t.deepEqual(res.body.message, 'EXCEED_TIME_OF_USAGE')
@@ -540,7 +534,7 @@ test.serial('POST / cannot checkout with voucher exceeding number of usage', asy
 })
 
 test.serial('POST / cannot checkout with expired voucher', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $lt: new Date() },
         binRange: { $exists: false },
         used: false
@@ -549,10 +543,10 @@ test.serial('POST / cannot checkout with expired voucher', async t => {
     t.truthy(voucher)
 
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -562,14 +556,14 @@ test.serial('POST / cannot checkout with expired voucher', async t => {
         "shipping": 25000,
         "voucher": voucher._id,
         "accountCredit": account.accountCredit
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_OR_NOT_VALID')
 })
 
 test.serial('POST / cannot checkout with redeemed voucher', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $lt: new Date() },
         binRange: { $exists: false },
         used: true
@@ -578,10 +572,10 @@ test.serial('POST / cannot checkout with redeemed voucher', async t => {
     t.truthy(voucher)
 
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -591,14 +585,14 @@ test.serial('POST / cannot checkout with redeemed voucher', async t => {
         "shipping": 25000,
         "voucher": voucher._id,
         "accountCredit": account.accountCredit
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_OR_NOT_VALID')
 })
 
 test.serial('POST / cannot checkout with COD using voucher for CC', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         binRange: { $exists: true },
         used: false,
@@ -608,10 +602,10 @@ test.serial('POST / cannot checkout with COD using voucher for CC', async t => {
     t.truthy(voucher)
 
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -621,7 +615,7 @@ test.serial('POST / cannot checkout with COD using voucher for CC', async t => {
         "shipping": 25000,
         "voucher": voucher._id,
         "accountCredit": account.accountCredit
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'REQUIRES_CC_PAYMENT')
@@ -631,7 +625,7 @@ test.serial('POST / cannot checkout with voucher for Stripe using wrong bin rang
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
-        let voucher = await access.getVoucher({
+        const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
             used: false,
@@ -641,8 +635,8 @@ test.serial('POST / cannot checkout with voucher for Stripe using wrong bin rang
         t.truthy(voucher)
 
         item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-        await requestCart.addToCart(item.id, cookie)
-        account = await requestAccount.getAccountInfo(cookie)
+        await requestCart.addToCart(item.id, t.context['cookie'])
+        account = await requestAccount.getAccountInfo(t.context['cookie'])
 
         const stripeData = {
             "type": "card",
@@ -653,9 +647,9 @@ test.serial('POST / cannot checkout with voucher for Stripe using wrong bin rang
             "key": config.stripeKey
         }
         const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase).then(res => res.body)
+            t.context['cookie'], config.stripeBase).then(res => res.body)
 
-        let res = await request.post(config.api.checkout, {
+        const res = await request.post(config.api.checkout, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
@@ -666,7 +660,7 @@ test.serial('POST / cannot checkout with voucher for Stripe using wrong bin rang
             "shipping": 0,
             "voucher": voucher._id,
             "accountCredit": account.accountCredit
-        }, cookie)
+        }, t.context['cookie'])
 
         t.deepEqual(res.statusCode, 400)
         t.deepEqual(res.body.message, 'THIS_CC_NOT_ACCEPTABLE')
@@ -674,7 +668,7 @@ test.serial('POST / cannot checkout with voucher for Stripe using wrong bin rang
 })
 
 test.serial('POST / cannot checkout with already used voucher', async t => {
-    let voucher = await access.getUsedVoucher({
+    const voucher = await access.getUsedVoucher({
         expiry: { $gte: new Date() },
         binRange: { $exists: false },
         used: false,
@@ -684,10 +678,10 @@ test.serial('POST / cannot checkout with already used voucher', async t => {
     t.truthy(voucher)
 
     item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -697,14 +691,14 @@ test.serial('POST / cannot checkout with already used voucher', async t => {
         "shipping": 25000,
         "voucher": voucher._id,
         "accountCredit": account.accountCredit
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'YOU_ALREADY_USED_THIS_VOUCHER')
 })
 
 test.serial('POST / cannot checkout with voucher only used for other customer', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         customer: { $exists: true, $ne: customer._id }
@@ -713,10 +707,10 @@ test.serial('POST / cannot checkout with voucher only used for other customer', 
     t.truthy(voucher)
 
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -726,7 +720,7 @@ test.serial('POST / cannot checkout with voucher only used for other customer', 
         "shipping": 25000,
         "voucher": voucher._id,
         "accountCredit": account.accountCredit
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'NOT_ALLOWED_TO_USE_VOUCHER')
@@ -736,10 +730,10 @@ test.serial('POST / cannot checkout with voucher only used for other customer', 
 
 test.serial('POST / cannot checkout with more than available credit', async t => {
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
@@ -748,7 +742,7 @@ test.serial('POST / cannot checkout with more than available credit', async t =>
         "method": "COD",
         "shipping": 25000,
         "accountCredit": account.accountCredit + 1
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE')

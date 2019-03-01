@@ -4,44 +4,10 @@ import * as Model from '../../common/interface'
 
 let request = new Utils.SaleUtils
 
-import test, { ExecutionContext } from 'ava'
-
-export function validateSaleList(t: ExecutionContext, sale: Model.SalesModel) {
-    t.truthy(sale.id)
-    t.truthy(sale.title)
-    t.truthy(sale.endTime)
-
-    if (sale.image) {
-        t.true(request.validateImage(sale.image))
-    }
-    if (sale.image1) {
-        t.true(request.validateImage(sale.image1))
-    }
-    if (sale.image2) {
-        t.true(request.validateImage(sale.image2))
-    }
-    if (sale.image3) {
-        t.true(request.validateImage(sale.image3))
-    }
-    if (sale.image4) {
-        t.true(request.validateImage(sale.image4))
-    }
-
-    if (sale.categories) {
-        t.truthy(sale.categories.length)
-    }
-
-    if (sale.potd === false) {
-        t.true(sale.slug.includes(sale.id))
-    } else if (sale.potd === true) {
-        t.false(sale.slug.includes(sale.id))
-    }
-
-    t.deepEqual(typeof (sale.international), 'boolean')
-}
+import test from 'ava'
 
 test('GET / all home sales', async t => {
-    let res = await request.get(config.api.home)
+    const res = await request.get(config.api.home)
     let home: Model.Home = res.body
 
     t.true(home.hasOwnProperty('featured'))
@@ -63,7 +29,7 @@ test('GET / ongoing sales - current', async t => {
     let sales = await request.getSales(config.api.currentSales)
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -71,7 +37,7 @@ test('GET / ongoing sales - today', async t => {
     let sales = await request.getSales(config.api.todaySales)
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -79,7 +45,7 @@ test('GET / ongoing sales - featured', async t => {
     let sales = await request.getSales(config.api.featuredSales)
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -87,7 +53,7 @@ test('GET / ongoing sales - international', async t => {
     let sales = await request.getSales(config.api.internationalSales)
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -95,7 +61,7 @@ test('GET / ongoing sales - POTD', async t => {
     let sales = await request.getSales(config.api.potdSales)
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -103,7 +69,7 @@ test('GET / ongoing sales - current apparel', async t => {
     let sales = await request.getSales(config.api.cateApparel + '/sales/current')
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -111,7 +77,7 @@ test('GET / ongoing sales - current accessories', async t => {
     let sales = await request.getSales(config.api.cateAccessories + '/sales/current')
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -119,7 +85,7 @@ test('GET / ongoing sales - current bags shoes', async t => {
     let sales = await request.getSales(config.api.cateBagsShoes + '/sales/current')
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -127,7 +93,7 @@ test('GET / ongoing sales - current health beauty', async t => {
     let sales = await request.getSales(config.api.cateHealthBeauty + '/sales/current')
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 
@@ -135,7 +101,7 @@ test('GET / ongoing sales - current home lifestyle', async t => {
     let sales = await request.getSales(config.api.cateHomeLifeStyle + '/sales/current')
 
     sales.forEach(sale => {
-        validateSaleList(t, sale)
+        request.validateSaleList(t, sale)
     })
 })
 

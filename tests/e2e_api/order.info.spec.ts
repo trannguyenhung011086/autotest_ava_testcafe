@@ -2,153 +2,90 @@ import { config } from '../../common/config'
 import * as Utils from '../../common/utils'
 import * as Model from '../../common/interface'
 
-let cookie: string
-let account: Model.Account
 let orders: Model.OrderSummary[]
 let orderItem: Model.Order
 
 let request = new Utils.OrderUtils
 let requestAccount = new Utils.AccountUtils
+let requestAddress = new Utils.AddressUtils
+let requestCheckout = new Utils.CheckoutUtils
+let requestCart = new Utils.CartUtils
+let requestProduct = new Utils.ProductUtils
+let requestOrder = new Utils.OrderUtils
 
-import test, { ExecutionContext } from 'ava'
+let item: Model.Product
+let addresses: Model.Addresses
+let checkoutInput: Model.CheckoutInput = {}
 
-export function validateOrderSummary(t: ExecutionContext, order: Model.OrderSummary) {
-    if (order.code) {
-        t.regex(order.code, /^SG|HK|VN/)
-    }
-    t.true(request.validateDate(order.createdDate))
-    t.regex(order.status, /pending|placed|confirmed|cancelled|shipped|delivered|return request|returned/)
-
-    if (order.shippedDate) {
-        t.true(request.validateDate(order.shippedDate))
-    }
-    if (order.deliveredDate) {
-        t.true(request.validateDate(order.deliveredDate))
-    }
-}
-
-export function validateAddress(t: ExecutionContext, address: any) {
-    t.truthy(address.address)
-    t.truthy(address.city)
-    t.truthy(address.district)
-    t.truthy(address.firstName)
-    t.truthy(address.lastName)
-    t.truthy(address.phone)
-}
-
-export function validatePayment(t: ExecutionContext, payment: Model.PaymentSummary) {
-    t.regex(payment.method, /COD|STRIPE|CC|FREE/)
-
-    if (payment.method == 'COD' || payment.method == 'STRIPE') {
-        t.falsy(payment.card)
-    }
-    if (payment.card) {
-        t.regex(payment.card.lastDigits, /\d{4}/)
-        t.regex(payment.card.type, /VISA|Master/)
-    }
-
-    t.true(payment.shipping <= 25000)
-    t.true(payment.subtotal >= 0)
-    t.true(payment.accountCredit <= 0)
-    t.true(payment.voucherAmount >= 0)
-    t.true(payment.total >= 0)
-
-    const total = payment.subtotal + payment.shipping + payment.accountCredit - payment.voucherAmount
-
-    if (total >= 0) {
-        t.deepEqual(orderItem.paymentSummary.total, total)
-    }
-}
-
-export function validateProduct(t: ExecutionContext, product: Model.OrderedProduct) {
-    t.truthy(product.id)
-    t.truthy(product.productContentId)
-    t.truthy(product.title)
-    t.true(product.slug.includes(product.productContentId))
-    t.true.skip(product.retailPrice >= product.salePrice)
-    t.true(product.salePrice <= product.totalSalePrice)
-    t.true(product.quantity > 0)
-    t.true(request.validateImage(product.image))
-    t.deepEqual(typeof (product.returnable), 'boolean')
-    t.truthy(product.type)
-    t.truthy(product.brand._id)
-    t.truthy(product.brand.name)
-    t.truthy(product.nsId)
-    t.truthy(product.productId)
-}
-
-export function validateOrderDetail(t: ExecutionContext, orderItem: Model.Order) {
-    validateOrderSummary(t, orderItem)
-
-    t.deepEqual(typeof (orderItem.isBulky), 'boolean')
-
-    if (orderItem.isCrossBorder) {
-        t.deepEqual(typeof (orderItem.isCrossBorder), 'boolean')
-    }
-
-    t.deepEqual(typeof (orderItem.isFirstOrder), 'boolean')
-    t.deepEqual(typeof (orderItem.isVirtual), 'boolean')
-
-    t.regex(orderItem.tracking, /dhlecommerce\.asia|ghn\.vn/)
-    t.deepEqual(orderItem.user, account.id)
-
-    validateAddress(t, orderItem.address.billing)
-    validateAddress(t, orderItem.address.shipping)
-    validatePayment(t, orderItem.paymentSummary)
-
-    orderItem.products.forEach(product => {
-        validateProduct(t, product)
-    })
-}
+import test from 'ava'
 
 test.before(async t => {
-    cookie = await request.getLogInCookie(config.testAccount.email_in,
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_in,
         config.testAccount.password_in)
 
-    account = await requestAccount.getAccountInfo(cookie)
+    addresses = await requestAddress.getAddresses(t.context['cookie'])
+})
+
+test('Compare product details from checkout to order', async t => {
+    item = await requestProduct.getProductWithCountry('VN', 0, 2000000)
+    let cart = await requestCart.addToCart(item.id, t.context['cookie'])
+
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
+    checkoutInput.addresses = addresses
+
+    let checkout = await requestCheckout.checkoutCod(checkoutInput, t.context['cookie'])
+    t.truthy(checkout.orderId)
+
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
+
+    t.deepEqual(cart.productContentId, order.products[0].productContentId)
+    t.deepEqual(cart.productId, order.products[0].productId)
+    t.deepEqual(cart.nsId, order.products[0].nsId)
+    t.deepEqual(cart.retailPrice, order.products[0].retailPrice)
+    t.deepEqual(cart.salePrice, order.products[0].salePrice)
 })
 
 test('GET / cannot see order of another customer', async t => {
-    let res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', cookie)
+    const res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', t.context['cookie'])
 
     t.deepEqual(res.statusCode, 200)
     t.deepEqual(res.body.length, 0)
 })
 
 test('GET / can access orders', async t => {
-    let res = await request.get(config.api.orders, cookie)
+    const res = await request.get(config.api.orders, t.context['cookie'])
     orders = res.body
 
     orders.forEach(order => {
-        validateOrderSummary(t, order)
+        request.validateOrderSummary(t, order)
     })
 })
 
 test('GET / can see order info using order ID', async t => {
-    orders = await request.getOrders(cookie)
+    orders = await request.getOrders(t.context['cookie'])
 
     for (let order of orders) {
-        let res = await request.get(config.api.orders + '/' + order.id, cookie)
+        const res = await request.get(config.api.orders + '/' + order.id, t.context['cookie'])
         orderItem = res.body
 
-        validateOrderDetail(t, orderItem)
+        request.validateOrderDetail(t, orderItem)
     }
 })
 
 test('GET / can see order info using order code', async t => {
-    orders = await request.getOrders(cookie)
+    orders = await request.getOrders(t.context['cookie'])
 
     for (let order of orders) {
         const orderCode = order.code.split('-')[1]
-        const res = await request.get(config.api.orders + '/' + orderCode, cookie)
+        const res = await request.get(config.api.orders + '/' + orderCode, t.context['cookie'])
         orderItem = res.body
 
-        validateOrderDetail(t, orderItem)
+        request.validateOrderDetail(t, orderItem)
     }
 })
 
 test('GET / cannot access order info with invalid cookie', async t => {
-    let res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', 'leflair.connect2.sid=test')
+    const res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', 'leflair.connect2.sid=test')
 
     t.deepEqual(res.statusCode, 401)
     t.deepEqual(res.body.message, 'Invalid request.')

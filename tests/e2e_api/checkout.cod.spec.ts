@@ -7,7 +7,6 @@ let customer: Model.Customer
 let item: Model.Product
 let addresses: Model.Addresses
 let checkoutInput: Model.CheckoutInput = {}
-let cookie: string
 
 let request = new Utils.CheckoutUtils
 let requestAddress = new Utils.AddressUtils
@@ -20,38 +19,33 @@ let access = new Utils.DbAccessUtils
 import test from 'ava'
 
 test.before(async t => {
-    cookie = await request.getLogInCookie(config.testAccount.email_in,
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_in,
         config.testAccount.password_in)
 
-    await requestAddress.addAddresses(cookie)
-    addresses = await requestAddress.getAddresses(cookie)
+    addresses = await requestAddress.getAddresses(t.context['cookie'])
 
-    account = await requestAccount.getAccountInfo(cookie)
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
     customer = await access.getCustomerInfo({ email: account.email })
 })
 
 test.beforeEach(async t => {
-    await requestCart.emptyCart(cookie)
-})
-
-test.after.always(async t => {
-    await requestAddress.deleteAddresses(cookie)
+    await requestCart.emptyCart(t.context['cookie'])
 })
 
 test.serial('POST / cannot checkout with COD - international product', async t => {
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
 
-    await requestCart.addToCart(item.id, cookie)
-    account = await requestAccount.getAccountInfo(cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
         },
         "cart": account.cart,
         "method": "COD"
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'International orders must be paid by credit card. Please refresh the page and try again.')
@@ -61,19 +55,19 @@ test.serial('POST / cannot checkout with COD - domestic + international product'
     let item1 = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
     let item2 = await requestProduct.getInStockProduct(config.api.todaySales, 1)
 
-    await requestCart.addToCart(item1.id, cookie)
-    await requestCart.addToCart(item2.id, cookie)
+    await requestCart.addToCart(item1.id, t.context['cookie'])
+    await requestCart.addToCart(item2.id, t.context['cookie'])
 
-    account = await requestAccount.getAccountInfo(cookie)
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
 
-    let res = await request.post(config.api.checkout, {
+    const res = await request.post(config.api.checkout, {
         "address": {
             "shipping": addresses.shipping[0],
             "billing": addresses.billing[0]
         },
         "cart": account.cart,
         "method": "COD"
-    }, cookie)
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'International orders must be paid by credit card. Please refresh the page and try again.')
@@ -81,15 +75,15 @@ test.serial('POST / cannot checkout with COD - domestic + international product'
 
 test.serial('POST / checkout with COD', async t => {
     item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
-    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
 
-    let checkout = await request.checkoutCod(checkoutInput, cookie)
+    let checkout = await request.checkoutCod(checkoutInput, t.context['cookie'])
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
     t.true(order.code.includes(checkout.code))
     t.deepEqual(order.status, 'placed')
@@ -111,21 +105,23 @@ test.serial('POST / checkout with COD - voucher (amount) + credit', async t => {
             oncePerAccount: true
         }, customer)
 
+        t.truthy(voucher)
+
         item = await requestProduct.getInStockProduct(config.api.todaySales, 2)
-        await requestCart.addToCart(item.id, cookie)
+        await requestCart.addToCart(item.id, t.context['cookie'])
 
         const credit = request.calculateCredit(account.accountCredit,
             item.salePrice + 25000, voucher.amount)
 
-        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+        checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
         checkoutInput.addresses = addresses
         checkoutInput.voucherId = voucher._id
         checkoutInput.credit = credit
 
-        let checkout = await request.checkoutCod(checkoutInput, cookie)
+        let checkout = await request.checkoutCod(checkoutInput, t.context['cookie'])
         t.truthy(checkout.orderId)
 
-        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
         t.true(order.code.includes(checkout.code))
         t.deepEqual(order.status, 'placed')
@@ -152,17 +148,19 @@ test.serial('POST / checkout with COD - voucher (percentage + max discount)', as
             specificDays: []
         }, customer)
 
-        item = await requestProduct.getInStockProduct(config.api.todaySales, 1, 500000)
-        await requestCart.addToCart(item.id, cookie)
+        t.truthy(voucher)
 
-        checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+        item = await requestProduct.getInStockProduct(config.api.todaySales, 1, 500000)
+        await requestCart.addToCart(item.id, t.context['cookie'])
+
+        checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
         checkoutInput.addresses = addresses
         checkoutInput.voucherId = voucher._id
 
-        let checkout = await request.checkoutCod(checkoutInput, cookie)
+        let checkout = await request.checkoutCod(checkoutInput, t.context['cookie'])
         t.truthy(checkout.orderId)
 
-        let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
+        let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
 
         t.true(order.code.includes(checkout.code))
         t.deepEqual(order.status, 'placed')

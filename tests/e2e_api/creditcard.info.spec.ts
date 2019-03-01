@@ -2,7 +2,6 @@ import { config } from '../../common/config'
 import * as Utils from '../../common/utils'
 import * as Model from '../../common/interface'
 
-let cookie: string
 let creditcards: Model.CreditCard[]
 let checkoutInput: Model.CheckoutInput = {}
 let addresses: Model.Addresses
@@ -17,14 +16,13 @@ let requestProduct = new Utils.ProductUtils
 import test from 'ava'
 
 test.before(async t => {
-    cookie = await request.getLogInCookie(config.testAccount.email_in,
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_in,
         config.testAccount.password_in)
 
-    await requestAddress.addAddresses(cookie)
-    addresses = await requestAddress.getAddresses(cookie)
+    addresses = await requestAddress.getAddresses(t.context['cookie'])
 
     let item = await requestProduct.getInStockProduct(config.api.internationalSales, 1)
-    await requestCart.addToCart(item.id, cookie)
+    await requestCart.addToCart(item.id, t.context['cookie'])
 
     let stripeData = {
         "type": "card",
@@ -35,22 +33,18 @@ test.before(async t => {
         "key": config.stripeKey
     }
 
-    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
     checkoutInput.saveNewCard = true
     checkoutInput.stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-        cookie, config.stripeBase).then(res => res.body)
+        t.context['cookie'], config.stripeBase).then(res => res.body)
 
-    let checkout = await requestCheckout.checkoutStripe(checkoutInput, cookie)
+    let checkout = await requestCheckout.checkoutStripe(checkoutInput, t.context['cookie'])
     t.truthy(checkout.orderId)
 })
 
-test.after.always(async t => {
-    await requestAddress.deleteAddresses(cookie)
-})
-
 test.serial('GET / can access creditcard info', async t => {
-    let res = await request.get(config.api.creditcard, cookie)
+    const res = await request.get(config.api.creditcard, t.context['cookie'])
     creditcards = res.body
 
     creditcards.forEach(card => {
@@ -66,10 +60,10 @@ test.serial('GET / can access creditcard info', async t => {
 })
 
 test.serial('DELETE / cannot delete invalid creditcard', async t => {
-    let res = await request.get(config.api.creditcard, cookie)
+    let res = await request.get(config.api.creditcard, t.context['cookie'])
     creditcards = res.body
 
-    res = await request.delete(config.api.creditcard + '/INVALID-ID', cookie)
+    res = await request.delete(config.api.creditcard + '/INVALID-ID', t.context['cookie'])
 
     t.deepEqual(res.statusCode, 500)
     t.deepEqual(res.body.message, 'INVALID_CREDIT_CARD_OR_CANNOT_DELETE')
@@ -79,11 +73,11 @@ test.serial('DELETE / can delete creditcard', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
-        let res = await request.get(config.api.creditcard, cookie)
+        let res = await request.get(config.api.creditcard, t.context['cookie'])
         creditcards = res.body
 
         if (creditcards.length > 0) {
-            res = await request.delete(config.api.creditcard + '/' + creditcards[0].id, cookie)
+            res = await request.delete(config.api.creditcard + '/' + creditcards[0].id, t.context['cookie'])
 
             t.deepEqual(res.statusCode, 200)
             t.true(res.body)
@@ -92,7 +86,7 @@ test.serial('DELETE / can delete creditcard', async t => {
 })
 
 test('GET / cannot access creditcard info with invalid cookie', async t => {
-    let res = await request.get(config.api.creditcard, 'leflair.connect2.sid=test')
+    const res = await request.get(config.api.creditcard, 'leflair.connect2.sid=test')
 
     t.deepEqual(res.statusCode, 401)
     t.deepEqual(res.body.message, 'Access denied.')

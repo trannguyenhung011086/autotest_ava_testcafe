@@ -9,7 +9,7 @@ export class BrandUtils extends Helper {
     }
 
     public async getBrandsList(): Promise<Model.BrandItem[]> {
-        let res = await this.get(config.api.brands)
+        const res = await this.get(config.api.brands)
         let brands: Model.brands = res.body
         let brandList = []
         for (let item of Object.keys(brands)) {
@@ -30,7 +30,7 @@ export class BrandUtils extends Helper {
 
         let result: Model.BrandInfo
         for (let brand of brandList) {
-            let res = await this.get(config.api.brands + brand.id)
+            const res = await this.get(config.api.brands + brand.id)
             if (res.body.products.length == 0) {
                 result = res.body
                 break
@@ -50,7 +50,7 @@ export class BrandUtils extends Helper {
         let result: Model.BrandInfo
         for (let item of brandList) {
             if (item.name == products[0].brand) {
-                let res = await this.get(config.api.brands + item.id)
+                const res = await this.get(config.api.brands + item.id)
                 result = res.body
                 break
             }

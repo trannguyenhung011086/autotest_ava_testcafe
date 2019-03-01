@@ -5,53 +5,17 @@ import * as Model from '../../common/interface'
 let request = new Utils.SaleUtils
 let access = new Utils.DbAccessUtils
 
-import test, { ExecutionContext } from 'ava'
-
-export function validateSaleInfo(t: ExecutionContext, res: Model.SaleInfoModel) {
-    t.truthy(res.title)
-    t.true(new Date(res.startTime).getTime() < new Date().getTime())
-
-    res.products.forEach(product => {
-        t.truthy(product.id)
-        t.truthy(product.title)
-        t.true(request.validateImage(product.image))
-        t.true(request.validateImage(product.image2))
-        t.true(product.retailPrice >= product.salePrice)
-        t.deepEqual(typeof (product.soldOut), 'boolean')
-        t.truthy(product.category)
-        t.truthy(product.brand)
-        t.true(product.slug.includes(product.id))
-        t.deepEqual(typeof (product.quantity), 'number')
-        t.true(product.numberOfVariations >= 0)
-        t.truthy(product.nsId)
-        t.false(product.isSecretSale)
-    })
-
-    t.truthy(res.filter.gender)
-    t.truthy(res.filter.type)
-    t.truthy(res.filter.color)
-    t.truthy(res.filter.size)
-    t.truthy(res.filter.brand)
-    t.truthy(res.filter.category)
-
-    t.true(res.sort.includes('RECOMMENDED'))
-    t.true(res.sort.includes('HIGHEST_DISCOUNT'))
-    t.true(res.sort.includes('LOW_PRICE'))
-    t.true(res.sort.includes('HIGH_PRICE'))
-
-    t.false(res.campaign)
-    t.true(res.slug.includes(res.id))
-}
+import test from 'ava'
 
 test('GET / invalid sale ID', async t => {
-    let res = await request.get(config.api.sales + 'INVALID-ID')
+    const res = await request.get(config.api.sales + 'INVALID-ID')
 
     t.deepEqual(res.statusCode, 404)
     t.deepEqual(res.body.message, 'INVALID_SALE_ID')
 })
 
 test('GET / no sale matching', async t => {
-    let res = await request.get(config.api.sales + 'invalid-5bd6c3137cf0476b22488d21')
+    const res = await request.get(config.api.sales + 'invalid-5bd6c3137cf0476b22488d21')
 
     t.deepEqual(res.statusCode, 404)
     t.deepEqual(res.body.message, 'NO_SALE_MATCHING')
@@ -61,7 +25,7 @@ test('GET / sale not started', async t => {
     let futureSale = await access.getSale({
         startDate: { $gt: new Date() }
     })
-    let res = await request.get(config.api.sales + futureSale._id)
+    const res = await request.get(config.api.sales + futureSale._id)
 
     t.deepEqual(res.statusCode, 404)
     t.deepEqual(res.body.message, 'SALE_NOT_FOUND')
@@ -71,20 +35,20 @@ test('GET / sale has ended', async t => {
     let endedSale = await access.getSale({
         endDate: { $lt: new Date() }
     })
-    let res = await request.get(config.api.sales + endedSale._id)
+    const res = await request.get(config.api.sales + endedSale._id)
 
     t.deepEqual(res.statusCode, 410)
     t.deepEqual(res.body.message, 'SALE_HAS_ENDED')
 })
 
 test('GET / invalid upcoming sale ID', async t => {
-    let res = await request.get(config.api.upcomingSale + 'INVALID-ID')
+    const res = await request.get(config.api.upcomingSale + 'INVALID-ID')
 
     t.deepEqual(res.statusCode, 500)
 })
 
 test('GET / no upcoming sale matching', async t => {
-    let res = await request.get(config.api.upcomingSale + '566979b534cbcd100061967b')
+    const res = await request.get(config.api.upcomingSale + '566979b534cbcd100061967b')
 
     t.deepEqual(res.statusCode, 404)
     t.deepEqual(res.body.message, 'NO_UPCOMING_SALE_MATCHING')
@@ -94,7 +58,7 @@ test('GET / upcoming sale ended', async t => {
     let endedSale = await access.getSale({
         endDate: { $lt: new Date() }
     })
-    let res = await request.get(config.api.upcomingSale + endedSale._id)
+    const res = await request.get(config.api.upcomingSale + endedSale._id)
 
     t.deepEqual(res.statusCode, 410)
     t.deepEqual(res.body.message, 'SALE_HAS_ENDED')
@@ -104,8 +68,8 @@ test('GET / valid ongoing sale - current', async t => {
     let sales = await request.getSales(config.api.currentSales)
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -116,8 +80,8 @@ test('GET / valid ongoing sale - today', async t => {
     let sales = await request.getSales(config.api.todaySales)
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -128,8 +92,8 @@ test('GET / valid ongoing sale - featured', async t => {
     let sales = await request.getSales(config.api.featuredSales)
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -140,8 +104,8 @@ test('GET / valid ongoing sale - international', async t => {
     let sales = await request.getSales(config.api.internationalSales)
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -152,8 +116,8 @@ test('GET / valid ongoing sale - POTD', async t => {
     let sales = await request.getSales(config.api.potdSales)
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -164,8 +128,8 @@ test('GET / valid ongoing sale - current apparel', async t => {
     let sales = await request.getSales(config.api.cateApparel + '/sales/current')
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -176,8 +140,8 @@ test('GET / valid ongoing sale - current accessories', async t => {
     let sales = await request.getSales(config.api.cateAccessories + '/sales/current')
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -188,8 +152,8 @@ test('GET / valid ongoing sale - current bags shoes', async t => {
     let sales = await request.getSales(config.api.cateBagsShoes + '/sales/current')
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -200,8 +164,8 @@ test('GET / valid ongoing sale - current health beauty', async t => {
     let sales = await request.getSales(config.api.cateHealthBeauty + '/sales/current')
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -212,8 +176,8 @@ test('GET / valid ongoing sale - current home lifestyle', async t => {
     let sales = await request.getSales(config.api.cateHomeLifeStyle + '/sales/current')
 
     for (let sale of sales) {
-        let res = await request.getSaleInfo(sale.id)
-        validateSaleInfo(t, res)
+        const res = await request.getSaleInfo(sale.id)
+        request.validateSaleInfo(t, res)
 
         t.deepEqual(res.id, sale.id)
         t.deepEqual(res.endTime, sale.endTime)
@@ -276,7 +240,7 @@ test('GET / valid upcoming sale ID', async t => {
         for (let sale of date.sales) {
             t.true(date.sales.length > 0)
 
-            let res = await request.get(config.api.upcomingSale + sale.id)
+            const res = await request.get(config.api.upcomingSale + sale.id)
             let upcoming: Model.UpcomingInfo
             upcoming = res.body
 

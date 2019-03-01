@@ -7,7 +7,7 @@ let request = new Utils.AccountUtils
 import test from 'ava'
 
 test('POST / empty password', async t => {
-    let res = await request.post(config.api.reset, {
+    const res = await request.post(config.api.reset, {
         "password": "",
         "token": "TEST_TOKEN"
     })
@@ -17,7 +17,7 @@ test('POST / empty password', async t => {
 })
 
 test('POST / password with length < 7', async t => {
-    let res = await request.post(config.api.reset, {
+    const res = await request.post(config.api.reset, {
         "password": "123456",
         "token": "TEST_TOKEN"
     })
@@ -27,7 +27,7 @@ test('POST / password with length < 7', async t => {
 })
 
 test('POST / invalid token', async t => {
-    let res = await request.post(config.api.reset, {
+    const res = await request.post(config.api.reset, {
         "password": "123456789",
         "token": faker.random.uuid
     })

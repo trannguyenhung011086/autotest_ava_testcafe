@@ -26,14 +26,14 @@ test('GET / valid campaign name', async t => {
 })
 
 test('GET / invalid campaign name', async t => {
-    let res = await request.get(config.api.campaigns + 'INVALID-CAMPAIGN')
+    const res = await request.get(config.api.campaigns + 'INVALID-CAMPAIGN')
 
     t.deepEqual(res.statusCode, 404)
     t.deepEqual(res.body.message, 'NOT_FOUND')
 })
 
 test('GET / missing campaign name', async t => {
-    let res = await request.get(config.api.campaigns)
+    const res = await request.get(config.api.campaigns)
 
     t.deepEqual(res.statusCode, 404)
     t.deepEqual(res.body.message, 'Not found')

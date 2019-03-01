@@ -9,7 +9,7 @@ export class CreditCardUtils extends Helper {
 
     public async getCards(cookie?: string): Promise<Model.CreditCard[]> {
         try {
-            let res = await this.get(config.api.creditcard, cookie)
+            const res = await this.get(config.api.creditcard, cookie)
             return res.body
         } catch (e) {
             throw {

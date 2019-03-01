@@ -5,26 +5,25 @@ import * as Model from '../../common/interface'
 
 let account: Model.Account
 let signIn: Model.SignIn
-let cookie: string
 
 let request = new Utils.AccountUtils
 
 import test from 'ava'
 
 test.before(async t => {
-    cookie = await request.getLogInCookie(config.testAccount.email_ex_3,
-        config.testAccount.password_ex_3)
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[2],
+        config.testAccount.password_ex)
 })
 
 test('GET / get account info', async t => {
-    let res = await request.get(config.api.account, cookie)
+    const res = await request.get(config.api.account, t.context['cookie'])
     account = res.body
 
     t.deepEqual(res.statusCode, 200)
     t.truthy(account.id)
     t.true(account.hasOwnProperty('firstName'))
     t.true(account.hasOwnProperty('lastName'))
-    t.deepEqual(account.email, config.testAccount.email_ex_3)
+    t.deepEqual(account.email, config.testAccount.email_ex[2].toLowerCase())
     t.regex(account.language, /en|vn/)
     t.deepEqual(typeof (account.accountCredit), 'number')
     t.deepEqual(account.provider, 'local')
@@ -44,10 +43,10 @@ test('PUT / can change name', async t => {
     let firstName = 'QA_' + faker.name.firstName()
     let lastName = 'QA_' + faker.name.lastName()
 
-    let res = await request.put(config.api.account, {
+    const res = await request.put(config.api.account, {
         "firstName": firstName,
         "lastName": lastName
-    }, cookie)
+    }, t.context['cookie'])
     signIn = res.body
 
     t.deepEqual(res.statusCode, 200)
@@ -56,16 +55,16 @@ test('PUT / can change name', async t => {
 })
 
 test.skip('PUT / cannot change email', async t => {
-    let res = await request.put(config.api.account, {
-        "email": 'new-' + config.testAccount.email_ex_3
-    }, cookie)
+    const res = await request.put(config.api.account, {
+        "email": 'new-' + config.testAccount.email_ex[2]
+    }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'USER_UPDATE_ERROR')
 }) // wait for WWW-335
 
 test('PUT / cannot update with wrong cookie', async t => {
-    let res = await request.put(config.api.account, {
+    const res = await request.put(config.api.account, {
         "firstName": "first",
         "lastName": "last"
     }, 'leflair.connect2.sid=test')
@@ -75,62 +74,62 @@ test('PUT / cannot update with wrong cookie', async t => {
 })
 
 test('PUT / wrong current password', async t => {
-    let res = await request.put(config.api.password,
+    const res = await request.put(config.api.password,
         {
             "currentPassword": faker.internet.password(),
             "newPassword": faker.internet.password()
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'COULD_NOT_CHANGE_PASSWORD')
 })
 
 test('PUT / empty current password', async t => {
-    let res = await request.put(config.api.password,
+    const res = await request.put(config.api.password,
         {
             "currentPassword": "",
             "newPassword": faker.internet.password()
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'COULD_NOT_CHANGE_PASSWORD')
 })
 
 test('PUT / new password has length < 7', async t => {
-    let res = await request.put(config.api.password,
+    const res = await request.put(config.api.password,
         {
             "currentPassword": 'leflairqa',
             "newPassword": "123456"
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'COULD_NOT_CHANGE_PASSWORD')
 })
 
 test('PUT / empty new password', async t => {
-    let res = await request.put(config.api.password,
+    const res = await request.put(config.api.password,
         {
             "currentPassword": 'leflairqa',
             "newPassword": ""
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'COULD_NOT_CHANGE_PASSWORD')
 })
 
 test('PUT / can change password', async t => {
-    let res = await request.put(config.api.password,
+    const res = await request.put(config.api.password,
         {
-            "currentPassword": config.testAccount.password_ex_3,
-            "newPassword": config.testAccount.password_ex_3
-        }, cookie)
+            "currentPassword": config.testAccount.password_ex,
+            "newPassword": config.testAccount.password_ex
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 200)
     t.deepEqual(res.body.message, 'PASSWORD_CHANGED')
 })
 
 test('PUT / cannot update password with wrong cookie', async t => {
-    let res = await request.put(config.api.password,
+    const res = await request.put(config.api.password,
         {
             "currentPassword": 'leflairqa',
             "newPassword": 'leflairqa'

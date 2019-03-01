@@ -9,7 +9,7 @@ let request = new Utils.AccountUtils
 import test from 'ava'
 
 test('POST / empty email and password', async t => {
-    let res = await request.post(config.api.signUp,
+    const res = await request.post(config.api.signUp,
         {
             "email": "",
             "password": "",
@@ -22,7 +22,7 @@ test('POST / empty email and password', async t => {
 })
 
 test('POST / wrong format email', async t => {
-    let res = await request.post(config.api.signUp,
+    const res = await request.post(config.api.signUp,
         {
             "email": ".test%!@#$%^&*()_+<>?@mail.com",
             "password": faker.internet.password,
@@ -35,7 +35,7 @@ test('POST / wrong format email', async t => {
 })
 
 test('POST / length < 7 password', async t => {
-    let res = await request.post(config.api.signUp,
+    const res = await request.post(config.api.signUp,
         {
             "email": 'QA_' + faker.internet.email(),
             "password": "123",
@@ -48,10 +48,10 @@ test('POST / length < 7 password', async t => {
 })
 
 test('POST / existing account', async t => {
-    let res = await request.post(config.api.signUp,
+    const res = await request.post(config.api.signUp,
         {
-            "email": config.testAccount.email_ex_1,
-            "password": config.testAccount.password_ex_1,
+            "email": config.testAccount.email_ex[1],
+            "password": config.testAccount.password_ex,
             "language": "vn",
             "gender": "M"
         })
@@ -61,7 +61,7 @@ test('POST / existing account', async t => {
 })
 
 test('POST / missing email field', async t => {
-    let res = await request.post(config.api.signUp,
+    const res = await request.post(config.api.signUp,
         {
             "password": faker.internet.password()
         })
@@ -71,7 +71,7 @@ test('POST / missing email field', async t => {
 })
 
 test('POST / missing password field', async t => {
-    let res = await request.post(config.api.signUp,
+    const res = await request.post(config.api.signUp,
         {
             "email": 'QA_' + faker.internet.email()
         })
@@ -82,7 +82,7 @@ test('POST / missing password field', async t => {
 
 test('POST / successful', async t => {
     const email = 'QA_' + faker.internet.email()
-    let res = await request.post(config.api.signUp,
+    const res = await request.post(config.api.signUp,
         {
             "email": email,
             "password": faker.internet.password(),
@@ -104,3 +104,32 @@ test('POST / successful', async t => {
     t.deepEqual(signUp.gender, 'M')
     t.deepEqual(signUp.cart.length, 0)
 })
+
+// test('generate fake users', async t => {
+//     const emailList = [
+//         'QA_test1234_leflair_0@mailinator.com',
+//         'QA_test1234_leflair_1@mailinator.com',
+//         'QA_test1234_leflair_2@mailinator.com',
+//         'QA_test1234_leflair_3@mailinator.com',
+//         'QA_test1234_leflair_4@mailinator.com',
+//         'QA_test1234_leflair_5@mailinator.com',
+//         'QA_test1234_leflair_6@mailinator.com',
+//         'QA_test1234_leflair_7@mailinator.com',
+//         'QA_test1234_leflair_8@mailinator.com',
+//         'QA_test1234_leflair_9@mailinator.com',
+//         'QA_test1234_leflair_10@mailinator.com'
+//     ]
+
+//     for (let email of emailList) {
+//         const res = await request.post(config.api.signUp,
+//             {
+//                 "email": email,
+//                 "password": '123456789',
+//                 "language": "vn",
+//                 "gender": "M"
+//             })
+//         signUp = res.body
+
+//         t.deepEqual(res.statusCode, 200)
+//     }
+// })

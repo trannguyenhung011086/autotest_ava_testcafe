@@ -158,19 +158,12 @@ export class DbAccessUtils {
     public async getNotUsedVoucher(query: Object, customer: Model.Customer): Promise<Model.VoucherModel> {
         let vouchers = await this.getVoucherList(query)
 
-        let result: Model.VoucherModel
         for (let voucher of vouchers) {
             const checkUsed = await this.checkUsedVoucher(voucher._id, customer._id)
             if (!checkUsed) {
-                result = voucher
-                break
+                return voucher
             }
         }
-
-        if (!result) {
-            throw 'Cannot get voucher!'
-        }
-        return result
     }
 
     public async getCampaign(query: Object): Promise<Model.Campaign> {

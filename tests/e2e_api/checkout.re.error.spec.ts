@@ -7,7 +7,6 @@ let customer: Model.Customer
 let addresses: Model.Addresses
 let item: Model.Product
 let failedAttemptOrder: Model.FailedAttempt
-let cookie: string
 
 let request = new Utils.CheckoutUtils
 let requestAddress = new Utils.AddressUtils
@@ -20,31 +19,27 @@ let accessRedis = new Utils.RedisAccessUtils
 import test from 'ava'
 
 test.before(async t => {
-    cookie = await request.getLogInCookie(config.testAccount.email_ex_2,
-        config.testAccount.email_ex_2)
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[6],
+        config.testAccount.password_ex)
 
-    await requestAddress.addAddresses(cookie)
-    addresses = await requestAddress.getAddresses(cookie)
-
-    account = await requestAccount.getAccountInfo(cookie)
+    addresses = await requestAddress.getAddresses(t.context['cookie'])
+    account = await requestAccount.getAccountInfo(t.context['cookie'])
     customer = await access.getCustomerInfo({ email: account.email })
 
-    item = await requestProduct.getProductWithCountry('VN', 0, 2000000)
-    failedAttemptOrder = await request.createFailedAttemptOrder([item, item], cookie)
+    item = await requestProduct.getInStockProduct(config.api.currentSales, 2)
+    failedAttemptOrder = await request.createFailedAttemptOrder([item, item], t.context['cookie'])
+
+    t.truthy(failedAttemptOrder.orderId)
 })
 
 test.beforeEach(async t => {
-    await requestCart.emptyCart(cookie)
-})
-
-test.after.always(async t => {
-    await requestAddress.deleteAddresses(cookie)
+    await requestCart.emptyCart(t.context['cookie'])
 })
 
 // validate required data
 
 test.serial('POST / cannot recheckout with invalid cookie', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -62,26 +57,24 @@ test.serial('POST / cannot recheckout with invalid cookie', async t => {
             "accountCredit": 0
         }, 'leflair.connect2.sid=test')
 
-    t.deepEqual(res.statusCode, 400)
-    t.true(res.body.message.includes('EMAIL_ADDRESS_REQUIRED'))
-    t.true(res.body.message.includes('EMAIL_ADDRESS_NOT_WELL_FORMAT'))
+    t.deepEqual(res.statusCode, 500)
 })
 
 test.serial('POST / cannot recheckout with empty data', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
-        failedAttemptOrder.code, {}, cookie)
+    const res = await request.post(config.api.checkout + '/order/' +
+        failedAttemptOrder.code, {}, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 500)
 })
 
 test.serial('POST / cannot recheckout without address', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": {},
                 "billing": {}
             }
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.true(res.body.message.includes('SHIPPING_ADDRESS_REQUIRED'))
@@ -89,21 +82,21 @@ test.serial('POST / cannot recheckout without address', async t => {
 })
 
 test.serial('POST / cannot recheckout with empty cart', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
                 "billing": addresses.billing[0]
             },
             "cart": []
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.true(res.body.message.includes('THERE_ARE_NO_ITEMS_IN_YOUR_ORDER'))
 })
 
 test.serial('POST / cannot recheckout with invalid phone and tax code', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": {
@@ -121,7 +114,7 @@ test.serial('POST / cannot recheckout with invalid phone and tax code', async t 
                     "salePrice": failedAttemptOrder.products[0].salePrice
                 }
             ]
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.true(res.body.message.includes('SHIPPING_PHONE_NUMBER_IS_NOT_VALID'))
@@ -130,7 +123,7 @@ test.serial('POST / cannot recheckout with invalid phone and tax code', async t 
 })
 
 test.serial('POST / cannot recheckout without payment method', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -143,7 +136,7 @@ test.serial('POST / cannot recheckout without payment method', async t => {
                     "salePrice": failedAttemptOrder.products[0].salePrice
                 }
             ]
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.true(res.body.message.includes('PLEASE_SELECT_A_PAYMENT_METHOD'))
@@ -152,7 +145,7 @@ test.serial('POST / cannot recheckout without payment method', async t => {
 // validate cart
 
 test.serial('POST / cannot recheckout with mismatched cart', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -171,14 +164,14 @@ test.serial('POST / cannot recheckout with mismatched cart', async t => {
                 }
             ],
             "method": "FREE"
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'CART_MISMATCH')
 })
 
 test.serial('POST / cannot recheckout with mismatched quantity', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -192,14 +185,14 @@ test.serial('POST / cannot recheckout with mismatched quantity', async t => {
                 }
             ],
             "method": "FREE"
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message[0].message, 'QUANTITY_SUBMITTED_NOT_MATCH_IN_THE_CART')
 })
 
 test.serial('POST / cannot recheckout with mismatched price', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -213,14 +206,14 @@ test.serial('POST / cannot recheckout with mismatched price', async t => {
                 }
             ],
             "method": "FREE"
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message[0].message, 'PRICE_MISMATCH')
 })
 
 test.serial('POST / cannot recheckout with invalid product', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -234,7 +227,7 @@ test.serial('POST / cannot recheckout with invalid product', async t => {
                 }
             ],
             "method": "FREE"
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message[0].message, 'CART_MISMATCH_CANT_FIND_PRODUCT')
@@ -257,7 +250,7 @@ test.serial('POST / cannot recheckout with sold out product', async t => {
             redisItem['quantity'] = 0
             await accessRedis.setValue('nsId:' + failedAttemptOrder.products[0].nsId, JSON.stringify(redisItem))
 
-            let res = await request.post(config.api.checkout + '/order/' +
+            const res = await request.post(config.api.checkout + '/order/' +
                 failedAttemptOrder.code, {
                     "address": {
                         "shipping": addresses.shipping[0],
@@ -271,7 +264,7 @@ test.serial('POST / cannot recheckout with sold out product', async t => {
                         }
                     ],
                     "method": "FREE"
-                }, cookie)
+                }, t.context['cookie'])
 
             t.deepEqual(res.statusCode, 400)
             t.deepEqual(res.body.message[0].message, 'TITLE_IS_OUT_OF_STOCK')
@@ -301,7 +294,7 @@ test.serial('POST / cannot recheckout with limited stock product', async t => {
             redisItem['quantity'] = 1
             await accessRedis.setValue('nsId:' + failedAttemptOrder.products[0].nsId, JSON.stringify(redisItem))
 
-            let res = await request.post(config.api.checkout + '/order/' +
+            const res = await request.post(config.api.checkout + '/order/' +
                 failedAttemptOrder.code, {
                     "address": {
                         "shipping": addresses.shipping[0],
@@ -315,7 +308,7 @@ test.serial('POST / cannot recheckout with limited stock product', async t => {
                         }
                     ],
                     "method": "FREE"
-                }, cookie)
+                }, t.context['cookie'])
 
             t.deepEqual(res.statusCode, 400)
             t.deepEqual(res.body.message[0].message, 'ONLY_LIMITED_UNITS_IN_STOCK')
@@ -345,7 +338,7 @@ test.serial('POST / cannot recheckout with sale ended product', async t => {
             redisItem['event']['endDate'] = '2019-02-18T01:00:00.000Z'
             await accessRedis.setValue('productId:' + failedAttemptOrder.products[0].productContentId, JSON.stringify(redisItem))
 
-            let res = await request.post(config.api.checkout + '/order/' +
+            const res = await request.post(config.api.checkout + '/order/' +
                 failedAttemptOrder.code, {
                     "address": {
                         "shipping": addresses.shipping[0],
@@ -359,7 +352,7 @@ test.serial('POST / cannot recheckout with sale ended product', async t => {
                         }
                     ],
                     "method": "FREE"
-                }, cookie)
+                }, t.context['cookie'])
 
             t.deepEqual(res.statusCode, 400)
             t.deepEqual(res.body.message[0].message, 'THE_SALE_FOR_TITLE_HAS_ENDED')
@@ -377,7 +370,7 @@ test.serial('POST / cannot recheckout with sale ended product', async t => {
 // validate address
 
 test.skip('POST / cannot recheckout with new address', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[1],
@@ -391,7 +384,7 @@ test.skip('POST / cannot recheckout with new address', async t => {
                 }
             ],
             "method": "FREE"
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message[0].message, 'CART_MISMATCH_CANT_FIND_PRODUCT')
@@ -400,7 +393,7 @@ test.skip('POST / cannot recheckout with new address', async t => {
 // validate voucher
 
 test.serial('POST / cannot recheckout with voucher not meeting min items', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         numberOfItems: { $gte: 2 }
@@ -408,7 +401,7 @@ test.serial('POST / cannot recheckout with voucher not meeting min items', async
 
     t.truthy(voucher)
 
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -424,7 +417,7 @@ test.serial('POST / cannot recheckout with voucher not meeting min items', async
             "method": "COD",
             "shipping": 25000,
             "voucher": voucher._id
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'NOT_MEET_MINIMUM_ITEMS')
@@ -433,7 +426,7 @@ test.serial('POST / cannot recheckout with voucher not meeting min items', async
 
 test.serial('POST / cannot recheckout with voucher not applied for today', async t => {
     const today = new Date().getDay()
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         specificDays: { $size: 1 },
@@ -442,7 +435,7 @@ test.serial('POST / cannot recheckout with voucher not applied for today', async
 
     t.truthy(voucher)
 
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -458,7 +451,7 @@ test.serial('POST / cannot recheckout with voucher not applied for today', async
             "method": "COD",
             "shipping": 25000,
             "voucher": voucher._id
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_NOT_APPLY_FOR_TODAY')
@@ -466,7 +459,7 @@ test.serial('POST / cannot recheckout with voucher not applied for today', async
 })
 
 test.serial('POST / cannot recheckout with voucher not meeting min purchase', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         binRange: { $exists: false },
@@ -475,7 +468,7 @@ test.serial('POST / cannot recheckout with voucher not meeting min purchase', as
 
     t.truthy(voucher)
 
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -491,14 +484,14 @@ test.serial('POST / cannot recheckout with voucher not meeting min purchase', as
             "method": "COD",
             "shipping": 25000,
             "voucher": voucher._id
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM')
 })
 
 test.serial('POST / cannot recheckout with voucher exceeding number of usage', async t => {
-    let vouchers = await access.getVoucherList({
+    const vouchers = await access.getVoucherList({
         expiry: { $gte: new Date() },
         multipleUser: true,
         numberOfUsage: { $gte: 1 },
@@ -506,7 +499,7 @@ test.serial('POST / cannot recheckout with voucher exceeding number of usage', a
     })
     let matchedVoucher: Model.VoucherModel
 
-    for (let voucher of vouchers) {
+    for (const voucher of vouchers) {
         const used = await access.countUsedVoucher(voucher._id)
         if (voucher.numberOfUsage <= used) {
             matchedVoucher = voucher
@@ -516,7 +509,7 @@ test.serial('POST / cannot recheckout with voucher exceeding number of usage', a
 
     t.truthy(matchedVoucher)
 
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -532,14 +525,14 @@ test.serial('POST / cannot recheckout with voucher exceeding number of usage', a
             "method": "COD",
             "shipping": 25000,
             "voucher": matchedVoucher._id
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'EXCEED_TIME_OF_USAGE')
 })
 
 test.serial('POST / cannot recheckout with expired voucher', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $lt: new Date() },
         binRange: { $exists: false },
         used: false
@@ -547,7 +540,7 @@ test.serial('POST / cannot recheckout with expired voucher', async t => {
 
     t.truthy(voucher)
 
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -563,14 +556,14 @@ test.serial('POST / cannot recheckout with expired voucher', async t => {
             "method": "COD",
             "shipping": 25000,
             "voucher": voucher._id
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_OR_NOT_VALID')
 })
 
 test.serial('POST / cannot recheckout with COD using voucher for CC', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         binRange: { $exists: true },
         used: false,
@@ -579,7 +572,7 @@ test.serial('POST / cannot recheckout with COD using voucher for CC', async t =>
 
     t.truthy(voucher)
 
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -595,7 +588,7 @@ test.serial('POST / cannot recheckout with COD using voucher for CC', async t =>
             "method": "COD",
             "shipping": 25000,
             "voucher": voucher._id
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'REQUIRES_CC_PAYMENT')
@@ -605,7 +598,7 @@ test.serial('POST / cannot recheckout with voucher for Stripe using wrong bin ra
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
-        let voucher = await access.getVoucher({
+        const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
             used: false,
@@ -623,9 +616,9 @@ test.serial('POST / cannot recheckout with voucher for Stripe using wrong bin ra
             "key": config.stripeKey
         }
         const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-            cookie, config.stripeBase).then(res => res.body)
+            t.context['cookie'], config.stripeBase).then(res => res.body)
 
-        let res = await request.post(config.api.checkout + '/order/' +
+        const res = await request.post(config.api.checkout + '/order/' +
             failedAttemptOrder.code, {
                 "address": {
                     "shipping": addresses.shipping[0],
@@ -642,7 +635,7 @@ test.serial('POST / cannot recheckout with voucher for Stripe using wrong bin ra
                 "methodData": stripeSource,
                 "shipping": 0,
                 "voucher": voucher._id
-            }, cookie)
+            }, t.context['cookie'])
 
         t.deepEqual(res.statusCode, 400)
         t.deepEqual(res.body.message, 'THIS_CC_NOT_ACCEPTABLE')
@@ -650,7 +643,7 @@ test.serial('POST / cannot recheckout with voucher for Stripe using wrong bin ra
 })
 
 test.serial('POST / cannot recheckout with already used voucher', async t => {
-    let voucher = await access.getUsedVoucher({
+    const voucher = await access.getUsedVoucher({
         expiry: { $gte: new Date() },
         binRange: { $exists: false },
         used: false,
@@ -659,7 +652,7 @@ test.serial('POST / cannot recheckout with already used voucher', async t => {
 
     t.truthy(voucher)
 
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -675,14 +668,14 @@ test.serial('POST / cannot recheckout with already used voucher', async t => {
             "method": "COD",
             "shipping": 25000,
             "voucher": voucher._id
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'YOU_ALREADY_USED_THIS_VOUCHER')
 })
 
 test.serial('POST / cannot recheckout with voucher only used for other customer', async t => {
-    let voucher = await access.getVoucher({
+    const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         binRange: { $exists: false },
@@ -691,7 +684,7 @@ test.serial('POST / cannot recheckout with voucher only used for other customer'
 
     t.truthy(voucher)
 
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -707,7 +700,7 @@ test.serial('POST / cannot recheckout with voucher only used for other customer'
             "method": "COD",
             "shipping": 25000,
             "voucher": voucher._id
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'NOT_ALLOWED_TO_USE_VOUCHER')
@@ -716,7 +709,7 @@ test.serial('POST / cannot recheckout with voucher only used for other customer'
 // validate account credit
 
 test.serial('POST / cannot recheckout with with more than available credit', async t => {
-    let res = await request.post(config.api.checkout + '/order/' +
+    const res = await request.post(config.api.checkout + '/order/' +
         failedAttemptOrder.code, {
             "address": {
                 "shipping": addresses.shipping[0],
@@ -732,7 +725,7 @@ test.serial('POST / cannot recheckout with with more than available credit', asy
             "method": "COD",
             "shipping": 25000,
             "accountCredit": account.accountCredit + 1
-        }, cookie)
+        }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE')

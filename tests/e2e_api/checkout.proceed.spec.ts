@@ -5,7 +5,6 @@ import * as Model from '../../common/interface'
 let checkout: Model.Checkout
 let item: Model.Product
 let cart: Model.Cart
-let cookie: string
 
 let helper = new Utils.Helper
 let requestCart = new Utils.CartUtils
@@ -13,16 +12,12 @@ let requestProduct = new Utils.ProductUtils
 
 import test from 'ava'
 
-test.before(async t => {
-    cookie = await helper.getGuestCookie()
-})
-
 test.beforeEach(async t => {
-    await requestCart.emptyCart(cookie)
+    t.context['cookie'] = await helper.getGuestCookie()
 })
 
 test('GET / proceed checkout with empty cart', async t => {
-    let res = await helper.get(config.api.checkout, cookie)
+    const res = await helper.get(config.api.checkout, t.context['cookie'])
     checkout = res.body
 
     t.deepEqual(res.statusCode, 200)
@@ -34,10 +29,10 @@ test('GET / proceed checkout with cart', async t => {
 
     let res = await helper.post(config.api.cart, {
         "productId": item.id
-    }, cookie)
+    }, t.context['cookie'])
     cart = res.body
 
-    res = await helper.get(config.api.checkout, cookie)
+    res = await helper.get(config.api.checkout, t.context['cookie'])
     checkout = res.body
 
     t.deepEqual(res.statusCode, 200)

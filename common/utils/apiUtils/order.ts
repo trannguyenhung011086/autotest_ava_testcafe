@@ -9,7 +9,7 @@ export class OrderUtils extends Helper {
 
     public async getOrders(cookie?: string): Promise<Model.OrderSummary[]> {
         try {
-            let res = await this.get(config.api.orders, cookie)
+            const res = await this.get(config.api.orders, cookie)
             return res.body
         } catch (e) {
             throw {
@@ -21,7 +21,7 @@ export class OrderUtils extends Helper {
 
     public async getOrderInfo(orderId: string, cookie?: string): Promise<Model.Order> {
         try {
-            let res = await this.get(config.api.orders + '/' + orderId, cookie)
+            const res = await this.get(config.api.orders + '/' + orderId, cookie)
             return res.body
         } catch (e) {
             throw {
@@ -33,7 +33,7 @@ export class OrderUtils extends Helper {
 
     public async getSplitOrderInfo(orderCode: string, cookie?: string): Promise<Model.Order[]> {
         try {
-            let res = await this.get(config.api.orders + '/' + orderCode, cookie)
+            const res = await this.get(config.api.orders + '/' + orderCode, cookie)
             return res.body
         } catch (e) {
             throw {

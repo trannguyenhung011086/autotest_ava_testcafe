@@ -43,27 +43,17 @@ export class CheckoutUtils extends Helper {
             api = config.api.checkout
         }
 
-        let res = await this.post(api, data, cookie)
-
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot complete PayDollar checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
+        const res = await this.post(api, data, cookie)
         return res.body
     }
 
     public async parsePayDollarRes(content: string): Promise<Model.PayDollarResponse> {
-        try {
-            let result: any = content.split('&').reduce((result, value) => {
-                result[value.split('=')[0]] = value.split('=')[1]
-                return result
-            }, {})
+        let result: any = content.split('&').reduce((result, value) => {
+            result[value.split('=')[0]] = value.split('=')[1]
             return result
-        } catch (e) {
-            throw e
-        }
+        }, {})
+
+        return result
     }
 
     public async checkoutCod(info: Model.CheckoutInput, cookie?: string): Promise<Model.CheckoutOrder> {
@@ -93,13 +83,7 @@ export class CheckoutUtils extends Helper {
             api = config.api.checkout
         }
 
-        let res = await this.post(api, data, cookie)
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot complete COD checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
+        const res = await this.post(api, data, cookie)
         return res.body
     }
 
@@ -137,29 +121,16 @@ export class CheckoutUtils extends Helper {
             api = config.api.checkout
         }
 
-        let res = await this.post(api, data, cookie)
-
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot complete STRIPE checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
+        const res = await this.post(api, data, cookie)
         return res.body
     }
 
     public async failedAttempt(orderCode: string, cookie?: string): Promise<Model.FailedAttempt> {
-        let res = await this.post(config.api.checkout + '/order/failed-attempt', {
+        const res = await this.post(config.api.checkout + '/order/failed-attempt', {
             "errorMsg": "invalid card",
             "orderCode": orderCode
         }, cookie)
 
-        if (res.statusCode != 200) {
-            throw {
-                message: 'Cannot execute failed-attempt checkout',
-                error: JSON.stringify(res.body, null, '\t')
-            }
-        }
         return res.body
     }
 
@@ -183,7 +154,7 @@ export class CheckoutUtils extends Helper {
         payDollarCreditCard.epYear = 2020
         payDollarCreditCard.securityCode = '123'
 
-        let res = await this.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
+        const res = await this.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
             cookie, config.payDollarBase)
 
         let parse = await this.parsePayDollarRes(res.body)

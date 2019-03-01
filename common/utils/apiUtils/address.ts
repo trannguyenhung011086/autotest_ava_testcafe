@@ -10,7 +10,7 @@ export class AddressUtils extends Helper {
 
     public async getAddresses(cookie?: string): Promise<Model.Addresses> {
         try {
-            let res = await this.get(config.api.addresses, cookie)
+            const res = await this.get(config.api.addresses, cookie)
             return res.body
         } catch (e) {
             throw {
@@ -22,7 +22,7 @@ export class AddressUtils extends Helper {
 
     public async getCities(): Promise<Model.City[]> {
         try {
-            let res = await this.get(config.api.addresses + '/cities')
+            const res = await this.get(config.api.addresses + '/cities')
             return res.body
         } catch (e) {
             throw {
@@ -35,7 +35,7 @@ export class AddressUtils extends Helper {
 
     public async getDistricts(cityId: string): Promise<Model.District[]> {
         try {
-            let res = await this.get(config.api.addresses + '/cities/' + cityId + '/districts')
+            const res = await this.get(config.api.addresses + '/cities/' + cityId + '/districts')
             return res.body
         } catch (e) {
             throw {
@@ -62,15 +62,17 @@ export class AddressUtils extends Helper {
     public async deleteAddresses(cookie?: string): Promise<void> {
         let addresses = await this.getAddresses(cookie)
         try {
-            if (addresses.billing.length > 0) {
-                for (let billing of addresses.billing) {
-                    await this.delete(config.api.addresses + '/' + billing.id, cookie)
+            for (let billing of addresses.billing) {
+                if (addresses.billing.length == 1) {
+                    break
                 }
+                await this.delete(config.api.addresses + '/' + billing.id, cookie)
             }
-            if (addresses.shipping.length > 0) {
-                for (let shipping of addresses.shipping) {
-                    await this.delete(config.api.addresses + '/' + shipping.id, cookie)
+            for (let shipping of addresses.shipping) {
+                if (addresses.shipping.length == 1) {
+                    break
                 }
+                await this.delete(config.api.addresses + '/' + shipping.id, cookie)
             }
         } catch (e) {
             throw {
@@ -83,9 +85,9 @@ export class AddressUtils extends Helper {
     public async addAddresses(cookie?: string) {
         let cities = await this.getCities()
         let shipping = await this.generateAddress('shipping', cities)
-        
+
         shipping.duplicateBilling = true
-        let res = await this.post(config.api.addresses, shipping, cookie)
+        const res = await this.post(config.api.addresses, shipping, cookie)
 
         if (res.statusCode != 200) {
             throw {
@@ -108,7 +110,7 @@ export class AddressUtils extends Helper {
             lastName: 'QA_' + faker.name.lastName(),
             phone: faker.phone.phoneNumber().replace(/ /g, '')
         }
-        
+
         if (addressType == 'shipping') {
             address.type = 'shipping'
         }

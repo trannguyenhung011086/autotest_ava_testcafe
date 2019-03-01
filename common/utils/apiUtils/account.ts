@@ -8,7 +8,7 @@ export class AccountUtils extends Helper {
     }
 
     public async getAccountInfo(cookie?: string): Promise<Model.Account> {
-        let res = await this.get(config.api.account, cookie)
+        const res = await this.get(config.api.account, cookie)
         if (res.statusCode != 200) {
             throw {
                 message: 'Cannot get account info!',

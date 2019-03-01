@@ -33,12 +33,12 @@ export function getFeedId(url: string) {
 }
 
 test.before(async t => {
-    let res = await helper.getPlain('https://www.google.com/basepages/producttype/taxonomy.en-US.txt')
+    const res = await helper.getPlain('https://www.google.com/basepages/producttype/taxonomy.en-US.txt')
     googleCategories = res.body.split('\n')
 })
 
 test('GET / get Facebook product feeds', async t => {
-    let res = await helper.getPlain(config.api.feedFacebook)
+    const res = await helper.getPlain(config.api.feedFacebook)
 
     t.deepEqual(res.statusCode, 200)
 
@@ -73,7 +73,7 @@ test('GET / get Facebook product feeds', async t => {
 })
 
 test('GET / get Google product feeds', async t => {
-    let res = await helper.getPlain(config.api.feedGoogle)
+    const res = await helper.getPlain(config.api.feedGoogle)
     t.deepEqual(res.statusCode, 200)
 
     let parsed = Papa.parse(res.body, { header: true })
@@ -88,7 +88,7 @@ test('GET / get Google product feeds', async t => {
 })
 
 test('GET / get Google dynamic product feeds', async t => {
-    let res = await helper.getPlain(config.api.feedGoogleDynamic)
+    const res = await helper.getPlain(config.api.feedGoogleDynamic)
 
     t.deepEqual(res.statusCode, 200)
 
@@ -113,7 +113,7 @@ test('GET / get Google dynamic product feeds', async t => {
 })
 
 test('GET / get Criteo product feeds v1', async t => {
-    let res = await helper.getPlain(config.api.feedCriteo)
+    const res = await helper.getPlain(config.api.feedCriteo)
 
     t.deepEqual(res.statusCode, 200)
 
@@ -147,7 +147,7 @@ test('GET / get Criteo product feeds v1', async t => {
 
 // need to improve Criteo feeds format later
 test.skip('GET / get Criteo product feeds v2', async t => {
-    let res = await helper.getPlain(config.api.feedCriteo)
+    const res = await helper.getPlain(config.api.feedCriteo)
     t.deepEqual(res.statusCode, 200)
 
     let parsed = Papa.parse(res.body, { header: true })
@@ -190,7 +190,7 @@ test.skip('GET / get Criteo product feeds v2', async t => {
 })
 
 test('GET / get Google Merchant product feeds', async t => {
-    let res = await helper.getPlain(config.api.feedGoogleMerchant)
+    const res = await helper.getPlain(config.api.feedGoogleMerchant)
 
     t.deepEqual(res.statusCode, 200)
 
@@ -254,7 +254,7 @@ test('GET / get Google Merchant product feeds', async t => {
 })
 
 test('GET / get Insider product feeds', async t => {
-    let res = await helper.getPlain(config.api.feedInsider)
+    const res = await helper.getPlain(config.api.feedInsider)
 
     t.deepEqual(res.statusCode, 200)
 

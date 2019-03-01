@@ -2,7 +2,6 @@ import { config } from '../../common/config'
 import * as Utils from '../../common/utils'
 import * as Model from '../../common/interface'
 
-let cookie: string
 let voucher: Model.Voucher
 let voucherInfo: Model.VoucherModel
 let customer: Model.Customer
@@ -13,13 +12,13 @@ let access = new Utils.DbAccessUtils
 import test from 'ava'
 
 test.before(async t => {
-    cookie = await helper.getLogInCookie(config.testAccount.email_ex_1,
-        config.testAccount.password_ex_1)
-    customer = await access.getCustomerInfo({ email: config.testAccount.email_ex_1 })
+    t.context['cookie'] = await helper.getLogInCookie(config.testAccount.email_ex[0],
+        config.testAccount.password_ex)
+    customer = await access.getCustomerInfo({ email: config.testAccount.email_ex[0] })
 })
 
 test.serial('GET / check invalid voucher', async t => {
-    let res = await helper.get(config.api.voucher + 'INVALID-ID', cookie)
+    const res = await helper.get(config.api.voucher + 'INVALID-ID', t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_NOT_EXISTS')
@@ -32,7 +31,7 @@ test.serial('GET / check expired voucher', async t => {
 
     t.truthy(voucherInfo)
 
-    let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
+    const res = await helper.get(config.api.voucher + voucherInfo.code, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_CAMPAIGN_INVALID_OR_ENDED')
@@ -45,7 +44,7 @@ test.serial('GET / check not started voucher', async t => {
 
     t.truthy(voucherInfo)
 
-    let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
+    const res = await helper.get(config.api.voucher + voucherInfo.code, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_CAMPAIGN_INVALID_OR_NOT_STARTED')
@@ -60,7 +59,7 @@ test.serial('GET / check redeemed voucher', async t => {
 
     t.truthy(voucherInfo)
 
-    let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
+    const res = await helper.get(config.api.voucher + voucherInfo.code, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'VOUCHER_HAS_BEEN_REDEEMED')
@@ -76,7 +75,7 @@ test.serial('GET / check already used voucher', async t => {
 
     t.truthy(voucher)
 
-    let res = await helper.get(config.api.voucher + voucher.code, cookie)
+    const res = await helper.get(config.api.voucher + voucher.code, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'YOU_ALREADY_USED_THIS_VOUCHER')
@@ -90,7 +89,7 @@ test.serial('GET / check not allowed to use voucher ', async t => {
 
     t.truthy(voucherInfo)
 
-    let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
+    const res = await helper.get(config.api.voucher + voucherInfo.code, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'NOT_ALLOWED_TO_USE_VOUCHER')
@@ -105,7 +104,7 @@ test.serial('GET / check valid voucher', async t => {
 
     t.truthy(voucherInfo)
 
-    let res = await helper.get(config.api.voucher + voucherInfo.code, cookie)
+    const res = await helper.get(config.api.voucher + voucherInfo.code, t.context['cookie'])
     voucher = res.body
 
     t.deepEqual(res.statusCode, 200)
@@ -121,15 +120,7 @@ test.serial('GET / check valid voucher', async t => {
 })
 
 test.serial('GET / cannot check voucher with invalid cookie', async t => {
-    let res = await helper.get(config.api.voucher + 'CARD-ID', 'leflair.connect2.sid=test')
-
-    t.deepEqual(res.statusCode, 401)
-    t.deepEqual(res.body.message, 'Access denied.')
-})
-
-test.serial('GET / cannot check voucher without login', async t => {
-    await helper.get(config.api.signOut, cookie)
-    let res = await helper.get(config.api.voucher + 'CARD-ID', cookie)
+    const res = await helper.get(config.api.voucher + 'CARD-ID', 'leflair.connect2.sid=test')
 
     t.deepEqual(res.statusCode, 401)
     t.deepEqual(res.body.message, 'Access denied.')

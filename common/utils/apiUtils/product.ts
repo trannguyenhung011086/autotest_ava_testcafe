@@ -25,7 +25,11 @@ export class ProductUtils extends Helper {
 
         // filter out invalid sale on staging
         sales = sales.reduce((result, value) => {
-            if (value.id != '5c6662dbd76f7144bf5872b5') {
+            const exclude = [
+                '5c6662dbd76f7144bf5872b5',
+                '5c6bd1967486a8220646498c'
+            ]
+            if (!exclude.includes(value.id)) {
                 result.push(value)
             }
             return result
@@ -66,7 +70,7 @@ export class ProductUtils extends Helper {
 
         let result: Model.ProductInfoModel
         for (let product of products) {
-            let res = await this.getProductInfo(product.id)
+            const res = await this.getProductInfo(product.id)
             if (res.sizes.length > 1) {
                 result = res
                 break
@@ -84,7 +88,7 @@ export class ProductUtils extends Helper {
 
         let result: Model.ProductInfoModel
         for (let product of products) {
-            let res = await this.getProductInfo(product.id)
+            const res = await this.getProductInfo(product.id)
             if (res.colors.length > 1) {
                 result = res
                 break
@@ -102,7 +106,7 @@ export class ProductUtils extends Helper {
 
         let result: Model.ProductInfoModel
         for (let product of products) {
-            let res = await this.getProductInfo(product.id)
+            const res = await this.getProductInfo(product.id)
             if (res.colors.length == 0 && res.sizes.length == 0) {
                 result = res
                 break

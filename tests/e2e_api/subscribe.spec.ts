@@ -7,7 +7,7 @@ let helper = new Utils.Helper
 import test from 'ava'
 
 test('POST / empty email', async t => {
-    let res = await helper.post(config.api.subscribe, {
+    const res = await helper.post(config.api.subscribe, {
         "email": ""
     })
 
@@ -21,7 +21,7 @@ test('POST / empty email', async t => {
 })
 
 test('POST / wrong format email', async t => {
-    let res = await helper.post(config.api.subscribe, {
+    const res = await helper.post(config.api.subscribe, {
         "email": ".test%!@#$%^&*()_+<>?@mail.com"
     })
 
@@ -35,7 +35,7 @@ test('POST / wrong format email', async t => {
 })
 
 test('POST / valid email', async t => {
-    let res = await helper.post(config.api.subscribe, {
+    const res = await helper.post(config.api.subscribe, {
         "email": faker.internet.email()
     })
 
