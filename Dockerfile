@@ -14,7 +14,7 @@ USER tester
 WORKDIR /home/tester
 
 # create folder for test reports
-RUN mkdir report
+RUN mkdir -p report
 
 # copy required files
 COPY package.json /home/tester
