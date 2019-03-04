@@ -1,6 +1,6 @@
 import { config } from '../../common/config'
 import * as Utils from '../../common/utils'
-import faker from 'faker/locale/vi'
+import * as faker from 'faker/locale/vi'
 
 let helper = new Utils.Helper
 
