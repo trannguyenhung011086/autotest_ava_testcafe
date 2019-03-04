@@ -18,6 +18,7 @@ RUN mkdir -p report
 
 # copy required files
 COPY package.json /home/tester
+# COPY . /home/tester
 
 # install packages
 RUN yarn install \
