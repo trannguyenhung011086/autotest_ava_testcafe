@@ -18,7 +18,7 @@ test_api_stg:
   script:
     - docker run --name api_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_api_ci
   after_script:
-    - docker cp api_stg:/dockertests/report/test_api.txt test_api.txt
+    - docker cp api_stg:/dockertests/test_api.txt test_api.txt
   except:
     - schedules
   artifacts:
@@ -70,7 +70,7 @@ test_api_prod:
   script:
     - docker run --name api_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_ci
   after_script:
-    - docker cp api_prod:/dockertests/report/test_api.txt test_api.txt
+    - docker cp api_prod:/dockertests/test_api.txt test_api.txt
   artifacts:
     expire_in: 1 week
     reports:
