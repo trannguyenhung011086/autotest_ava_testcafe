@@ -12,7 +12,6 @@ build:
   stage: build
   script:
     - docker build -t hung/autotest .
-    - npm install
 
 test_api_stg:
   stage: test_stg
