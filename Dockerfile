@@ -34,4 +34,4 @@ RUN yarn install \
 # RUN chmod +x /docker-entrypoint.sh
 
 # set volume
-# VOLUME [ "/dockertests" ]
+VOLUME [ "/dockertests" ]
