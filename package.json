@@ -14,16 +14,16 @@
   "main": "index.js",
   "scripts": {
     "ava": "ava --verbose",
-    "test_api": "./node_modules/.bin/ava tests/e2e_api/ --verbose > report/test_api.txt",
+    "test_api": "./node_modules/.bin/ava --verbose tests/e2e_api/ > report/test_api.txt",
     "test_chromium": "./node_modules/.bin/testcafe \"chromium --no-sandbox\" tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml",
     "test_firefox": "./node_modules/.bin/testcafe firefox tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml",
     "test_mobile_emu": "./node_modules/.bin/testcafe \"chromium:emulation:device=iphone 6 --no-sandbox\" tests/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml",
     "test_desktop_remote": "./node_modules/.bin/testcafe remote tests/e2e_ui/desktop --qr-code --selector-timeout 15000 --assertion-timeout 5000",
     "test_mobile_remote": "./node_modules/.bin/testcafe remote tests/e2e_ui/mobile --qr-code --selector-timeout 15000 --assertion-timeout 5000",
-    "test_api_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/ava tests/e2e_api/account.*.ts --verbose > report/test_api.txt",
-    "test_chromium_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless --no-sandbox\" tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml",
-    "test_firefox_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe firefox:headless tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml",
-    "test_mobile_emu_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless:emulation:device=iphone 6 --no-sandbox\" tests/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml"
+    "test_api_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/ava --verbose ./tests/e2e_api/account.*.ts > ./report/test_api.txt",
+    "test_chromium_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless --no-sandbox\" ./tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml",
+    "test_firefox_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe firefox:headless ./tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml",
+    "test_mobile_emu_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless:emulation:device=iphone 6 --no-sandbox\" ./tests/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml"
   },
   "author": "Hung Tran",
   "license": "ISC",
