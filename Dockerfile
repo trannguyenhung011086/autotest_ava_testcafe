@@ -13,9 +13,6 @@ RUN addgroup -g 1000 -S tester && \
 USER tester
 WORKDIR /home/tester
 
-# create folder for test reports
-RUN mkdir -p report
-
 # copy required files
 COPY package.json /home/tester
 # COPY . /home/tester
@@ -26,8 +23,8 @@ RUN yarn install \
     && rm -rf /tmp/*
 
 # # set path
-# ENV NODE_PATH=/testcafe/node_modules
-# ENV PATH=$PATH:/testcafe/node_modules/.bin
+# ENV NODE_PATH=/autotest/node_modules
+# ENV PATH=$PATH:/autotest/node_modules/.bin
 
 # USER root
 # COPY docker-entrypoint.sh /
