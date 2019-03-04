@@ -1,7 +1,7 @@
-import { config } from '../../common/config'
-import * as Utils from '../../common/utils'
+import { config } from '../../../common/config'
+import * as Utils from '../../../common/utils'
 import * as faker from 'faker/locale/vi'
-import * as Model from '../../common/interface'
+import * as Model from '../../../common/interface'
 
 let signIn: Model.SignIn
 let request = new Utils.AccountUtils

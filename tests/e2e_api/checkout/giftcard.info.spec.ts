@@ -1,6 +1,6 @@
-import { config } from '../../common/config'
-import * as Utils from '../../common/utils'
-import * as Model from '../../common/interface'
+import { config } from '../../../common/config'
+import * as Utils from '../../../common/utils'
+import * as Model from '../../../common/interface'
 
 let giftCard: Model.Giftcard
 let giftcardInfo: Model.GiftcardModel

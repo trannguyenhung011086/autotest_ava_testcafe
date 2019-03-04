@@ -1,5 +1,5 @@
-import { config } from '../../common/config'
-import * as Utils from '../../common/utils'
+import { config } from '../../../common/config'
+import * as Utils from '../../../common/utils'
 
 let request = new Utils.BestSellersUtils
 

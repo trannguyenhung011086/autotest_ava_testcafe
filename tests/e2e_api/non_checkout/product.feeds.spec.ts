@@ -1,6 +1,6 @@
-import { config } from '../../common/config'
-import * as Utils from '../../common/utils'
-import * as Model from '../../common/interface'
+import { config } from '../../../common/config'
+import * as Utils from '../../../common/utils'
+import * as Model from '../../../common/interface'
 import Papa from 'papaparse'
 import convert from 'xml-js'
 
