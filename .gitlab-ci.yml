@@ -13,18 +13,19 @@ build:
   script:
     - docker build -t hung/autotest .
 
-test_api_stg:
+test_api_non_checkout_stg:
   stage: test_stg
   script:
-    - docker run --name api_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_api_ci
-  after_script:
-    - docker cp api_stg:/home/tester/report/test_api.txt test_api.txt
+    - docker run --name api_non_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_api_non_checkout_ci
   except:
     - schedules
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: test_api.txt
+
+test_api_checkout_stg:
+  stage: test_stg
+  script:
+    - docker run --name api_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci
+  except:
+    - schedules
 
 test_chromium_stg:
   stage: test_stg
@@ -65,16 +66,17 @@ test_mobile_emu_stg:
   except:
     - schedules
 
-test_api_prod:
+test_api_non_checkout_prod:
   stage: test_prod
   script:
-    - docker run --name api_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_ci
-  after_script:
-    - docker cp api_prod:/home/tester/report/test_api.txt test_api.txt
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: test_api.txt
+    - docker run --name api_non_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_non_checkout_ci
+  only:
+    - schedules
+
+test_api_checkout_prod:
+  stage: test_prod
+  script:
+    - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci
   only:
     - schedules
 
