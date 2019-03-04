@@ -13,6 +13,9 @@ RUN addgroup -g 1000 -S tester && \
 USER tester
 WORKDIR /home/tester
 
+# create folder for test reports
+RUN mkdir -p report
+
 # copy required files
 COPY package.json /home/tester
 # COPY . /home/tester

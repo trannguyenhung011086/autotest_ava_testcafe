@@ -3,8 +3,7 @@
         "target": "esnext",
         "lib": [
             "dom",
-            "es6",
-            "es2017"
+            "esnext"
         ],
         "moduleResolution": "node",
         "module": "commonjs",
@@ -13,8 +12,5 @@
         "declaration": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true
-    },
-    "exclude": [
-        "node_modules"
-    ]
+    }
 }
