@@ -5,7 +5,7 @@ import { Pages } from '../page_objects'
 const page = new Pages()
 
 fixture('Sign up via email ' + config.baseUrl)
-    .meta({ type: 'regression' })    
+    .meta({ type: 'regression' })
     .page(config.baseUrl + config.signUp)
     .requestHooks(page.base.blockPopup)
 
@@ -27,7 +27,7 @@ test('Cannot sign up with length < 7 password', async () => {
 })
 
 test('Cannot sign up with existing account', async () => {
-    await page.signUp.submitData(config.testAccount.email_ex_2, config.testAccount.password_ex_2)
+    await page.signUp.submitData(config.testAccount.email_ex[2], config.testAccount.password_ex)
     await t.expect(await page.signUp.getCommonError()).eql(config.notifyMsg.emailExisted)
 })
 

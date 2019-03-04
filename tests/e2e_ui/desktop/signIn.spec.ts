@@ -23,7 +23,7 @@ test('Cannot sign in with non-existing email', async () => {
 })
 
 test('Cannot sign in with incorrect password', async () => {
-    await page.signIn.submitData(config.testAccount.email_ex_1, faker.internet.password())
+    await page.signIn.submitData(config.testAccount.email_ex[1], faker.internet.password())
     await t.expect(await page.signIn.getCommonError()).eql(config.notifyMsg.invalidEmailPassword)
 })
 
@@ -33,7 +33,7 @@ test('Cannot sign in with Facebook email', async () => {
 })
 
 test('Can sign in with existing email', async () => {
-    await page.signIn.submitData(config.testAccount.email_ex_1, config.testAccount.password_ex_1)
+    await page.signIn.submitData(config.testAccount.email_ex[1], config.testAccount.password_ex)
     await t.expect(await page.signIn.getSuccessMsg()).match(/^Chào mừng.+quay trở lại!$/)
 })
 
