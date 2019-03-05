@@ -238,7 +238,6 @@ test('GET / product with colors', async t => {
     await request.validateProductInfo(t, product)
 
     for (let color of product.colors) {
-        t.log(color)
         t.truthy(color.availableSizes)
         t.truthy(color.name)
         t.deepEqual(typeof (color.soldOut), 'boolean')
@@ -247,7 +246,7 @@ test('GET / product with colors', async t => {
             t.true(color.hex.includes('#'))
         }
         if (color.hidden) {
-            t.true(typeof (color.hidden), 'boolean')
+            t.deepEqual(typeof (color.hidden), 'boolean')
         }
 
         const res = await request.get(config.api.product + 'view-product/' +
