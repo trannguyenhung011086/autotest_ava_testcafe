@@ -93,7 +93,8 @@ export type Color = {
     name: string,
     hex?: string,
     soldOut: boolean,
-    availableSizes: string[]
+    availableSizes: string[],
+    hidden?: boolean
 }
 
 export interface FilterModel {

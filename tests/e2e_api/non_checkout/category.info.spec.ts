@@ -129,7 +129,7 @@ test('GET / get featured sales - home lifestyle', async t => {
 test('GET / get current sales - apparel', async t => {
     let featured = await request.get(config.api.cateApparel + '/sales/featured?limit=1')
 
-    let sales = await requestSale.getSales(config.api.cateApparel + '/sales/current')
+    let sales = await requestSale.getSales(config.api.cateApparel + '/sales/current?excludeId=' + featured.body.id)
 
     for (let sale of sales) {
         await request.validateSale(t, sale)
@@ -140,7 +140,7 @@ test('GET / get current sales - apparel', async t => {
 test('GET / get current sales - accessories', async t => {
     let featured = await request.get(config.api.cateAccessories + '/sales/featured?limit=1')
 
-    let sales = await requestSale.getSales(config.api.cateAccessories + '/sales/current')
+    let sales = await requestSale.getSales(config.api.cateAccessories + '/sales/current?excludeId=' + featured.body.id)
 
     for (let sale of sales) {
         await request.validateSale(t, sale)
@@ -151,7 +151,7 @@ test('GET / get current sales - accessories', async t => {
 test('GET / get current sales - bags shoes', async t => {
     let featured = await request.get(config.api.cateBagsShoes + '/sales/featured?limit=1')
 
-    let sales = await requestSale.getSales(config.api.cateBagsShoes + '/sales/current')
+    let sales = await requestSale.getSales(config.api.cateBagsShoes + '/sales/current?excludeId=' + featured.body.id)
 
     for (let sale of sales) {
         await request.validateSale(t, sale)
@@ -162,7 +162,7 @@ test('GET / get current sales - bags shoes', async t => {
 test('GET / get current sales - health beauty', async t => {
     let featured = await request.get(config.api.cateHealthBeauty + '/sales/featured?limit=1')
 
-    let sales = await requestSale.getSales(config.api.cateHealthBeauty + '/sales/current')
+    let sales = await requestSale.getSales(config.api.cateHealthBeauty + '/sales/current?excludeId=' + featured.body.id)
 
     for (let sale of sales) {
         await request.validateSale(t, sale)
@@ -173,7 +173,7 @@ test('GET / get current sales - health beauty', async t => {
 test('GET / get current sales - home lifestyle', async t => {
     let featured = await request.get(config.api.cateHomeLifeStyle + '/sales/featured?limit=1')
 
-    let sales = await requestSale.getSales(config.api.cateHomeLifeStyle + '/sales/current')
+    let sales = await requestSale.getSales(config.api.cateHomeLifeStyle + '/sales/current?excludeId=' + featured.body.id)
 
     for (let sale of sales) {
         await request.validateSale(t, sale)

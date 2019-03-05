@@ -392,7 +392,7 @@ export class Helper {
             t.true(this.validateImage(product.image2))
             t.true(product.retailPrice >= product.salePrice)
             t.deepEqual(typeof (product.soldOut), 'boolean')
-            t.truthy(product.category)
+            t.truthy.skip(product.category)
             t.truthy(product.brand)
             t.true(product.slug.includes(product.id))
             t.deepEqual(typeof (product.quantity), 'number')
@@ -421,7 +421,7 @@ export class Helper {
         t.truthy(sale.id)
         t.truthy(sale.title)
         t.truthy(sale.endTime)
-    
+
         if (sale.image) {
             t.true(this.validateImage(sale.image))
         }
@@ -437,17 +437,17 @@ export class Helper {
         if (sale.image4) {
             t.true(this.validateImage(sale.image4))
         }
-    
+
         if (sale.categories) {
             t.truthy(sale.categories.length)
         }
-    
+
         if (sale.potd === false) {
             t.true(sale.slug.includes(sale.id))
         } else if (sale.potd === true) {
             t.false(sale.slug.includes(sale.id))
         }
-    
+
         t.deepEqual(typeof (sale.international), 'boolean')
     }
 }

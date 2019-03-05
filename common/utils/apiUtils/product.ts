@@ -27,7 +27,8 @@ export class ProductUtils extends Helper {
         sales = sales.reduce((result, value) => {
             const exclude = [
                 '5c6662dbd76f7144bf5872b5',
-                '5c6bd1967486a8220646498c'
+                '5c6bd1967486a8220646498c',
+                '5c766fc25422f9b23f34beba'
             ]
             if (!exclude.includes(value.id)) {
                 result.push(value)

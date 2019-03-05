@@ -238,10 +238,17 @@ test('GET / product with colors', async t => {
     await request.validateProductInfo(t, product)
 
     for (let color of product.colors) {
+        t.log(color)
         t.truthy(color.availableSizes)
-        t.truthy(color.hex)
         t.truthy(color.name)
         t.deepEqual(typeof (color.soldOut), 'boolean')
+
+        if (color.hex) {
+            t.true(color.hex.includes('#'))
+        }
+        if (color.hidden) {
+            t.true(typeof (color.hidden), 'boolean')
+        }
 
         const res = await request.get(config.api.product + 'view-product/' +
             product.id + '/' + encodeURIComponent(color.name))

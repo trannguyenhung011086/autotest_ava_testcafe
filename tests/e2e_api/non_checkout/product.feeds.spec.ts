@@ -1,8 +1,8 @@
 import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
 import * as Model from '../../../common/interface'
-import Papa from 'papaparse'
-import convert from 'xml-js'
+import * as Papa from 'papaparse'
+import * as convert from 'xml-js'
 
 let facebookFeeds: Model.FacebookFeeds[]
 let googleFeeds: Model.GoogleFeeds[]
