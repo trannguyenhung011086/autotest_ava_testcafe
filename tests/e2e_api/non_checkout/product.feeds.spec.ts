@@ -280,13 +280,3 @@ test('GET / get Insider product feeds', async t => {
         t.true(retail_price >= sale_price)
     })
 })
-
-test.after('Verify total feeds sent to each service', async t => {
-    let totalFeeds = facebookFeeds.length
-
-    t.deepEqual(totalFeeds, googleFeeds.length)
-    t.deepEqual(totalFeeds, googleDynamicFeeds.length)
-    t.deepEqual(totalFeeds, criteoFeeds.length)
-    t.deepEqual(totalFeeds, googleMerchantFeeds.feed.entry.length)
-    t.deepEqual(totalFeeds, insiderFeeds.products.product.length)
-})

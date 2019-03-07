@@ -13,8 +13,7 @@ let request = new Utils.AddressUtils
 import test from 'ava'
 
 test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[10],
-        config.testAccount.password_ex)
+    t.context['cookie'] = await request.pickRandomUser(config.testAccount.email_ex)
 
     addresses = await request.getAddresses(t.context['cookie'])
 

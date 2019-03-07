@@ -12,9 +12,6 @@ import test from 'ava'
 
 test.beforeEach(async t => {
     t.context['cookie'] = await request.getGuestCookie()
-})
-
-test.afterEach.always(async t => {
     await request.emptyCart(t.context['cookie'])
 })
 

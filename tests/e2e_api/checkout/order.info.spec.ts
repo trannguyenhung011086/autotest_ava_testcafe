@@ -2,9 +2,6 @@ import { config } from '../../../common/config'
 import * as Utils from '../../../common/utils'
 import * as Model from '../../../common/interface'
 
-let orders: Model.OrderSummary[]
-let orderItem: Model.Order
-
 let request = new Utils.OrderUtils
 let requestAccount = new Utils.AccountUtils
 let requestAddress = new Utils.AddressUtils
@@ -14,7 +11,6 @@ let requestProduct = new Utils.ProductUtils
 let requestOrder = new Utils.OrderUtils
 
 let item: Model.Product
-let addresses: Model.Addresses
 let checkoutInput: Model.CheckoutInput = {}
 
 import test from 'ava'
@@ -22,13 +18,13 @@ import test from 'ava'
 test.before(async t => {
     t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_in,
         config.testAccount.password_in)
-
-    addresses = await requestAddress.getAddresses(t.context['cookie'])
 })
 
 test('Compare product details from checkout to order', async t => {
     item = await requestProduct.getProductWithCountry('VN', 0, 2000000)
     let cart = await requestCart.addToCart(item.id, t.context['cookie'])
+
+    const addresses = await requestAddress.getAddresses(t.context['cookie'])
 
     checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
     checkoutInput.addresses = addresses
@@ -41,7 +37,7 @@ test('Compare product details from checkout to order', async t => {
     t.deepEqual(cart.productContentId, order.products[0].productContentId)
     t.deepEqual(cart.productId, order.products[0].productId)
     t.deepEqual(cart.nsId, order.products[0].nsId)
-    t.deepEqual(cart.retailPrice, order.products[0].retailPrice)
+    t.deepEqual.skip(cart.retailPrice, order.products[0].retailPrice) // wait for WWW-570 
     t.deepEqual(cart.salePrice, order.products[0].salePrice)
 })
 
@@ -54,7 +50,7 @@ test('GET / cannot see order of another customer', async t => {
 
 test('GET / can access orders', async t => {
     const res = await request.get(config.api.orders, t.context['cookie'])
-    orders = res.body
+    const orders: Model.OrderSummary[] = res.body
 
     orders.forEach(order => {
         request.validateOrderSummary(t, order)
@@ -62,25 +58,29 @@ test('GET / can access orders', async t => {
 })
 
 test('GET / can see order info using order ID', async t => {
-    orders = await request.getOrders(t.context['cookie'])
+    const orders = await request.getOrders(t.context['cookie'])
 
     for (let order of orders) {
         const res = await request.get(config.api.orders + '/' + order.id, t.context['cookie'])
-        orderItem = res.body
+        const orderItem: Model.Order = res.body
 
         request.validateOrderDetail(t, orderItem)
     }
 })
 
 test('GET / can see order info using order code', async t => {
-    orders = await request.getOrders(t.context['cookie'])
+    const orders = await request.getOrders(t.context['cookie'])
 
     for (let order of orders) {
-        const orderCode = order.code.split('-')[1]
-        const res = await request.get(config.api.orders + '/' + orderCode, t.context['cookie'])
-        orderItem = res.body
+        const res = await request.get(config.api.orders + '/' + order.code, t.context['cookie'])
 
-        request.validateOrderDetail(t, orderItem)
+        if (Array.isArray(res.body)) {
+            for (let item of res.body) {
+                request.validateOrderDetail(t, item)
+            }
+        } else {
+            request.validateOrderDetail(t, res.body)
+        }
     }
 })
 

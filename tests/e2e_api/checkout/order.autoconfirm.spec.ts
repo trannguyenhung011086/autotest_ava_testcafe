@@ -110,7 +110,7 @@ test.serial('Not auto-confirm international order', async t => {
     t.true(order.isCrossBorder)
 })
 
-test.serial('Auto-confirm order for regular customer', async t => {
+test.serial('Auto-confirm order for regular customer (skip-prod)', async t => {
     // regular customer has at least 1 order with status 'delivered'/'return request'/'returned'
     // new order must use same address with old order
 

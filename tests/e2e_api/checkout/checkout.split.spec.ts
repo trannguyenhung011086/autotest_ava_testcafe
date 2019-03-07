@@ -29,7 +29,7 @@ let stripeSource: any
 import test from 'ava'
 
 test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[8],
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[10],
         config.testAccount.password_ex)
 
     addresses = await requestAddress.getAddresses(t.context['cookie'])
@@ -38,12 +38,10 @@ test.before(async t => {
 })
 
 test.beforeEach(async t => {
-    stripeSource = await request.postFormUrl('/v1/sources', stripeData,
-        t.context['cookie'], config.stripeBase).then(res => res.body)
-})
-
-test.afterEach(async t => {
     await requestCart.emptyCart(t.context['cookie'])
+
+    stripeSource = await request.postFormUrl('/v1/sources', stripeData, t.context['cookie'],
+        config.stripeBase).then(res => res.body)
 })
 
 test.serial('POST / not split SG order when total < 1,000,000', async t => {
@@ -395,12 +393,13 @@ test.serial('POST / split SG and VN order - voucher (amount)', async t => {
     const voucher = await access.getNotUsedVoucher({
         expiry: { $gte: new Date() },
         used: false,
-        minimumPurchase: null,
-        binRange: { $exists: false },
         discountType: 'amount',
-        amount: { $gt: 0 },
-        specificDays: []
+        minimumPurchase: 0,
+        numberOfItems: 0,
+        oncePerAccount: true,
+        customer: { $exists: false }
     }, customer)
+    t.truthy(voucher)
 
     let itemSG = await requestProduct.getProductWithCountry('SG', 0, 2000000)
     let itemVN = await requestProduct.getProductWithCountry('VN', 0, 2000000)
@@ -448,6 +447,7 @@ test.serial('POST / split SG order when total >= 1,000,000 - voucher (percentage
         maximumDiscountAmount: { $gt: 0 },
         specificDays: []
     })
+    t.truthy(voucher)
 
     let itemSG1 = await requestProduct.getProductWithCountry('SG', 500000, 700000)
     let itemSG2 = await requestProduct.getProductWithCountry('SG', 800000, 1000000)

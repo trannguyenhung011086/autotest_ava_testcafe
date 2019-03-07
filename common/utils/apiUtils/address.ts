@@ -9,40 +9,18 @@ export class AddressUtils extends Helper {
     }
 
     public async getAddresses(cookie?: string): Promise<Model.Addresses> {
-        try {
-            const res = await this.get(config.api.addresses, cookie)
-            return res.body
-        } catch (e) {
-            throw {
-                message: 'Cannot get address list!',
-                error: JSON.stringify(e, null, '\t')
-            }
-        }
+        const res = await this.get(config.api.addresses, cookie)
+        return res.body
     }
 
     public async getCities(): Promise<Model.City[]> {
-        try {
-            const res = await this.get(config.api.addresses + '/cities')
-            return res.body
-        } catch (e) {
-            throw {
-                message: 'Cannot get city list!',
-                error: JSON.stringify(e, null, '\t')
-            }
-        }
-
+        const res = await this.get(config.api.addresses + '/cities')
+        return res.body
     }
 
     public async getDistricts(cityId: string): Promise<Model.District[]> {
-        try {
-            const res = await this.get(config.api.addresses + '/cities/' + cityId + '/districts')
-            return res.body
-        } catch (e) {
-            throw {
-                message: 'Cannot get district list!',
-                error: JSON.stringify(e, null, '\t')
-            }
-        }
+        const res = await this.get(config.api.addresses + '/cities/' + cityId + '/districts')
+        return res.body
     }
 
     public getCity(cities: Model.City[]): Model.City {
@@ -54,7 +32,7 @@ export class AddressUtils extends Helper {
 
     public getDistrict(districts: Model.District[]): Model.District {
         if (!districts) {
-            throw 'City list has error!'
+            throw 'District list has error!'
         }
         return new Helper().getArrayRandomElement(districts)
     }

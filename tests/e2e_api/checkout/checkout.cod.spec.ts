@@ -19,8 +19,8 @@ let access = new Utils.DbAccessUtils
 import test from 'ava'
 
 test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_in,
-        config.testAccount.password_in)
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[1],
+        config.testAccount.password_ex)
 
     addresses = await requestAddress.getAddresses(t.context['cookie'])
 
@@ -92,7 +92,7 @@ test.serial('POST / checkout with COD', async t => {
     t.deepEqual(order.paymentSummary.shipping, 25000)
 })
 
-test.serial('POST / checkout with COD - voucher (amount) + credit', async t => {
+test.serial('POST / checkout with COD - voucher (amount) + credit (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
@@ -102,7 +102,8 @@ test.serial('POST / checkout with COD - voucher (amount) + credit', async t => {
             discountType: 'amount',
             minimumPurchase: 0,
             numberOfItems: 0,
-            oncePerAccount: true
+            oncePerAccount: true,
+            customer: { $exists: false }
         }, customer)
 
         t.truthy(voucher)
@@ -133,19 +134,18 @@ test.serial('POST / checkout with COD - voucher (amount) + credit', async t => {
     }
 })
 
-test.serial('POST / checkout with COD - voucher (percentage + max discount)', async t => {
+test.serial('POST / checkout with COD - voucher (percentage + max discount) (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
         let voucher = await access.getNotUsedVoucher({
             expiry: { $gte: new Date() },
             used: false,
-            numberOfItems: { $exists: false },
-            minimumPurchase: { $lte: 500000 },
-            binRange: { $exists: false },
             discountType: 'percentage',
-            maximumDiscountAmount: { $gt: 0 },
-            specificDays: []
+            maximumDiscountAmount: { $gt: 0, $lte: 150000 },
+            specificDays: [],
+            customer: { $exists: false },
+            numberOfItems: 0
         }, customer)
 
         t.truthy(voucher)

@@ -69,7 +69,7 @@ test.serial('DELETE / cannot delete invalid creditcard', async t => {
     t.deepEqual(res.body.message, 'INVALID_CREDIT_CARD_OR_CANNOT_DELETE')
 })
 
-test.serial('DELETE / can delete creditcard', async t => {
+test.serial('DELETE / can delete creditcard (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {

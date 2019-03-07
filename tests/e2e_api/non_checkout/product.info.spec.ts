@@ -16,11 +16,11 @@ test('GET / invalid product ID', async t => {
     t.deepEqual(res.body.message, 'PRODUCT_NOT_FOUND')
 })
 
-test('GET / product of sale not started', async t => {
+test('GET / product of sale not started (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
-        let products = await request.getProducts(config.api.todaySales)
+        let products = await request.getProducts(config.api.currentSales)
 
         let redisItem: string
         let originalStart: string
@@ -30,8 +30,11 @@ test('GET / product of sale not started', async t => {
             originalStart = redisItem['event']['startDate']
 
             // set date on Redis
-            redisItem['event']['startDate'] = '2019-02-22T01:00:00.000Z'
+            redisItem['event']['startDate'] = '2030-02-22T01:00:00.000Z'
             await accessRedis.setValue('productId:' + products[0].id, JSON.stringify(redisItem))
+
+            redisItem = await accessRedis.getKey('productId:' + products[0].id)
+            t.deepEqual(redisItem['event']['startDate'], '2030-02-22T01:00:00.000Z')
 
             const res = await request.get(config.api.product + products[0].id)
 
@@ -47,11 +50,11 @@ test('GET / product of sale not started', async t => {
     }
 })
 
-test('GET / product of sale ended', async t => {
+test('GET / product of sale ended (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
-        let products = await request.getProducts(config.api.todaySales)
+        let products = await request.getProducts(config.api.currentSales)
 
         let redisItem: string
         let originalEnd: string
@@ -63,6 +66,9 @@ test('GET / product of sale ended', async t => {
             // set date on Redis
             redisItem['event']['endDate'] = '2019-02-18T01:00:00.000Z'
             await accessRedis.setValue('productId:' + products[0].id, JSON.stringify(redisItem))
+
+            redisItem = await accessRedis.getKey('productId:' + products[0].id)
+            t.deepEqual(redisItem['event']['endDate'], '2019-02-18T01:00:00.000Z')
 
             const res = await request.get(config.api.product + products[0].id)
 

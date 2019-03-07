@@ -13,6 +13,7 @@ let requestAddress = new Utils.AddressUtils
 let requestAccount = new Utils.AccountUtils
 let requestCart = new Utils.CartUtils
 let requestProduct = new Utils.ProductUtils
+let requestOrder = new Utils.OrderUtils
 let access = new Utils.DbAccessUtils
 let accessRedis = new Utils.RedisAccessUtils
 
@@ -235,7 +236,7 @@ test.serial('POST / cannot recheckout with invalid product', async t => {
 
 // validate availability
 
-test.serial('POST / cannot recheckout with sold out product', async t => {
+test.serial('POST / cannot recheckout with sold out product (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
@@ -279,7 +280,7 @@ test.serial('POST / cannot recheckout with sold out product', async t => {
     }
 })
 
-test.serial('POST / cannot recheckout with limited stock product', async t => {
+test.serial('POST / cannot recheckout with limited stock product (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
@@ -323,7 +324,7 @@ test.serial('POST / cannot recheckout with limited stock product', async t => {
     }
 })
 
-test.serial('POST / cannot recheckout with sale ended product', async t => {
+test.serial('POST / cannot recheckout with sale ended product (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
@@ -396,7 +397,7 @@ test.serial('POST / cannot recheckout with voucher not meeting min items', async
     const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
-        numberOfItems: { $gte: 2 }
+        numberOfItems: { $gt: 2 }
     })
 
     t.truthy(voucher)
@@ -594,7 +595,7 @@ test.serial('POST / cannot recheckout with COD using voucher for CC', async t =>
     t.deepEqual(res.body.message, 'REQUIRES_CC_PAYMENT')
 })
 
-test.serial('POST / cannot recheckout with voucher for Stripe using wrong bin range', async t => {
+test.serial('POST / cannot recheckout with voucher for Stripe using wrong bin range (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
     } else {
@@ -643,12 +644,19 @@ test.serial('POST / cannot recheckout with voucher for Stripe using wrong bin ra
 })
 
 test.serial('POST / cannot recheckout with already used voucher', async t => {
+    const cookie = await request.getLogInCookie(config.testAccount.email_in,
+        config.testAccount.password_in)
+
+    const customer1 = await access.getCustomerInfo({
+        email: config.testAccount.email_in.toLowerCase()
+    })
+
     const voucher = await access.getUsedVoucher({
         expiry: { $gte: new Date() },
         binRange: { $exists: false },
         used: false,
         oncePerAccount: true
-    }, customer)
+    }, customer1)
 
     t.truthy(voucher)
 
@@ -668,7 +676,7 @@ test.serial('POST / cannot recheckout with already used voucher', async t => {
             "method": "COD",
             "shipping": 25000,
             "voucher": voucher._id
-        }, t.context['cookie'])
+        }, cookie)
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'YOU_ALREADY_USED_THIS_VOUCHER')
@@ -729,4 +737,56 @@ test.serial('POST / cannot recheckout with with more than available credit', asy
 
     t.deepEqual(res.statusCode, 400)
     t.deepEqual(res.body.message, 'USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE')
+})
+
+// validate voucher amount
+
+test.serial('Validate voucher amount applied for recheckout order (skip-prod)', async t => {
+    if (process.env.NODE_ENV == 'prod') {
+        t.pass()
+    } else {
+        const voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            used: false,
+            discountType: 'percentage',
+            maximumDiscountAmount: { $gt: 0, $lte: 150000 },
+            specificDays: [],
+            customer: { $exists: false },
+            numberOfItems: 0
+        })
+
+        t.truthy(voucher)
+
+        item = await requestProduct.getProductWithCountry('VN', 2000000, 10000000)
+        await requestCart.addToCart(item.id, t.context['cookie'])
+
+        let info: Model.CheckoutInput
+        info = {}
+        info.account = await requestAccount.getAccountInfo(t.context['cookie'])
+        info.addresses = await requestAddress.getAddresses(t.context['cookie'])
+        info.voucherId = voucher._id
+
+        let checkout = await request.checkoutPayDollar(info, t.context['cookie'])
+
+        t.truthy(checkout.orderId)
+
+        let payDollarCreditCard = checkout.creditCard
+        payDollarCreditCard.cardHolder = 'testing'
+        payDollarCreditCard.cardNo = '4335900000140045'
+        payDollarCreditCard.pMethod = 'VISA'
+        payDollarCreditCard.epMonth = 7
+        payDollarCreditCard.epYear = 2020
+        payDollarCreditCard.securityCode = '333'
+
+        const res = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
+            t.context['cookie'], config.payDollarBase)
+
+        let parse = await request.parsePayDollarRes(res.body)
+
+        let failedAttempt = await request.failedAttempt(parse.Ref, t.context['cookie'])
+
+        const order = await requestOrder.getOrderInfo(failedAttempt.orderId, t.context['cookie'])
+
+        t.true(order.paymentSummary.voucherAmount <= voucher.maximumDiscountAmount)
+    }
 })

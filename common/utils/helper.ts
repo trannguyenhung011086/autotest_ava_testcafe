@@ -172,6 +172,12 @@ export class Helper {
         return cookie
     }
 
+    public async pickRandomUser(emailList: string[]) {
+        const rand = Math.floor(Math.random() * emailList.length)
+        return await this.getLogInCookie(config.testAccount.email_ex[rand],
+            config.testAccount.password_ex)
+    }
+
     public getArrayRandomElement(arr: any[]) {
         if (arr && arr.length) {
             return arr[Math.floor(Math.random() * arr.length)]
@@ -179,13 +185,14 @@ export class Helper {
     }
 
     public matchRegExp(input: string, exp: RegExp) {
-        const matched = input.match(exp)
-
-        if (matched.length > 0) {
+        if (input.match(exp) && input.match(exp).length > 0) {
             return true
-        } else {
-            return false
         }
+        return false
+    }
+
+    public validateEmail(email: string) {
+        return this.matchRegExp(email.toLowerCase(), /(?=^.{1,64}$)^[a-zA-Z0-9](?:[a-zA-Z0-9\._-]*[a-zA-Z0-9])?@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-z]{2,}))$/)
     }
 
     public validateImage(image: string) {

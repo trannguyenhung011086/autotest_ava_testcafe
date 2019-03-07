@@ -3,27 +3,25 @@ import * as Utils from '../../../common/utils'
 import * as faker from 'faker/locale/vi'
 import * as Model from '../../../common/interface'
 
-let account: Model.Account
 let signIn: Model.SignIn
 
 let request = new Utils.AccountUtils
 
 import test from 'ava'
 
-test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[2],
-        config.testAccount.password_ex)
+test.beforeEach(async t => {
+    t.context['cookie'] = await request.pickRandomUser(config.testAccount.email_ex)
 })
 
 test('GET / get account info', async t => {
     const res = await request.get(config.api.account, t.context['cookie'])
-    account = res.body
+    const account: Model.Account = res.body
 
     t.deepEqual(res.statusCode, 200)
     t.truthy(account.id)
+    t.true(request.validateEmail(account.email))
     t.true(account.hasOwnProperty('firstName'))
     t.true(account.hasOwnProperty('lastName'))
-    t.deepEqual(account.email, config.testAccount.email_ex[2].toLowerCase())
     t.regex(account.language, /en|vn/)
     t.deepEqual(typeof (account.accountCredit), 'number')
     t.deepEqual(account.provider, 'local')

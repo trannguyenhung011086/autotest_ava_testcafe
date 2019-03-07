@@ -43,3 +43,7 @@ test.requestHooks(mockNonRedirect)
         let location = await t.eval(() => document.location.href)
         await t.expect(location).notEql(config.baseUrl + '/vn')
     })
+
+test.skip('Check product info returned from API. See WWW-456', async () => {
+    // TO DO
+})

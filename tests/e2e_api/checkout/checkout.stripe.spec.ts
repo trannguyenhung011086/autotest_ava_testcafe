@@ -27,9 +27,9 @@ const stripeData = {
 import test from 'ava'
 
 test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[9],
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[3],
         config.testAccount.password_ex)
-        
+
     addresses = await requestAddress.getAddresses(t.context['cookie'])
 })
 
@@ -73,6 +73,8 @@ test.serial('POST / cannot checkout with unsupported Stripe', async t => {
     stripeData['card[number]'] = '3566002020360505' // JCB
     const stripeSource = await request.postFormUrl('/v1/sources', stripeData,
         t.context['cookie'], config.stripeBase).then(res => res.body)
+
+    t.truthy(stripeSource['error']['code'], 'card_declined')
 
     const res = await request.post(config.api.checkout, {
         "address": {
@@ -227,7 +229,7 @@ test.serial('POST / checkout with new Stripe (save card) - MASTER - voucher (amo
     t.deepEqual(Math.abs(order.paymentSummary.accountCredit), credit)
 })
 
-test.serial('POST / checkout with saved Stripe - voucher (percentage + max discount)', async t => {
+test.serial.only('POST / checkout with saved Stripe - voucher (percentage + max discount)', async t => {
     const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,

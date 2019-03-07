@@ -301,23 +301,26 @@ test.serial('POST / checkout with new CC (save card) - VISA - voucher (amount) +
 
     t.truthy(voucher)
 
+    const cookie = await request.getLogInCookie(config.testAccount.email_ex[9],
+        config.testAccount.password_ex)
+
     item = await requestProduct.getInStockProduct(config.api.todaySales, 2)
 
     const credit = request.calculateCredit(account.accountCredit,
         item.salePrice, voucher.amount)
 
-    await requestCart.addToCart(item.id, t.context['cookie'])
+    await requestCart.addToCart(item.id, cookie)
 
-    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
+    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
     checkoutInput.addresses = addresses
     checkoutInput.voucherId = voucher._id
     checkoutInput.credit = credit
     checkoutInput.saveNewCard = true
 
-    let checkout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
+    let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
+    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
 
     t.true(checkout.creditCard.orderRef.includes(order.code))
     t.deepEqual(order.status, 'pending')
@@ -336,14 +339,14 @@ test.serial('POST / checkout with new CC (save card) - VISA - voucher (amount) +
     payDollarCreditCard.securityCode = '123'
 
     let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
-        t.context['cookie'], config.payDollarBase)
+        cookie, config.payDollarBase)
     let parse = await request.parsePayDollarRes(result.body)
 
     t.deepEqual(parse.successcode, '0')
     t.deepEqual(parse.Ref, checkout.creditCard.orderRef)
     t.regex(parse.errMsg, /Transaction completed/)
 
-    order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
+    order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
     t.deepEqual(order.status, 'placed')
 })
 
@@ -361,18 +364,21 @@ test.serial('POST / checkout with saved CC - voucher (percentage + max discount)
 
     t.truthy(voucher)
 
-    item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
-    await requestCart.addToCart(item.id, t.context['cookie'])
+    const cookie = await request.getLogInCookie(config.testAccount.email_ex[7],
+        config.testAccount.password_ex)
 
-    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
+    item = await requestProduct.getInStockProduct(config.api.todaySales, 1)
+    await requestCart.addToCart(item.id, cookie)
+
+    checkoutInput.account = await requestAccount.getAccountInfo(cookie)
     checkoutInput.addresses = addresses
     checkoutInput.voucherId = voucher._id
     checkoutInput.methodData = matchedCard
 
-    let checkout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
+    let checkout = await request.checkoutPayDollar(checkoutInput, cookie)
     t.truthy(checkout.orderId)
 
-    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
+    let order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
 
     t.true(checkout.creditCard.orderRef.includes(order.code))
     t.deepEqual(order.status, 'pending')
@@ -383,13 +389,13 @@ test.serial('POST / checkout with saved CC - voucher (percentage + max discount)
 
     payDollarCreditCard = checkout.creditCard
     let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
-        t.context['cookie'], config.payDollarBase)
+        cookie, config.payDollarBase)
     let parse = await request.parsePayDollarRes(result.body)
 
     t.deepEqual(parse.successcode, '0')
     t.deepEqual(parse.Ref, checkout.creditCard.orderRef)
     t.regex(parse.errMsg, /Transaction completed/)
 
-    order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
+    order = await requestOrder.getOrderInfo(checkout.orderId, cookie)
     t.deepEqual(order.status, 'placed')
 })

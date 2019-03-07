@@ -4,6 +4,7 @@ import { Helper } from '../helper'
 import { AccountUtils } from './account'
 import { AddressUtils } from './address'
 import { CartUtils } from './cart'
+import { t } from 'testcafe';
 
 export class CheckoutUtils extends Helper {
     constructor() {

@@ -63,7 +63,7 @@ test.serial('POST / recheckout with COD', async t => {
     t.deepEqual(order.paymentSummary.shipping, 25000)
 })
 
-test.serial('POST / recheckout with new CC (not save card) - VISA', async t => {
+test.serial('POST / recheckout with new CC (not save card) - VISA (skip-prod)', async t => {
     checkoutInput.saveNewCard = false
 
     let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
@@ -97,7 +97,7 @@ test.serial('POST / recheckout with new CC (not save card) - VISA', async t => {
     t.deepEqual(order.status, 'placed')
 })
 
-test.serial('POST / recheckout with new CC (save card) - MASTER', async t => {
+test.serial('POST / recheckout with new CC (save card) - MASTER (skip-prod)', async t => {
     checkoutInput.saveNewCard = true
 
     let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
@@ -131,7 +131,7 @@ test.serial('POST / recheckout with new CC (save card) - MASTER', async t => {
     t.deepEqual(order.status, 'placed')
 })
 
-test.serial('POST / recheckout with saved CC', async t => {
+test.serial('POST / recheckout with saved CC (skip-prod)', async t => {
     let matchedCard = await requestCreditcard.getCard('PayDollar', t.context['cookie'])
     checkoutInput.methodData = matchedCard
 
@@ -159,12 +159,13 @@ test.serial('POST / recheckout with saved CC', async t => {
     t.deepEqual(order.status, 'placed')
 })
 
-test.serial('POST / recheckout with COD - voucher (amount) + credit', async t => {
+test.serial('POST / recheckout with COD - voucher (amount) + credit (skip-prod)', async t => {
     const voucher = await access.getNotUsedVoucher({
         expiry: { $gte: new Date() },
         used: false,
-        numberOfItems: { $exists: false },
-        minimumPurchase: null,
+        numberOfItems: 0,
+        minimumPurchase: 0,
+        numberOfUsage: null,
         binRange: { $exists: false },
         discountType: 'amount',
         amount: { $gt: 0 },
@@ -179,7 +180,7 @@ test.serial('POST / recheckout with COD - voucher (amount) + credit', async t =>
     checkoutInput.voucherId = voucher._id
     checkoutInput.credit = credit
 
-    let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
+    let reCheckout = await request.checkoutCod(checkoutInput, t.context['cookie'])
     t.truthy(reCheckout.orderId)
 
     let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
@@ -193,7 +194,7 @@ test.serial('POST / recheckout with COD - voucher (amount) + credit', async t =>
     t.deepEqual(Math.abs(order.paymentSummary.accountCredit), credit)
 })
 
-test.serial('POST / recheckout with saved CC - voucher (percentage + max discount)', async t => {
+test.serial('POST / recheckout with saved CC - voucher (percentage + max discount) (skip-prod)', async t => {
     const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
