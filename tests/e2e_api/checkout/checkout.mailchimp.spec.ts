@@ -23,7 +23,6 @@ test.before(async t => {
         config.testAccount.password_ex)
 
     addresses = await requestAddress.getAddresses(t.context['cookie'])
-
     account = await requestAccount.getAccountInfo(t.context['cookie'])
     customer = await access.getCustomerInfo({ email: account.email })
 })

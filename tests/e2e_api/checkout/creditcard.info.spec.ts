@@ -16,8 +16,8 @@ let requestProduct = new Utils.ProductUtils
 import test from 'ava'
 
 test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_in,
-        config.testAccount.password_in)
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[12],
+        config.testAccount.password_ex)
 
     addresses = await requestAddress.getAddresses(t.context['cookie'])
 

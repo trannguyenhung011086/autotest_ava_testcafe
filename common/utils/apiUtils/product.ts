@@ -162,7 +162,7 @@ export class ProductUtils extends Helper {
             if (product.soldOut == false) {
                 matched.push(product)
             }
-            if (matched.length >= 10) {
+            if (matched.length >= 15) {
                 break
             }
         }
@@ -177,7 +177,7 @@ export class ProductUtils extends Helper {
                 } else if (!price && product.quantity >= quantity) {
                     result.push(product)
                 }
-                if (result.length >= 10) {
+                if (result.length >= 15) {
                     break
                 }
             }

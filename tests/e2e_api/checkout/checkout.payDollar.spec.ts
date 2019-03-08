@@ -296,7 +296,8 @@ test.serial('POST / checkout with new CC (save card) - VISA - voucher (amount) +
         binRange: '433590,542288,555555,400000',
         discountType: 'amount',
         amount: { $gt: 0 },
-        specificDays: []
+        specificDays: [],
+        numberOfUsage: null
     })
 
     t.truthy(voucher)
@@ -359,7 +360,8 @@ test.serial('POST / checkout with saved CC - voucher (percentage + max discount)
         binRange: '433590,542288,555555,400000',
         discountType: 'percentage',
         maximumDiscountAmount: { $gt: 0 },
-        specificDays: []
+        specificDays: [],
+        numberOfUsage: null
     })
 
     t.truthy(voucher)

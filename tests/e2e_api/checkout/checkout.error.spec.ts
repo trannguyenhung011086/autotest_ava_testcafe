@@ -24,7 +24,6 @@ test.before(async t => {
         config.testAccount.password_ex)
 
     addresses = await requestAddress.getAddresses(t.context['cookie'])
-
     account = await requestAccount.getAccountInfo(t.context['cookie'])
     customer = await access.getCustomerInfo({ email: account.email })
 })
@@ -275,7 +274,7 @@ test.serial('POST / cannot checkout with sold out product (skip-prod)', async t 
     } else {
         let redisItem: string
         let originalQuantity: number
-        let item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
+        const item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
 
         try {
             await requestCart.addToCart(item.id, t.context['cookie'])
@@ -319,7 +318,7 @@ test.serial('POST / cannot checkout with limited stock product (skip-prod)', asy
     } else {
         let redisItem: string
         let originalQuantity: number
-        let item = await requestProduct.getInStockProduct(config.api.currentSales, 2)
+        const item = await requestProduct.getInStockProduct(config.api.currentSales, 2)
 
         try {
             await requestCart.addToCart(item.id, t.context['cookie'])

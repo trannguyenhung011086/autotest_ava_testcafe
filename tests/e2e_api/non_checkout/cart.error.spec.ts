@@ -6,6 +6,7 @@ let item: Model.Product
 let cart: Model.Cart
 
 let request = new Utils.CartUtils
+let requestAccount = new Utils.AccountUtils
 let requestProduct = new Utils.ProductUtils
 let access = new Utils.DbAccessUtils
 
@@ -21,7 +22,7 @@ test('POST / cannot add invalid product to cart', async t => {
     }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 500)
-    t.deepEqual(res.body.message, 'COULD_NOT_ADD_ITEM_TO_CART')
+    t.deepEqual(res.body.message, 'Argument passed in must be a single String of 12 bytes or a string of 24 hex characters')
 })
 
 test('POST / cannot add empty product to cart', async t => {
@@ -30,7 +31,7 @@ test('POST / cannot add empty product to cart', async t => {
     }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 500)
-    t.deepEqual(res.body.message, 'COULD_NOT_ADD_ITEM_TO_CART')
+    t.deepEqual(res.body.message, 'Argument passed in must be a single String of 12 bytes or a string of 24 hex characters')
 })
 
 test('POST / cannot add sold out product to cart', async t => {
@@ -58,8 +59,27 @@ test('POST / cannot add sale ended product to cart', async t => {
     }, t.context['cookie'])
 
     t.deepEqual(res.statusCode, 500)
-    t.deepEqual(res.body.message, 'THE_SALE_FOR_TITLE_HAS_ENDED')
+    t.deepEqual(res.body.message, 'COULD_NOT_RESOLVE_PRODUCT')
 })
+
+test.skip('POST / cannot add more than 8 unique products', async t => {
+    const itemList = await requestProduct.getInStockProducts(config.api.currentSales, 1)
+    t.true(itemList.length > 10)
+
+    for (let i = 0; i < 8; i++) {
+        await request.addToCart(itemList[i].id, t.context['cookie'])
+    }
+
+    const account = await requestAccount.getAccountInfo(t.context['cookie'])
+    t.deepEqual(account.cart.length, 8)
+
+    const res = await request.post(config.api.cart, {
+        "productId": itemList[8].id
+    }, t.context['cookie'])
+
+    t.deepEqual(res.statusCode, 500)
+    t.deepEqual(res.body.message, 'You can only have 8 products in your cart!')
+}) // wait for WWW-618
 
 test('PUT / cannot update quantity in cart to 0', async t => {
     item = await requestProduct.getInStockProduct(config.api.currentSales, 1)

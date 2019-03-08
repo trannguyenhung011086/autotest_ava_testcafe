@@ -86,7 +86,8 @@ export const config = {
         feedGoogleDynamic: '/api/v1/google-dynamic-product-feeds',
         feedCriteo: '/api/v1/criteo',
         feedInsider: '/api/v1/insider',
-        feedGoogleMerchant: '/api/v1/google-merchant'
+        feedGoogleMerchant: '/api/v1/google-merchant',
+        sitemap: '/api/v2/sitemap.xml'
     },
     stripeKey: stripeKey,
     stripeBase: 'https://api.stripe.com',
@@ -106,7 +107,9 @@ export const config = {
             'QA_test1234_leflair_7@mailinator.com',
             'QA_test1234_leflair_8@mailinator.com',
             'QA_test1234_leflair_9@mailinator.com',
-            'QA_test1234_leflair_10@mailinator.com'
+            'QA_test1234_leflair_10@mailinator.com',
+            'test1234@test.com',
+            'test1234@mail.com'
         ],
         password_ex: '123456789',
         facebook: 'trannguyenhung011086@protonmail.com',

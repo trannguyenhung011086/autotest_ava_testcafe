@@ -12,6 +12,7 @@ export class BrandUtils extends Helper {
         const res = await this.get(config.api.brands)
         let brands: Model.brands = res.body
         let brandList = []
+
         for (let item of Object.keys(brands)) {
             let brand: Model.BrandItem
             for (brand of brands[item]) {
@@ -27,8 +28,8 @@ export class BrandUtils extends Helper {
 
     public async getBrandWithNoProduct(): Promise<Model.BrandInfo> {
         let brandList = await this.getBrandsList()
-
         let result: Model.BrandInfo
+
         for (let brand of brandList) {
             const res = await this.get(config.api.brands + brand.id)
             if (res.body.products.length == 0) {

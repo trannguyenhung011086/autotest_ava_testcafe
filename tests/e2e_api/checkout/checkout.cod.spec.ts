@@ -19,11 +19,10 @@ let access = new Utils.DbAccessUtils
 import test from 'ava'
 
 test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[1],
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[3],
         config.testAccount.password_ex)
 
     addresses = await requestAddress.getAddresses(t.context['cookie'])
-
     account = await requestAccount.getAccountInfo(t.context['cookie'])
     customer = await access.getCustomerInfo({ email: account.email })
 })
@@ -92,6 +91,27 @@ test.serial('POST / checkout with COD', async t => {
     t.deepEqual(order.paymentSummary.shipping, 25000)
 })
 
+test.serial('Compare product details from checkout to order', async t => {
+    item = await requestProduct.getProductWithCountry('VN', 0, 2000000)
+    let cart = await requestCart.addToCart(item.id, t.context['cookie'])
+
+    const addresses = await requestAddress.getAddresses(t.context['cookie'])
+
+    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
+    checkoutInput.addresses = addresses
+
+    let checkout = await request.checkoutCod(checkoutInput, t.context['cookie'])
+    t.truthy(checkout.orderId)
+
+    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
+
+    t.deepEqual(cart.productContentId, order.products[0].productContentId)
+    t.deepEqual(cart.productId, order.products[0].productId)
+    t.deepEqual(cart.nsId, order.products[0].nsId)
+    t.deepEqual.skip(cart.retailPrice, order.products[0].retailPrice) // wait for WWW-570 
+    t.deepEqual(cart.salePrice, order.products[0].salePrice)
+})
+
 test.serial('POST / checkout with COD - voucher (amount) + credit (skip-prod)', async t => {
     if (process.env.NODE_ENV == 'prod') {
         t.pass()
@@ -102,8 +122,9 @@ test.serial('POST / checkout with COD - voucher (amount) + credit (skip-prod)', 
             discountType: 'amount',
             minimumPurchase: 0,
             numberOfItems: 0,
-            oncePerAccount: true,
-            customer: { $exists: false }
+            customer: { $exists: false },
+            numberOfUsage: null,
+            binRange: { $exists: false }
         }, customer)
 
         t.truthy(voucher)
@@ -142,10 +163,11 @@ test.serial('POST / checkout with COD - voucher (percentage + max discount) (ski
             expiry: { $gte: new Date() },
             used: false,
             discountType: 'percentage',
-            maximumDiscountAmount: { $gt: 0, $lte: 150000 },
             specificDays: [],
             customer: { $exists: false },
-            numberOfItems: 0
+            numberOfItems: 0,
+            numberOfUsage: null,
+            binRange: { $exists: false }
         }, customer)
 
         t.truthy(voucher)

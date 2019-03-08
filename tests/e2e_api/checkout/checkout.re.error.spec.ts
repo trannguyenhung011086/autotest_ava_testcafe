@@ -20,7 +20,7 @@ let accessRedis = new Utils.RedisAccessUtils
 import test from 'ava'
 
 test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[6],
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[2],
         config.testAccount.password_ex)
 
     addresses = await requestAddress.getAddresses(t.context['cookie'])

@@ -64,173 +64,193 @@ test.serial('POST / recheckout with COD', async t => {
 })
 
 test.serial('POST / recheckout with new CC (not save card) - VISA (skip-prod)', async t => {
-    checkoutInput.saveNewCard = false
+    if (process.env.NODE_ENV == 'prod') {
+        t.pass()
+    } else {
+        checkoutInput.saveNewCard = false
 
-    let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
-    t.truthy(reCheckout.orderId)
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
+        t.truthy(reCheckout.orderId)
 
-    let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
 
-    t.true(reCheckout.creditCard.orderRef.includes(order.code))
-    t.deepEqual(order.status, 'pending')
-    t.false(order.isCrossBorder)
-    t.deepEqual(order.paymentSummary.method, 'CC')
-    t.deepEqual(order.paymentSummary.shipping, 0)
+        t.true(reCheckout.creditCard.orderRef.includes(order.code))
+        t.deepEqual(order.status, 'pending')
+        t.false(order.isCrossBorder)
+        t.deepEqual(order.paymentSummary.method, 'CC')
+        t.deepEqual(order.paymentSummary.shipping, 0)
 
-    payDollarCreditCard = reCheckout.creditCard
-    payDollarCreditCard.cardHolder = 'testing card'
-    payDollarCreditCard.cardNo = '4335900000140045'
-    payDollarCreditCard.pMethod = 'VISA'
-    payDollarCreditCard.epMonth = 7
-    payDollarCreditCard.epYear = 2020
-    payDollarCreditCard.securityCode = '123'
+        payDollarCreditCard = reCheckout.creditCard
+        payDollarCreditCard.cardHolder = 'testing card'
+        payDollarCreditCard.cardNo = '4335900000140045'
+        payDollarCreditCard.pMethod = 'VISA'
+        payDollarCreditCard.epMonth = 7
+        payDollarCreditCard.epYear = 2020
+        payDollarCreditCard.securityCode = '123'
 
-    let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
-        t.context['cookie'], config.payDollarBase)
-    let parse = await request.parsePayDollarRes(result.body)
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
+            t.context['cookie'], config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
-    t.deepEqual(parse.successcode, '0')
-    t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef)
-    t.regex(parse.errMsg, /Transaction completed/)
+        t.deepEqual(parse.successcode, '0')
+        t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef)
+        t.regex(parse.errMsg, /Transaction completed/)
 
-    order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
-    t.deepEqual(order.status, 'placed')
+        order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        t.deepEqual(order.status, 'placed')
+    }
 })
 
 test.serial('POST / recheckout with new CC (save card) - MASTER (skip-prod)', async t => {
-    checkoutInput.saveNewCard = true
+    if (process.env.NODE_ENV == 'prod') {
+        t.pass()
+    } else {
+        checkoutInput.saveNewCard = true
 
-    let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
-    t.truthy(reCheckout.orderId)
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
+        t.truthy(reCheckout.orderId)
 
-    let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
 
-    t.true(reCheckout.creditCard.orderRef.includes(order.code))
-    t.deepEqual(order.status, 'pending')
-    t.false(order.isCrossBorder)
-    t.deepEqual(order.paymentSummary.method, 'CC')
-    t.deepEqual(order.paymentSummary.shipping, 0)
+        t.true(reCheckout.creditCard.orderRef.includes(order.code))
+        t.deepEqual(order.status, 'pending')
+        t.false(order.isCrossBorder)
+        t.deepEqual(order.paymentSummary.method, 'CC')
+        t.deepEqual(order.paymentSummary.shipping, 0)
 
-    payDollarCreditCard = reCheckout.creditCard
-    payDollarCreditCard.cardHolder = 'testing card'
-    payDollarCreditCard.cardNo = '5422882800700007'
-    payDollarCreditCard.pMethod = 'Master'
-    payDollarCreditCard.epMonth = 7
-    payDollarCreditCard.epYear = 2020
-    payDollarCreditCard.securityCode = '123'
+        payDollarCreditCard = reCheckout.creditCard
+        payDollarCreditCard.cardHolder = 'testing card'
+        payDollarCreditCard.cardNo = '5422882800700007'
+        payDollarCreditCard.pMethod = 'Master'
+        payDollarCreditCard.epMonth = 7
+        payDollarCreditCard.epYear = 2020
+        payDollarCreditCard.securityCode = '123'
 
-    let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
-        t.context['cookie'], config.payDollarBase)
-    let parse = await request.parsePayDollarRes(result.body)
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
+            t.context['cookie'], config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
-    t.deepEqual(parse.successcode, '0')
-    t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef)
-    t.regex(parse.errMsg, /Transaction completed/)
+        t.deepEqual(parse.successcode, '0')
+        t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef)
+        t.regex(parse.errMsg, /Transaction completed/)
 
-    order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
-    t.deepEqual(order.status, 'placed')
+        order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        t.deepEqual(order.status, 'placed')
+    }
 })
 
 test.serial('POST / recheckout with saved CC (skip-prod)', async t => {
-    let matchedCard = await requestCreditcard.getCard('PayDollar', t.context['cookie'])
-    checkoutInput.methodData = matchedCard
+    if (process.env.NODE_ENV == 'prod') {
+        t.pass()
+    } else {
+        let matchedCard = await requestCreditcard.getCard('PayDollar', t.context['cookie'])
+        checkoutInput.methodData = matchedCard
 
-    let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
-    t.truthy(reCheckout.orderId)
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
+        t.truthy(reCheckout.orderId)
 
-    let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
 
-    t.true(reCheckout.creditCard.orderRef.includes(order.code))
-    t.deepEqual(order.status, 'pending')
-    t.false(order.isCrossBorder)
-    t.deepEqual(order.paymentSummary.method, 'CC')
-    t.deepEqual(order.paymentSummary.shipping, 0)
+        t.true(reCheckout.creditCard.orderRef.includes(order.code))
+        t.deepEqual(order.status, 'pending')
+        t.false(order.isCrossBorder)
+        t.deepEqual(order.paymentSummary.method, 'CC')
+        t.deepEqual(order.paymentSummary.shipping, 0)
 
-    payDollarCreditCard = reCheckout.creditCard
-    let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
-        t.context['cookie'], config.payDollarBase)
-    let parse = await request.parsePayDollarRes(result.body)
+        payDollarCreditCard = reCheckout.creditCard
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
+            t.context['cookie'], config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
-    t.deepEqual(parse.successcode, '0')
-    t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef)
-    t.regex(parse.errMsg, /Transaction completed/)
+        t.deepEqual(parse.successcode, '0')
+        t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef)
+        t.regex(parse.errMsg, /Transaction completed/)
 
-    order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
-    t.deepEqual(order.status, 'placed')
+        order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        t.deepEqual(order.status, 'placed')
+    }
 })
 
 test.serial('POST / recheckout with COD - voucher (amount) + credit (skip-prod)', async t => {
-    const voucher = await access.getNotUsedVoucher({
-        expiry: { $gte: new Date() },
-        used: false,
-        numberOfItems: 0,
-        minimumPurchase: 0,
-        numberOfUsage: null,
-        binRange: { $exists: false },
-        discountType: 'amount',
-        amount: { $gt: 0 },
-        specificDays: []
-    }, customer)
+    if (process.env.NODE_ENV == 'prod') {
+        t.pass()
+    } else {
+        const voucher = await access.getNotUsedVoucher({
+            expiry: { $gte: new Date() },
+            used: false,
+            numberOfItems: 0,
+            minimumPurchase: 0,
+            numberOfUsage: null,
+            binRange: { $exists: false },
+            discountType: 'amount',
+            amount: { $gt: 0 },
+            specificDays: []
+        }, customer)
 
-    t.truthy(voucher)
+        t.truthy(voucher)
 
-    const credit = request.calculateCredit(account.accountCredit,
-        item.salePrice, voucher.amount)
+        const credit = request.calculateCredit(account.accountCredit,
+            item.salePrice, voucher.amount)
 
-    checkoutInput.voucherId = voucher._id
-    checkoutInput.credit = credit
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.credit = credit
 
-    let reCheckout = await request.checkoutCod(checkoutInput, t.context['cookie'])
-    t.truthy(reCheckout.orderId)
+        let reCheckout = await request.checkoutCod(checkoutInput, t.context['cookie'])
+        t.truthy(reCheckout.orderId)
 
-    let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
 
-    t.true(order.code.includes(reCheckout.code))
-    t.deepEqual(order.status, 'placed')
-    t.false(order.isCrossBorder)
-    t.deepEqual(order.paymentSummary.method, 'COD')
-    t.deepEqual(order.paymentSummary.shipping, 25000)
-    t.deepEqual(order.paymentSummary.voucherAmount, voucher.amount)
-    t.deepEqual(Math.abs(order.paymentSummary.accountCredit), credit)
+        t.true(order.code.includes(reCheckout.code))
+        t.deepEqual(order.status, 'placed')
+        t.false(order.isCrossBorder)
+        t.deepEqual(order.paymentSummary.method, 'COD')
+        t.deepEqual(order.paymentSummary.shipping, 25000)
+        t.deepEqual(order.paymentSummary.voucherAmount, voucher.amount)
+        t.deepEqual(Math.abs(order.paymentSummary.accountCredit), credit)
+    }
 })
 
 test.serial('POST / recheckout with saved CC - voucher (percentage + max discount) (skip-prod)', async t => {
-    const voucher = await access.getVoucher({
-        expiry: { $gte: new Date() },
-        used: false,
-        binRange: '433590,542288,555555,400000',
-        discountType: 'percentage',
-        maximumDiscountAmount: { $gt: 0 },
-        specificDays: []
-    })
+    if (process.env.NODE_ENV == 'prod') {
+        t.pass()
+    } else {
+        const voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            used: false,
+            binRange: '433590,542288,555555,400000',
+            discountType: 'percentage',
+            maximumDiscountAmount: { $gt: 0 },
+            specificDays: []
+        })
 
-    t.truthy(voucher)
+        t.truthy(voucher)
 
-    let matchedCard = await requestCreditcard.getCard('PayDollar', t.context['cookie'])
+        let matchedCard = await requestCreditcard.getCard('PayDollar', t.context['cookie'])
 
-    checkoutInput.voucherId = voucher._id
-    checkoutInput.methodData = matchedCard
+        checkoutInput.voucherId = voucher._id
+        checkoutInput.methodData = matchedCard
 
-    let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
-    t.truthy(reCheckout.orderId)
+        let reCheckout = await request.checkoutPayDollar(checkoutInput, t.context['cookie'])
+        t.truthy(reCheckout.orderId)
 
-    let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        let order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
 
-    t.deepEqual(order.status, 'pending')
-    t.false(order.isCrossBorder)
-    t.deepEqual(order.paymentSummary.method, 'CC')
-    t.deepEqual(order.paymentSummary.shipping, 0)
-    t.true(order.paymentSummary.voucherAmount <= voucher.maximumDiscountAmount)
+        t.deepEqual(order.status, 'pending')
+        t.false(order.isCrossBorder)
+        t.deepEqual(order.paymentSummary.method, 'CC')
+        t.deepEqual(order.paymentSummary.shipping, 0)
+        t.true(order.paymentSummary.voucherAmount <= voucher.maximumDiscountAmount)
 
-    payDollarCreditCard = reCheckout.creditCard
-    let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
-        t.context['cookie'], config.payDollarBase)
-    let parse = await request.parsePayDollarRes(result.body)
+        payDollarCreditCard = reCheckout.creditCard
+        let result = await request.postFormUrlPlain(config.payDollarApi, payDollarCreditCard,
+            t.context['cookie'], config.payDollarBase)
+        let parse = await request.parsePayDollarRes(result.body)
 
-    t.deepEqual(parse.successcode, '0')
-    t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef)
-    t.regex(parse.errMsg, /Transaction completed/)
+        t.deepEqual(parse.successcode, '0')
+        t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef)
+        t.regex(parse.errMsg, /Transaction completed/)
 
-    order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
-    t.deepEqual(order.status, 'placed')
+        order = await requestOrder.getOrderInfo(reCheckout.orderId, t.context['cookie'])
+        t.deepEqual(order.status, 'placed')
+    }
 })

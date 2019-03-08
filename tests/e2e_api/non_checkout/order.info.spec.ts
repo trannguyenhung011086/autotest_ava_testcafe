@@ -20,27 +20,6 @@ test.before(async t => {
         config.testAccount.password_in)
 })
 
-test('Compare product details from checkout to order', async t => {
-    item = await requestProduct.getProductWithCountry('VN', 0, 2000000)
-    let cart = await requestCart.addToCart(item.id, t.context['cookie'])
-
-    const addresses = await requestAddress.getAddresses(t.context['cookie'])
-
-    checkoutInput.account = await requestAccount.getAccountInfo(t.context['cookie'])
-    checkoutInput.addresses = addresses
-
-    let checkout = await requestCheckout.checkoutCod(checkoutInput, t.context['cookie'])
-    t.truthy(checkout.orderId)
-
-    let order = await requestOrder.getOrderInfo(checkout.orderId, t.context['cookie'])
-
-    t.deepEqual(cart.productContentId, order.products[0].productContentId)
-    t.deepEqual(cart.productId, order.products[0].productId)
-    t.deepEqual(cart.nsId, order.products[0].nsId)
-    t.deepEqual.skip(cart.retailPrice, order.products[0].retailPrice) // wait for WWW-570 
-    t.deepEqual(cart.salePrice, order.products[0].salePrice)
-})
-
 test('GET / cannot see order of another customer', async t => {
     const res = await request.get(config.api.orders + '/5be3ea348f2a5c000155efbc', t.context['cookie'])
 

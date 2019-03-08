@@ -9,12 +9,12 @@ let request = new Utils.AddressUtils
 
 import test from 'ava'
 
-test.beforeEach(async t => {
-    t.context['cookie'] = await request.pickRandomUser(config.testAccount.email_ex)
-})
-
 test.before(async t => {
     cities = await request.getCities()
+})
+
+test.beforeEach(async t => {
+    t.context['cookie'] = await request.pickRandomUser(config.testAccount.email_ex)
 })
 
 test('GET / get all cities', async t => {
@@ -54,7 +54,7 @@ test('GET / get all addresses', async t => {
     t.truthy(addresses.shipping)
 })
 
-test('POST / add new valid shipping address (not duplicated billing address)', async t => {
+test('POST / add new shipping address (not duplicated billing address)', async t => {
     let shipping = await request.generateAddress('shipping', cities)
     shipping.duplicateBilling = false
 
@@ -72,7 +72,7 @@ test('POST / add new valid shipping address (not duplicated billing address)', a
     t.deepEqual(addresses.shipping[0].phone, shipping.phone)
 })
 
-test('POST / add new valid shipping address (duplicated billing address)', async t => {
+test('POST / add new shipping address (duplicated billing address)', async t => {
     let shipping = await request.generateAddress('shipping', cities)
     shipping.duplicateBilling = true
 
@@ -205,7 +205,7 @@ test('DELETE / delete billing address', async t => {
 
 // test('generate fake addressess', async t => {
 //     for (let email of config.testAccount.email_ex) {
-//         t.context['cookie'] = await request.getLogInt.context['cookie'](email,
+//         t.context['cookie'] = await request.getLogInCookie(email,
 //             config.testAccount.password_ex)
 //         cities = await request.getCities()
 //         let shipping = await request.generateAddress('shipping', cities)

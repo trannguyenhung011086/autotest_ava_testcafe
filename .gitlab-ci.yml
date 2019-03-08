@@ -27,44 +27,44 @@ test_api_checkout_stg:
   except:
     - schedules
 
-test_chromium_stg:
-  stage: test_stg
-  script:
-    - docker run --name chromium_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_chromium_ci
-  after_script:
-    - docker cp chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_chromium.xml
-  except:
-    - schedules
+# test_chromium_stg:
+#   stage: test_stg
+#   script:
+#     - docker run --name chromium_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_chromium_ci
+#   after_script:
+#     - docker cp chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_chromium.xml
+#   except:
+#     - schedules
 
-test_firefox_stg:
-  stage: test_stg
-  script:
-    - docker run --name firefox_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_firefox_ci
-  after_script:
-    - docker cp firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_firefox.xml
-  except:
-    - schedules
+# test_firefox_stg:
+#   stage: test_stg
+#   script:
+#     - docker run --name firefox_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_firefox_ci
+#   after_script:
+#     - docker cp firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_firefox.xml
+#   except:
+#     - schedules
 
-test_mobile_emu_stg:
-  stage: test_stg
-  script:
-    - docker run --name mobile_emu_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_mobile_emu_ci
-  after_script:
-    - docker cp mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_mobile_emu.xml
-  except:
-    - schedules
+# test_mobile_emu_stg:
+#   stage: test_stg
+#   script:
+#     - docker run --name mobile_emu_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_mobile_emu_ci
+#   after_script:
+#     - docker cp mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_mobile_emu.xml
+#   except:
+#     - schedules
 
 test_api_non_checkout_prod:
   stage: test_prod
@@ -73,51 +73,51 @@ test_api_non_checkout_prod:
   only:
     - schedules
 
-test_api_checkout_prod:
-  stage: test_prod
-  script:
-    - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci
-  only:
-    - schedules
+# test_api_checkout_prod:
+#   stage: test_prod
+#   script:
+#     - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci
+#   only:
+#     - schedules
 
-test_chromium_prod:
-  stage: test_prod
-  script:
-    - docker run --name chromium_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_chromium_ci
-  after_script:
-    - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_chromium.xml
-  only:
-    - schedules
+# test_chromium_prod:
+#   stage: test_prod
+#   script:
+#     - docker run --name chromium_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_chromium_ci
+#   after_script:
+#     - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_chromium.xml
+#   only:
+#     - schedules
 
-test_firefox_prod:
-  stage: test_prod
-  script:
-    - docker run --name firefox_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_firefox_ci
-  after_script:
-    - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_firefox.xml
-  only:
-    - schedules
+# test_firefox_prod:
+#   stage: test_prod
+#   script:
+#     - docker run --name firefox_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_firefox_ci
+#   after_script:
+#     - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_firefox.xml
+#   only:
+#     - schedules
 
-test_mobile_emu_prod:
-  stage: test_prod
-  script:
-    - docker run --name mobile_emu_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_mobile_emu_ci
-  after_script:
-    - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
-  artifacts:
-    expire_in: 1 week
-    reports:
-      junit: junit_mobile_emu.xml
-  only:
-    - schedules    
+# test_mobile_emu_prod:
+#   stage: test_prod
+#   script:
+#     - docker run --name mobile_emu_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_mobile_emu_ci
+#   after_script:
+#     - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit: junit_mobile_emu.xml
+#   only:
+#     - schedules    
 
 cleanup:
   stage: cleanup

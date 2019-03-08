@@ -27,7 +27,7 @@ const stripeData = {
 import test from 'ava'
 
 test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[3],
+    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[11],
         config.testAccount.password_ex)
 
     addresses = await requestAddress.getAddresses(t.context['cookie'])
@@ -194,8 +194,10 @@ test.serial('POST / checkout with new Stripe (save card) - MASTER - voucher (amo
         binRange: '433590,542288,555555,400000',
         discountType: 'amount',
         amount: { $gt: 0 },
-        specificDays: []
+        specificDays: [],
+        numberOfUsage: null
     })
+    t.truthy(voucher)
 
     item = await requestProduct.getInStockProduct(config.api.internationalSales, 2)
     await requestCart.addToCart(item.id, t.context['cookie'])
@@ -229,15 +231,17 @@ test.serial('POST / checkout with new Stripe (save card) - MASTER - voucher (amo
     t.deepEqual(Math.abs(order.paymentSummary.accountCredit), credit)
 })
 
-test.serial.only('POST / checkout with saved Stripe - voucher (percentage + max discount)', async t => {
+test.serial('POST / checkout with saved Stripe - voucher (percentage + max discount)', async t => {
     const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
         used: false,
         binRange: '433590,542288,555555,400000',
         discountType: 'percentage',
         maximumDiscountAmount: { $gt: 0 },
-        specificDays: []
+        specificDays: [],
+        numberOfUsage: null
     })
+    t.truthy(voucher)
 
     let matchedCard = await requestCreditcard.getCard('Stripe', t.context['cookie'])
 

@@ -13,18 +13,13 @@ let requestProduct = new Utils.ProductUtils
 
 import test from 'ava'
 
-test.before(async t => {
-    t.context['cookie'] = await request.getLogInCookie(config.testAccount.email_ex[3],
-        config.testAccount.password_ex)
-
+test.beforeEach(async t => {
+    t.context['cookie'] = await request.pickRandomUser(config.testAccount.email_ex)
+    await requestCart.emptyCart(t.context['cookie'])
     addresses = await requestAddress.getAddresses(t.context['cookie'])
 })
 
-test.beforeEach(async t => {
-    await requestCart.emptyCart(t.context['cookie'])
-})
-
-test.serial('POST / can send valid order to AccessTrade', async t => {
+test('POST / can send valid order to AccessTrade', async t => {
     let item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
     await requestCart.addToCart(item.id, t.context['cookie'])
 
@@ -43,7 +38,7 @@ test.serial('POST / can send valid order to AccessTrade', async t => {
     t.true(res.body.status)
 })
 
-test.serial('POST / cannot send valid order to AccessTrade without cookie', async t => {
+test('POST / cannot send valid order to AccessTrade without cookie', async t => {
     let item = await requestProduct.getInStockProduct(config.api.currentSales, 1)
     await requestCart.addToCart(item.id, t.context['cookie'])
 

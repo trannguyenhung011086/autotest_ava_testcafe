@@ -13,14 +13,16 @@ let request = new Utils.AddressUtils
 import test from 'ava'
 
 test.before(async t => {
+    const cities = await request.getCities()
+    city = await request.getCity(cities)
+    const districts = await request.getDistricts(city.id)
+    district = await request.getDistrict(districts)
+})
+
+test.beforeEach(async t => {
     t.context['cookie'] = await request.pickRandomUser(config.testAccount.email_ex)
 
     addresses = await request.getAddresses(t.context['cookie'])
-
-    let cities = await request.getCities()
-    city = await request.getCity(cities)
-    let districts = await request.getDistricts(city.id)
-    district = await request.getDistrict(districts)
 
     address = {
         address: 'QA_' + faker.address.streetAddress(),
