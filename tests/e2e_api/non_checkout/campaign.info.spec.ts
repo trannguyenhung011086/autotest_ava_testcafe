@@ -1,40 +1,40 @@
-import { config } from '../../../common/config'
-import * as Utils from '../../../common/utils'
-import * as Model from '../../../common/interface'
+import { config } from "../../../common/config";
+import * as Utils from "../../../common/utils";
+import * as Model from "../../../common/interface";
 
-let request = new Utils.Helper
-let access = new Utils.DbAccessUtils
+let request = new Utils.Helper();
+let access = new Utils.DbAccessUtils();
 
-import test from 'ava'
+import test from "ava";
 
-test('GET / valid campaign name', async t => {
-    let campaign: Model.Campaign = await access.getCampaign({
-        endDate: { $gt: new Date() }
-    })
+test("GET / valid campaign name", async t => {
+	let campaign: Model.Campaign = await access.getCampaign({
+		endDate: { $gt: new Date() }
+	});
 
-    t.truthy(campaign)
+	t.truthy(campaign);
 
-    let res = await request.get(config.api.campaigns + campaign.name)
+	let res = await request.get(config.api.campaigns + campaign.name);
 
-    t.deepEqual(res.statusCode, 200)
-    t.deepEqual(res.body.message, 'SET')
+	t.deepEqual(res.statusCode, 200);
+	t.deepEqual(res.body.message, "SET");
 
-    res = await request.get(config.api.campaigns + campaign.name)
+	res = await request.get(config.api.campaigns + campaign.name);
 
-    t.deepEqual(res.statusCode, 200)
-    t.deepEqual(res.body.message, 'NO_CHANGE')
-})
+	t.deepEqual(res.statusCode, 200);
+	t.deepEqual(res.body.message, "NO_CHANGE");
+});
 
-test('GET / invalid campaign name', async t => {
-    const res = await request.get(config.api.campaigns + 'INVALID-CAMPAIGN')
+test("GET / invalid campaign name", async t => {
+	const res = await request.get(config.api.campaigns + "INVALID-CAMPAIGN");
 
-    t.deepEqual(res.statusCode, 404)
-    t.deepEqual(res.body.message, 'NOT_FOUND')
-})
+	t.deepEqual(res.statusCode, 404);
+	t.deepEqual(res.body.message, "NOT_FOUND");
+});
 
-test('GET / missing campaign name', async t => {
-    const res = await request.get(config.api.campaigns)
+test("GET / missing campaign name", async t => {
+	const res = await request.get(config.api.campaigns);
 
-    t.deepEqual(res.statusCode, 404)
-    t.deepEqual(res.body.message, 'Not found')
-})
+	t.deepEqual(res.statusCode, 404);
+	t.deepEqual(res.body.message, "Not found");
+});

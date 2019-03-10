@@ -1,58 +1,58 @@
-import * as brand from './brands'
+import * as brand from "./brands";
 
 export interface EventCache {
-    id: string
-    title: string
-    description: string
-    variations: Variation[]
-    event: EventItem
-    brand: brand.BrandItem
-    category: Category
-    type: EventType
+	id: string;
+	title: string;
+	description: string;
+	variations: Variation[];
+	event: EventItem;
+	brand: brand.BrandItem;
+	category: Category;
+	type: EventType;
 }
 
 export type Variation = {
-    id: string,
-    nsId: string,
-    barcode?: string,
-    image: string,
-    image2: string,
-    color?: string,
-    salePrice?: number,
-    retailPrice?: number,
-    quantity?: number
-}
+	id: string;
+	nsId: string;
+	barcode?: string;
+	image: string;
+	image2: string;
+	color?: string;
+	salePrice?: number;
+	retailPrice?: number;
+	quantity?: number;
+};
 
 export type EventItem = {
-    id: string,
-    startDate: Date,
-    endDate: Date,
-    featured: boolean,
-    potd: boolean,
-    potdId?: string,
-    campaignId?: string,
-    categories: string[]
-}
+	id: string;
+	startDate: Date;
+	endDate: Date;
+	featured: boolean;
+	potd: boolean;
+	potdId?: string;
+	campaignId?: string;
+	categories: string[];
+};
 
 export type Category = {
-    name: string,
-    id: string,
-    nsId: string
-}
+	name: string;
+	id: string;
+	nsId: string;
+};
 
 export type EventType = {
-    name: string,
-    id: string
-}
+	name: string;
+	id: string;
+};
 
 export interface ItemCache {
-    total: number
-    list: ListItem[]
+	total: number;
+	list: ListItem[];
 }
 
 export type ListItem = {
-    quantity: number,
-    retailPrice: number,
-    salePrice: number,
-    nsId: string
-}
+	quantity: number;
+	retailPrice: number;
+	salePrice: number;
+	nsId: string;
+};
