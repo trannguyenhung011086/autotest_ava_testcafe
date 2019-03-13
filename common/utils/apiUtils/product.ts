@@ -317,4 +317,68 @@ export class ProductUtils extends Helper {
             }
         }
     }
+
+    public async getVirtualBulkyProductInfo(
+        saleType: string,
+        virtual: boolean,
+        bulky: boolean
+    ): Promise<Model.ProductInfoModel> {
+        const products = await this.getProducts(saleType);
+        const matched: Model.Products[] = [];
+
+        for (const product of products) {
+            if (product.soldOut !== true) {
+                matched.push(product);
+            }
+        }
+
+        let result: Model.ProductInfoModel;
+        for (const item of matched) {
+            const info = await this.getProductInfo(item.id);
+
+            if (virtual && !bulky) {
+                const isVirtual = info.products.every(input => {
+                    return input.isVirtual === true && input.isBulky === false;
+                });
+
+                if (isVirtual) {
+                    result = info;
+                }
+            } else if (!virtual && bulky) {
+                const isBulky = info.products.every(input => {
+                    return input.isVirtual === false && input.isBulky === true;
+                });
+
+                if (isBulky) {
+                    result = info;
+                }
+            } else if (virtual && bulky) {
+                const isVirtualBulky = info.products.every(input => {
+                    return input.isVirtual === true && input.isBulky === true;
+                });
+
+                if (isVirtualBulky) {
+                    result = info;
+                }
+            } else if (!virtual && !bulky) {
+                const notVirtualBulky = info.products.every(input => {
+                    return input.isVirtual === false && input.isBulky === false;
+                });
+
+                if (notVirtualBulky) {
+                    result = info;
+                }
+            }
+
+            if (result) {
+                break;
+            }
+        }
+
+        if (!result) {
+            throw "There is no product satisfied the condition from " +
+                saleType;
+        }
+        return result;
+    }
 }

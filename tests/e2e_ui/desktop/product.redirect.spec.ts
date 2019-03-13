@@ -1,7 +1,6 @@
 import { t, RequestMock } from "testcafe";
 import { config } from "../../../common/config";
 import * as Utils from "../../../common/utils";
-import * as Model from "../../../common/interface";
 import { Pages } from "../page_objects";
 
 const requestSale = new Utils.SaleUtils();
@@ -46,7 +45,3 @@ test.requestHooks(mockNonRedirect)(
         await t.expect(location).notEql(config.baseUrl + "/vn");
     }
 );
-
-test.skip("Check product info returned from API. See WWW-456", async () => {
-    // TO DO
-});

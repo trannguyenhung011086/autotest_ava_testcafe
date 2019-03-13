@@ -45,6 +45,24 @@ export class Helper {
         return await got.get(api, options);
     }
 
+    public async getHtml(api: string, cookie?: string, base?: string) {
+        const options = {
+            baseUrl: config.baseUrl,
+            headers: {
+                "Content-Type": "application/html"
+            },
+            throwHttpErrors: false
+            // cookieJar: this.cookieJar
+        };
+        if (cookie) {
+            options.headers["Cookie"] = cookie;
+        }
+        if (base) {
+            options.baseUrl = base;
+        }
+        return await got.get(api, options);
+    }
+
     public async post(
         api: string,
         data: Object,
@@ -218,6 +236,56 @@ export class Helper {
         return false;
     }
 
+    public isLowerCase(input: string) {
+        return /^[A-Z]*$/.test(input);
+    }
+
+    public isUpperCase(input: string) {
+        return /^[a-z]*$/.test(input);
+    }
+
+    public calculateLeadTime(isVirtual: boolean, isBulky: boolean) {
+        const dayOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const from = new Date();
+        const to = new Date();
+
+        // set base date
+        from.setDate(from.getDate() + 2);
+        to.setDate(to.getDate() + 7);
+
+        // update date
+        if (isVirtual && !isBulky) {
+            from.setDate(from.getDate() + 2);
+            to.setDate(to.getDate() + 3);
+        } else if (!isVirtual && isBulky) {
+            from.setDate(from.getDate() + 1);
+            to.setDate(to.getDate() + 2);
+        } else if (isVirtual && isBulky) {
+            from.setDate(from.getDate() + 3);
+            to.setDate(to.getDate() + 5);
+        }
+
+        // count for Sunday
+        if (from.getDay() < 1) {
+            from.setDate(from.getDate() + 1);
+            to.setDate(to.getDate() + 1);
+        }
+        if (to.getDay() < 1) {
+            to.setDate(to.getDate() + 1);
+        }
+
+        return {
+            from: {
+                day: dayOfWeek[from.getDay()],
+                date: from.getDate() + "/" + (from.getMonth() + 1)
+            },
+            to: {
+                day: dayOfWeek[to.getDay()],
+                date: to.getDate() + "/" + (to.getMonth() + 1)
+            }
+        };
+    }
+
     public validateEmail(email: string) {
         return this.matchRegExp(
             email.toLowerCase(),
@@ -386,9 +454,14 @@ export class Helper {
         t.truthy(product.saleId);
         t.true(product.retailPrice >= product.salePrice);
         t.deepEqual(typeof product.inStock, "boolean");
-        t.true.skip(product.quantity >= 0);
+        t.deepEqual(typeof product.quantity, "number");
+        // t.deepEqual(typeof product.quantityAvailable, "number");
         t.deepEqual(typeof product.isVirtual, "boolean");
         t.deepEqual(typeof product.isBulky, "boolean");
+
+        // if (product.quantityAvailable <= 0) {
+        //     t.true(product.isVirtual);
+        // }
     }
 
     public validateProductInfo(

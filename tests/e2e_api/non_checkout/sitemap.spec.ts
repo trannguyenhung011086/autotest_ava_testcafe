@@ -51,7 +51,7 @@ test("GET / get sitemap", async t => {
     let products = 0;
     let sales = 0;
 
-    sitemap.urlset.url.forEach(url => {
+    for (const url of sitemap.urlset.url) {
         t.regex(url.loc._text, /https:\/\/www.leflair.vn/);
         t.regex(url.lastmod._text, /^\d{4}-\d{2}-\d{2}$/);
         t.deepEqual(url.changefreq._text, "daily");
@@ -69,7 +69,7 @@ test("GET / get sitemap", async t => {
         if (url.loc._text.match(/\/sales\/.+/)) {
             sales += 1;
         }
-    });
+    }
 
     t.deepEqual(categories / 2, 6);
 
@@ -112,6 +112,8 @@ test("GET / get sitemap", async t => {
         config.api.potdSales,
         "international"
     )).length;
+
+    t.log(products / 2, domestic, international);
 
     t.deepEqual(products / 2, domestic + international);
 });

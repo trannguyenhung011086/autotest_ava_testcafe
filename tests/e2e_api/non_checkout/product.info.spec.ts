@@ -157,7 +157,7 @@ test("GET / valid product from POTD", async t => {
     }
 });
 
-test("GET / sold out product", async t => {
+test("GET / sold out product (virtual)", async t => {
     const product = await request.getSoldOutProductInfo(
         config.api.currentSales
     );
@@ -166,7 +166,8 @@ test("GET / sold out product", async t => {
 
     for (const item of product.products) {
         t.false(item.inStock);
-        t.true(item.quantity >= 0);
+        t.true(item.quantity <= 0);
+        t.true(item.isVirtual);
     }
     if (product.sizes.length > 0) {
         for (const size of product.sizes) {
