@@ -2,156 +2,100 @@ import { config } from "../../../common/config";
 import * as Utils from "../../../common/utils";
 import * as Model from "../../../common/interface";
 
-let request = new Utils.SaleUtils();
+const request = new Utils.SaleUtils();
 
 import test from "ava";
 
 test("GET / all home sales", async t => {
-	const res = await request.get(config.api.home);
-	let home: Model.Home = res.body;
+    const res = await request.get(config.api.home);
 
-	t.true(home.hasOwnProperty("featured"));
-	t.true(home.hasOwnProperty("today"));
-	t.true(home.hasOwnProperty("current"));
-	t.true(home.hasOwnProperty("potd"));
-	t.true(home.hasOwnProperty("banners"));
-	t.true(home.hasOwnProperty("upcoming"));
+    const home: Model.Home = res.body;
 
-	if (home.banners.length > 0) {
-		home.banners.forEach(banner => {
-			t.true(request.validateImage(banner.image));
-			t.truthy(banner.url);
-		});
-	}
+    t.true(home.hasOwnProperty("featured"));
+    t.true(home.hasOwnProperty("today"));
+    t.true(home.hasOwnProperty("current"));
+    t.true(home.hasOwnProperty("potd"));
+    t.true(home.hasOwnProperty("banners"));
+    t.true(home.hasOwnProperty("upcoming"));
+
+    if (home.banners.length > 0) {
+        home.banners.forEach(banner => {
+            t.true(request.validateImage(banner.image));
+            t.truthy(banner.url);
+        });
+    }
 });
 
-test("GET / ongoing sales - current", async t => {
-	let sales = await request.getSales(config.api.currentSales);
+for (const saleType of [
+    config.api.currentSales,
+    config.api.todaySales,
+    config.api.featuredSales
+]) {
+    test("GET / ongoing sales - " + saleType, async t => {
+        const sales = await request.getSales(saleType);
 
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
+        sales.forEach(sale => {
+            request.validateSaleList(t, sale);
+        });
+    });
+}
 
-test("GET / ongoing sales - today", async t => {
-	let sales = await request.getSales(config.api.todaySales);
+for (const cate of [
+    config.api.cateAccessories,
+    config.api.cateApparel,
+    config.api.cateBagsShoes,
+    config.api.cateHealthBeauty,
+    config.api.cateHomeLifeStyle
+]) {
+    test("GET / ongoing sales from " + cate, async t => {
+        const sales = await request.getSales(cate + "/sales/current");
 
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
-
-test("GET / ongoing sales - featured", async t => {
-	let sales = await request.getSales(config.api.featuredSales);
-
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
-
-test("GET / ongoing sales - international", async t => {
-	let sales = await request.getSales(config.api.internationalSales);
-
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
-
-test("GET / ongoing sales - POTD", async t => {
-	let sales = await request.getSales(config.api.potdSales);
-
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
-
-test("GET / ongoing sales - current apparel", async t => {
-	let sales = await request.getSales(
-		config.api.cateApparel + "/sales/current"
-	);
-
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
-
-test("GET / ongoing sales - current accessories", async t => {
-	let sales = await request.getSales(
-		config.api.cateAccessories + "/sales/current"
-	);
-
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
-
-test("GET / ongoing sales - current bags shoes", async t => {
-	let sales = await request.getSales(
-		config.api.cateBagsShoes + "/sales/current"
-	);
-
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
-
-test("GET / ongoing sales - current health beauty", async t => {
-	let sales = await request.getSales(
-		config.api.cateHealthBeauty + "/sales/current"
-	);
-
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
-
-test("GET / ongoing sales - current home lifestyle", async t => {
-	let sales = await request.getSales(
-		config.api.cateHomeLifeStyle + "/sales/current"
-	);
-
-	sales.forEach(sale => {
-		request.validateSaleList(t, sale);
-	});
-});
+        sales.forEach(sale => {
+            request.validateSaleList(t, sale);
+        });
+    });
+}
 
 test("GET / international sales", async t => {
-	let sales = await request.getSales(config.api.internationalSales);
+    const sales = await request.getSales(config.api.internationalSales);
 
-	sales.forEach(sale => {
-		t.true(sale.international);
-	});
+    sales.forEach(sale => {
+        request.validateSaleList(t, sale);
+        t.true(sale.international);
+    });
 });
 
 test("GET / POTD sales", async t => {
-	let sales = await request.getSales(config.api.potdSales);
+    const sales = await request.getSales(config.api.potdSales);
 
-	sales.forEach(sale => {
-		t.truthy(sale.product.id);
-		t.truthy(sale.product.brand);
-		t.truthy(sale.product.title);
-		t.true(sale.product.retailPrice >= sale.product.salePrice);
-		t.truthy(sale.product.images);
-		t.true(sale.slug.includes(sale.product.id));
-	});
+    sales.forEach(sale => {
+        request.validateSaleList(t, sale);
+        t.truthy(sale.product.id);
+        t.truthy(sale.product.brand);
+        t.truthy(sale.product.title);
+        t.true(sale.product.retailPrice >= sale.product.salePrice);
+        t.truthy(sale.product.images);
+        t.true(sale.slug.includes(sale.product.id));
+    });
 });
 
 test("GET / Upcoming sales", async t => {
-	let dates = await request.getUpcomingSales();
-	t.true(dates.length > 0);
+    const dates = await request.getUpcomingSales();
 
-	for (let date of dates) {
-		t.truthy(date.date);
-		t.truthy(date.year);
-		t.truthy(date.sales);
+    t.true(dates.length > 0);
 
-		for (let sale of date.sales) {
-			t.truthy(sale.id);
-			t.truthy(sale.title);
-			t.true(request.validateImage(sale.image));
-			t.true(sale.slug.includes(sale.id));
-			t.truthy(sale.categories);
-			t.deepEqual(typeof sale.international, "boolean");
-		}
-	}
+    for (const date of dates) {
+        t.truthy(date.date);
+        t.truthy(date.year);
+        t.truthy(date.sales);
+
+        for (const sale of date.sales) {
+            t.truthy(sale.id);
+            t.truthy(sale.title);
+            t.true(request.validateImage(sale.image));
+            t.true(sale.slug.includes(sale.id));
+            t.truthy(sale.categories);
+            t.deepEqual(typeof sale.international, "boolean");
+        }
+    }
 });

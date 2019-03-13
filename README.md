@@ -1,3 +1,5 @@
+# E2E test for API & UI
+
 _Precondition_
 
 -   Install latest node version
@@ -8,12 +10,14 @@ _Precondition_
 
 Use GOT http request library and AVA framework to test APIs
 
-Structure:
+_Structure_
 
 -   common/utils: store GET/POST/PUT/DELETE class
 -   tests/e2e_api: API test cases
 
 Example test command: `NODE_ENV=stg ava --verbose tests/e2e_api/`
+
+_Note:_ after verifying failed snapshot tests, use `ava --update-snapshots` to update snapshots
 
 ## E2E UI testing
 

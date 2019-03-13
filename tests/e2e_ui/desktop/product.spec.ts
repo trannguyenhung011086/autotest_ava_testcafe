@@ -4,51 +4,49 @@ import * as Utils from "../../../common/utils";
 import * as Model from "../../../common/interface";
 import { Pages } from "../page_objects";
 
-let sales: Model.SalesModel[];
-
-let requestSale = new Utils.SaleUtils();
+const requestSale = new Utils.SaleUtils();
 const page = new Pages();
 
 const mockRedirect = RequestMock()
-	.onRequestTo(/\/api\/v2\/product\/(?!view-product)/)
-	.respond({ code: 403 }, 403, { "access-control-allow-origin": "*" });
+    .onRequestTo(/\/api\/v2\/product\/(?!view-product)/)
+    .respond({ code: 403 }, 403, { "access-control-allow-origin": "*" });
 
 const mockNonRedirect = RequestMock()
-	.onRequestTo(/\/api\/v2\/product\/(?!view-product)/)
-	.respond(null, 500, { "access-control-allow-origin": "*" });
+    .onRequestTo(/\/api\/v2\/product\/(?!view-product)/)
+    .respond(null, 500, { "access-control-allow-origin": "*" });
 
 fixture("Check product detail page " + config.baseUrl).meta({
-	type: "regression"
+    type: "regression"
 });
 
 test.requestHooks(mockRedirect)(
-	"Redirect to homepage when product API returns 403 error code",
-	async () => {
-		sales = await requestSale.getSales(config.api.featuredSales);
+    "Redirect to homepage when product API returns 403 error code",
+    async () => {
+        const sales = await requestSale.getSales(config.api.featuredSales);
 
-		await t
-			.navigateTo(config.baseUrl + "/vn/sales/" + sales[0].slug)
-			.click(".product-card");
+        await t
+            .navigateTo(config.baseUrl + "/vn/sales/" + sales[0].slug)
+            .click(".product-card");
 
-		let location = await t.eval(() => document.location.href);
-		await t.expect(location).eql(config.baseUrl + "/vn");
-	}
+        const location = await t.eval(() => document.location.href);
+        await t.expect(location).eql(config.baseUrl + "/vn");
+    }
 );
 
 test.requestHooks(mockNonRedirect)(
-	"Not redirect to homepage when product API returns 500 error code",
-	async () => {
-		sales = await requestSale.getSales(config.api.featuredSales);
+    "Not redirect to homepage when product API returns 500 error code",
+    async () => {
+        const sales = await requestSale.getSales(config.api.featuredSales);
 
-		await t
-			.navigateTo(config.baseUrl + "/vn/sales/" + sales[0].slug)
-			.click(".product-card");
+        await t
+            .navigateTo(config.baseUrl + "/vn/sales/" + sales[0].slug)
+            .click(".product-card");
 
-		let location = await t.eval(() => document.location.href);
-		await t.expect(location).notEql(config.baseUrl + "/vn");
-	}
+        const location = await t.eval(() => document.location.href);
+        await t.expect(location).notEql(config.baseUrl + "/vn");
+    }
 );
 
 test.skip("Check product info returned from API. See WWW-456", async () => {
-	// TO DO
+    // TO DO
 });
