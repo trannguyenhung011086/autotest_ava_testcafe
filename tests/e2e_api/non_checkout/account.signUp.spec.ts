@@ -14,10 +14,10 @@ test("POST / empty email and password", async t => {
         language: "vn",
         gender: "M"
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "EMAIL_ADDRESS_REQUIRED");
+    t.snapshot(res.body);
 });
 
 test("POST / wrong format email", async t => {
@@ -27,10 +27,10 @@ test("POST / wrong format email", async t => {
         language: "vn",
         gender: "M"
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "REGISTER_INVALID_EMAIL");
+    t.snapshot(res.body);
 });
 
 test("POST / length < 7 password", async t => {
@@ -40,13 +40,13 @@ test("POST / length < 7 password", async t => {
         language: "vn",
         gender: "M"
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(
         res.body.message,
         "User validation failed: password: Password should be longer"
     );
+    t.snapshot(res.body);
 });
 
 test("POST / existing account", async t => {
@@ -56,33 +56,33 @@ test("POST / existing account", async t => {
         language: "vn",
         gender: "M"
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "EMAIL_ALREADY_EXISTS");
+    t.snapshot(res.body);
 });
 
 test("POST / missing email field", async t => {
     const res = await request.post(config.api.signUp, {
         password: faker.internet.password()
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "EMAIL_ADDRESS_REQUIRED");
+    t.snapshot(res.body);
 });
 
 test("POST / missing password field", async t => {
     const res = await request.post(config.api.signUp, {
         email: "QA_" + faker.internet.email()
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(
         res.body.message,
         "User validation failed: password: Password should be longer"
     );
+    t.snapshot(res.body);
 });
 
 test("POST / successful", async t => {

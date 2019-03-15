@@ -13,7 +13,7 @@ test.beforeEach(async t => {
     );
 });
 
-test("GET / get account info", async t => {
+test("GET / account info", async t => {
     const res = await request.get(config.api.account, t.context["cookie"]);
 
     const account: Model.Account = res.body;
@@ -80,10 +80,10 @@ test("PUT / cannot update with wrong cookie", async t => {
         },
         "leflair.connect2.sid=test"
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "Access denied.");
+    t.snapshot(res.body);
 });
 
 test("PUT / wrong current password", async t => {
@@ -95,10 +95,10 @@ test("PUT / wrong current password", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "COULD_NOT_CHANGE_PASSWORD");
+    t.snapshot(res.body);
 });
 
 test("PUT / empty current password", async t => {
@@ -110,10 +110,10 @@ test("PUT / empty current password", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "COULD_NOT_CHANGE_PASSWORD");
+    t.snapshot(res.body);
 });
 
 test("PUT / new password has length < 7", async t => {
@@ -125,10 +125,10 @@ test("PUT / new password has length < 7", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "COULD_NOT_CHANGE_PASSWORD");
+    t.snapshot(res.body);
 });
 
 test("PUT / empty new password", async t => {
@@ -140,10 +140,10 @@ test("PUT / empty new password", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "COULD_NOT_CHANGE_PASSWORD");
+    t.snapshot(res.body);
 });
 
 test("PUT / can change password", async t => {
@@ -155,10 +155,10 @@ test("PUT / can change password", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 200);
     t.deepEqual(res.body.message, "PASSWORD_CHANGED");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update password with wrong cookie", async t => {
@@ -170,8 +170,8 @@ test("PUT / cannot update password with wrong cookie", async t => {
         },
         "leflair.connect2.sid=test"
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "Access denied.");
+    t.snapshot(res.body);
 });

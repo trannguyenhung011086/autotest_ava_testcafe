@@ -20,8 +20,13 @@ test.before(async t => {
 });
 
 test.beforeEach(async t => {
-    t.context["cookie"] = await request.pickRandomUser(
-        config.testAccount.email_ex
+    // t.context["cookie"] = await request.pickRandomUser(
+    //     config.testAccount.email_ex
+    // );
+
+    t.context["cookie"] = await request.getLogInCookie(
+        config.testAccount.email_in,
+        config.testAccount.password_in
     );
 
     addresses = await request.getAddresses(t.context["cookie"]);
@@ -43,10 +48,10 @@ test("GET / cannot get non-existing address", async t => {
         config.api.addresses + "/" + "INVALID-ID",
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(res.body.message, "Address not found.");
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add address missing type", async t => {
@@ -58,17 +63,10 @@ test("POST / cannot add address missing type", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_TYPE_PARAM");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.shipping[0].address, clone.address);
-    t.notDeepEqual(addresses.shipping[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.shipping[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.shipping[0].phone, clone.phone);
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add address missing name", async t => {
@@ -81,17 +79,10 @@ test("POST / cannot add address missing name", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.shipping[0].address, clone.address);
-    t.notDeepEqual(addresses.shipping[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.shipping[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.shipping[0].phone, clone.phone);
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add address missing phone", async t => {
@@ -103,17 +94,10 @@ test("POST / cannot add address missing phone", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.shipping[0].address, clone.address);
-    t.notDeepEqual(addresses.shipping[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.shipping[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.shipping[0].phone, clone.phone);
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add address missing address", async t => {
@@ -125,17 +109,10 @@ test("POST / cannot add address missing address", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.shipping[0].address, clone.address);
-    t.notDeepEqual(addresses.shipping[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.shipping[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.shipping[0].phone, clone.phone);
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add address missing district", async t => {
@@ -147,17 +124,10 @@ test("POST / cannot add address missing district", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.shipping[0].address, clone.address);
-    t.notDeepEqual(addresses.shipping[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.shipping[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.shipping[0].phone, clone.phone);
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add address missing city", async t => {
@@ -169,17 +139,10 @@ test("POST / cannot add address missing city", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.shipping[0].address, clone.address);
-    t.notDeepEqual(addresses.shipping[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.shipping[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.shipping[0].phone, clone.phone);
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add address with length > 70", async t => {
@@ -191,17 +154,10 @@ test("POST / cannot add address with length > 70", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "ADDRESS_TOO_LONG");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.shipping[0].address, clone.address);
-    t.notDeepEqual(addresses.shipping[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.shipping[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.shipping[0].phone, clone.phone);
+    t.snapshot(res.body);
 });
 
 test.skip("POST / cannot add address with invalid phone", async t => {
@@ -213,17 +169,10 @@ test.skip("POST / cannot add address with invalid phone", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "PHONE_INVALID_FORMAT");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.shipping[0].address, clone.address);
-    t.notDeepEqual(addresses.shipping[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.shipping[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.shipping[0].phone, clone.phone);
+    t.snapshot(res.body);
 }); // wait for WWW-354
 
 test.skip("POST / cannot add address with invalid tax code", async t => {
@@ -236,17 +185,10 @@ test.skip("POST / cannot add address with invalid tax code", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "TAX_CODE_INVALID_FORMAT");
-
-    addresses = await request.getAddresses(t.context["cookie"]);
-
-    t.notDeepEqual(addresses.billing[0].address, clone.address);
-    t.notDeepEqual(addresses.billing[0].firstName, clone.firstName);
-    t.notDeepEqual(addresses.billing[0].lastName, clone.lastName);
-    t.notDeepEqual(addresses.billing[0].phone, clone.phone);
+    t.snapshot(res.body);
 }); // wait for WWW-354
 
 test("PUT / cannot update address missing name", async t => {
@@ -259,10 +201,10 @@ test("PUT / cannot update address missing name", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update address missing phone", async t => {
@@ -274,10 +216,10 @@ test("PUT / cannot update address missing phone", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update address missing address", async t => {
@@ -289,10 +231,10 @@ test("PUT / cannot update address missing address", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update address missing district", async t => {
@@ -304,10 +246,10 @@ test("PUT / cannot update address missing district", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update address missing city", async t => {
@@ -319,10 +261,10 @@ test("PUT / cannot update address missing city", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MISSING_REQUIRED_PARAMS");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update address with length > 70", async t => {
@@ -334,10 +276,10 @@ test("PUT / cannot update address with length > 70", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "ADDRESS_TOO_LONG");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update address with invalid phone", async t => {
@@ -349,10 +291,10 @@ test("PUT / cannot update address with invalid phone", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "PHONE_INVALID_FORMAT");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update address with invalid tax code", async t => {
@@ -365,8 +307,8 @@ test("PUT / cannot update address with invalid tax code", async t => {
         clone,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "TAX_CODE_INVALID_FORMAT");
+    t.snapshot(res.body);
 });

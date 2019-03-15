@@ -74,10 +74,10 @@ test("DELETE / remove product from cart", async t => {
         config.api.cart + cart.id,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 200);
     t.deepEqual(res.body.message, "ITEM_REMOVED_FROM_CART");
+    t.snapshot(res.body);
 });
 
 test("PUT / remove multiple products from cart", async t => {
@@ -108,10 +108,10 @@ test("PUT / remove multiple products from cart", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 200);
     t.deepEqual(res.body.message, "ITEM_REMOVED_FROM_CART");
+    t.snapshot(res.body);
 });
 
 test("POST / update cart after sign in", async t => {

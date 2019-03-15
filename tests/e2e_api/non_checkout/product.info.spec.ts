@@ -9,14 +9,15 @@ import test from "ava";
 
 test("GET / invalid product ID", async t => {
     const res = await request.get(config.api.product + "INVALID-ID");
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(res.body.message, "PRODUCT_NOT_FOUND");
+    t.snapshot(res.body);
 });
 
 test("GET / product of sale not started (skip-prod)", async t => {
     if (process.env.NODE_ENV == "prod") {
+        t.log("Skip check on prod!");
         t.pass();
     } else {
         const products = await request.getProducts(config.api.currentSales);
@@ -42,10 +43,10 @@ test("GET / product of sale not started (skip-prod)", async t => {
             );
 
             const res = await request.get(config.api.product + products[0].id);
-            t.snapshot(res.body);
 
             t.deepEqual(res.statusCode, 404);
             t.deepEqual(res.body.message, "SALE_NOT_FOUND");
+            t.snapshot(res.body);
         } catch (err) {
             throw err;
         } finally {
@@ -61,6 +62,7 @@ test("GET / product of sale not started (skip-prod)", async t => {
 
 test("GET / product of sale ended (skip-prod)", async t => {
     if (process.env.NODE_ENV == "prod") {
+        t.log("Skip check on prod!");
         t.pass();
     } else {
         const products = await request.getProducts(config.api.currentSales);
@@ -86,10 +88,10 @@ test("GET / product of sale ended (skip-prod)", async t => {
             );
 
             const res = await request.get(config.api.product + products[0].id);
-            t.snapshot(res.body);
 
             t.deepEqual(res.statusCode, 404);
             t.deepEqual(res.body.message, "SALE_HAS_ENDED");
+            t.snapshot(res.body);
         } catch (err) {
             throw err;
         } finally {
@@ -157,7 +159,7 @@ test("GET / valid product from POTD", async t => {
     }
 });
 
-test("GET / sold out product (virtual)", async t => {
+test("GET / sold out product", async t => {
     const product = await request.getSoldOutProductInfo(
         config.api.currentSales
     );
@@ -178,6 +180,36 @@ test("GET / sold out product (virtual)", async t => {
         for (const color of product.colors) {
             t.true(color.soldOut);
         }
+    }
+});
+
+test("GET / virtual product", async t => {
+    const product = await request.getVirtualBulkyProductInfo(
+        config.api.currentSales,
+        true,
+        false
+    );
+
+    await request.validateProductInfo(t, product);
+
+    for (const item of product.products) {
+        t.true(item.isVirtual);
+        t.deepEqual(item.quantityAvailable, 0);
+    }
+});
+
+test("GET / non-virtual product", async t => {
+    const product = await request.getVirtualBulkyProductInfo(
+        config.api.currentSales,
+        false,
+        false
+    );
+
+    await request.validateProductInfo(t, product);
+
+    for (const item of product.products) {
+        t.false(item.isVirtual);
+        t.true(item.quantityAvailable > 0);
     }
 });
 

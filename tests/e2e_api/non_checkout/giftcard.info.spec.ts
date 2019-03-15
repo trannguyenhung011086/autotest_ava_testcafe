@@ -18,10 +18,10 @@ test("GET / check invalid giftcard", async t => {
         config.api.giftcard + "INVALID-ID",
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "COULD_NOT_LOAD_GIFTCARD_OR_INVALID");
+    t.snapshot(res.body);
 });
 
 test("GET / check redeemed giftcard", async t => {
@@ -31,10 +31,10 @@ test("GET / check redeemed giftcard", async t => {
         config.api.giftcard + giftcardInfo.code,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "COULD_NOT_LOAD_GIFTCARD_OR_INVALID");
+    t.snapshot(res.body);
 });
 
 test("GET / check not redeemed giftcard", async t => {
@@ -58,8 +58,8 @@ test("GET / cannot check giftcard with invalid cookie", async t => {
         config.api.giftcard + "CARD-ID",
         "leflair.connect2.sid=test"
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "Access denied.");
+    t.snapshot(res.body);
 });

@@ -19,9 +19,8 @@ test.beforeEach(async t => {
     );
 });
 
-test("GET / get all cities", async t => {
+test.serial("GET / all cities", async t => {
     const res = await request.get(config.api.addresses + "/cities");
-    t.snapshot(res.body);
 
     cities = res.body;
 
@@ -33,12 +32,11 @@ test("GET / get all cities", async t => {
     });
 });
 
-test("GET / get all districts of each city", async t => {
+test.serial("GET / all districts of each city", async t => {
     for (const city of cities) {
         const res = await request.get(
             config.api.addresses + "/cities/" + city.id + "/districts"
         );
-        t.snapshot(res.body);
 
         districts = res.body;
 
@@ -51,7 +49,7 @@ test("GET / get all districts of each city", async t => {
     }
 });
 
-test("GET / get all addresses", async t => {
+test.serial("GET / all addresses", async t => {
     const res = await request.get(config.api.addresses, t.context["cookie"]);
 
     const addresses: Model.Addresses = res.body;
@@ -222,8 +220,9 @@ test("DELETE / delete shipping address", async t => {
             config.api.addresses + "/" + toDeleteId,
             t.context["cookie"]
         );
-        t.snapshot(res.body);
+
         t.deepEqual(res.statusCode, 200);
+        t.snapshot(res.body);
     }
 
     const updatedAddresses: Model.Addresses = await request.getAddresses(
@@ -246,8 +245,9 @@ test("DELETE / delete billing address", async t => {
             config.api.addresses + "/" + toDeleteId,
             t.context["cookie"]
         );
-        t.snapshot(res.body);
+
         t.deepEqual(res.statusCode, 200);
+        t.snapshot(res.body);
     }
 
     const updatedAddresses: Model.Addresses = await request.getAddresses(

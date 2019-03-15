@@ -163,54 +163,47 @@ test.serial("Not auto-confirm international order", async t => {
     t.true(order.isCrossBorder);
 });
 
-test.serial("Auto-confirm order for regular customer (skip-prod)", async t => {
+test.serial("Auto-confirm order for regular customer", async t => {
     // regular customer has at least 1 order with status 'delivered'/'return request'/'returned'
     // new order must use same address with old order
 
-    if (process.env.NODE_ENV == "prod") {
-        t.pass();
-    } else {
-        // 1st checkout to get placed order
-        const item = await requestProduct.getInStockProduct(
-            config.api.currentSales,
-            2
-        );
-        await requestCart.addToCart(item.id, t.context["cookie"]);
+    // 1st checkout to get placed order
+    const item = await requestProduct.getInStockProduct(
+        config.api.currentSales,
+        2
+    );
+    await requestCart.addToCart(item.id, t.context["cookie"]);
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkoutInput.addresses = addresses;
+    checkoutInput.account = await requestAccount.getAccountInfo(
+        t.context["cookie"]
+    );
+    checkoutInput.addresses = addresses;
 
-        let checkout = await request.checkoutCod(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(checkout.orderId);
+    let checkout = await request.checkoutCod(
+        checkoutInput,
+        t.context["cookie"]
+    );
+    t.truthy(checkout.orderId);
 
-        let order = await requestOrder.getOrderInfo(
-            checkout.orderId,
-            t.context["cookie"]
-        );
-        t.deepEqual(order.status, "placed");
+    let order = await requestOrder.getOrderInfo(
+        checkout.orderId,
+        t.context["cookie"]
+    );
+    t.deepEqual(order.status, "placed");
 
-        // update 1st checkout order status
-        await access.updateOrderStatus(order.code, "delivered");
+    // update 1st checkout order status
+    await access.updateOrderStatus(order.code, "delivered");
 
-        // 2nd checkout
-        await requestCart.addToCart(item.id, t.context["cookie"]);
+    // 2nd checkout
+    await requestCart.addToCart(item.id, t.context["cookie"]);
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkout = await request.checkoutCod(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        order = await requestOrder.getOrderInfo(
-            checkout.orderId,
-            t.context["cookie"]
-        );
-        t.deepEqual(order.status, "confirmed");
-    }
+    checkoutInput.account = await requestAccount.getAccountInfo(
+        t.context["cookie"]
+    );
+    checkout = await request.checkoutCod(checkoutInput, t.context["cookie"]);
+    order = await requestOrder.getOrderInfo(
+        checkout.orderId,
+        t.context["cookie"]
+    );
+    t.deepEqual(order.status, "confirmed");
 });

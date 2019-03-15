@@ -13,10 +13,10 @@ test.before(async t => {
 
 test("GET / cannot get secret sale when not call campaign API", async t => {
     const res = await request.get(config.api.secretSales, t.context["cookie"]);
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 200);
     t.deepEqual(res.body.length, 0);
+    t.snapshot(res.body);
 });
 
 test("GET / check secret sale when not call campaign API", async t => {
@@ -24,40 +24,46 @@ test("GET / check secret sale when not call campaign API", async t => {
         config.api.secretSales + "/check",
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 200);
     t.false(res.body);
+    t.snapshot(res.body);
 });
 
-test("GET / get secret sale when call campaign API", async t => {
+test("GET / secret sale when call campaign API", async t => {
     const campaign: Model.Campaign = await access.getCampaign({
         endDate: { $gt: new Date() }
     });
 
-    t.truthy(campaign);
+    if (campaign) {
+        await request.get(
+            config.api.campaigns + campaign.name,
+            t.context["cookie"]
+        );
 
-    await request.get(
-        config.api.campaigns + campaign.name,
-        t.context["cookie"]
-    );
+        const res = await request.get(
+            config.api.secretSales,
+            t.context["cookie"]
+        );
 
-    const res = await request.get(config.api.secretSales, t.context["cookie"]);
+        t.deepEqual(res.statusCode, 200);
 
-    t.deepEqual(res.statusCode, 200);
+        const sales: Model.SalesModel[] = res.body;
 
-    const sales: Model.SalesModel[] = res.body;
+        for (const sale of sales) {
+            t.truthy(sale.title);
+            t.truthy(sale.endTime);
+            t.deepEqual(typeof sale.potd, "boolean");
+            t.true(sale.slug.includes(sale.id));
+            t.truthy(sale.categories);
 
-    for (const sale of sales) {
-        t.truthy(sale.title);
-        t.truthy(sale.endTime);
-        t.deepEqual(typeof sale.potd, "boolean");
-        t.true(sale.slug.includes(sale.id));
-        t.truthy(sale.categories);
+            const saleInfo = await request.getSaleInfo(sale.id);
 
-        const saleInfo = await request.getSaleInfo(sale.id);
-
-        t.true(saleInfo.campaign);
+            t.true(saleInfo.campaign);
+        }
+    } else {
+        t.log("No campaign available. Skip test!");
+        t.pass();
     }
 });
 
@@ -66,19 +72,22 @@ test("GET / check secret sale when call campaign API", async t => {
         endDate: { $gt: new Date() }
     });
 
-    t.truthy(campaign);
+    if (campaign) {
+        await request.get(
+            config.api.campaigns + campaign.name,
+            t.context["cookie"]
+        );
 
-    await request.get(
-        config.api.campaigns + campaign.name,
-        t.context["cookie"]
-    );
+        const res = await request.get(
+            config.api.secretSales + "/check",
+            t.context["cookie"]
+        );
 
-    const res = await request.get(
-        config.api.secretSales + "/check",
-        t.context["cookie"]
-    );
-    t.snapshot(res.body);
-
-    t.deepEqual(res.statusCode, 200);
-    t.true(res.body);
+        t.deepEqual(res.statusCode, 200);
+        t.true(res.body);
+        t.snapshot(res.body);
+    } else {
+        t.log("No campaign available. Skip test!");
+        t.pass();
+    }
 });

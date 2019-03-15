@@ -22,13 +22,13 @@ test("POST / cannot add invalid product to cart", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(
         res.body.message,
         "Argument passed in must be a single String of 12 bytes or a string of 24 hex characters"
     );
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add empty product to cart", async t => {
@@ -39,13 +39,13 @@ test("POST / cannot add empty product to cart", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(
         res.body.message,
         "Argument passed in must be a single String of 12 bytes or a string of 24 hex characters"
     );
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add sold out product to cart", async t => {
@@ -60,10 +60,10 @@ test("POST / cannot add sold out product to cart", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "TITLE_IS_OUT_OF_STOCK");
+    t.snapshot(res.body);
 });
 
 test("POST / cannot add sale ended product to cart", async t => {
@@ -82,10 +82,10 @@ test("POST / cannot add sale ended product to cart", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "COULD_NOT_RESOLVE_PRODUCT");
+    t.snapshot(res.body);
 });
 
 test.skip("POST / cannot add more than 8 unique products", async t => {
@@ -109,10 +109,10 @@ test.skip("POST / cannot add more than 8 unique products", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "You can only have 8 products in your cart!");
+    t.snapshot(res.body);
 }); // wait for WWW-618
 
 test("PUT / cannot update quantity in cart to 0", async t => {
@@ -133,10 +133,10 @@ test("PUT / cannot update quantity in cart to 0", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "COULD_NOT_UPDATE_ITEM_QUANTITY");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update invalid quantity in cart", async t => {
@@ -157,10 +157,10 @@ test("PUT / cannot update invalid quantity in cart", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "COULD_NOT_UPDATE_ITEM_QUANTITY");
+    t.snapshot(res.body);
 });
 
 test("PUT / cannot update more than max quantity in cart", async t => {
@@ -191,19 +191,19 @@ test("DELETE / cannot remove product from cart with wrong cart item", async t =>
         config.api.cart + "INVALID-CART-ID",
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(
         res.body.message,
         "NO_CART_ITEM_MATCHING_THAT_ID_EXISTS_IN_THE_USER_CART"
     );
+    t.snapshot(res.body);
 });
 
 test("DELETE / cannot remove product from cart without cart item", async t => {
     const res = await request.delete(config.api.cart, t.context["cookie"]);
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(res.body.message, "Not found");
+    t.snapshot(res.body);
 });

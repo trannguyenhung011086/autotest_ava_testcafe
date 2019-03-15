@@ -14,12 +14,12 @@ test.beforeEach(async t => {
 
 test("GET / proceed checkout with empty cart", async t => {
     const res = await helper.get(config.api.checkout, t.context["cookie"]);
-    t.snapshot(res.body);
 
     const checkout: Model.Checkout = res.body;
 
     t.deepEqual(res.statusCode, 200);
     t.deepEqual(checkout.cart.length, 0);
+    t.snapshot(res.body);
 });
 
 test("GET / proceed checkout with cart", async t => {

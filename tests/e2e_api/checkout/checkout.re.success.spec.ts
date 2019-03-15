@@ -78,6 +78,7 @@ test.serial(
     "POST / recheckout with new CC (not save card) - VISA (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
             t.pass();
         } else {
             checkoutInput.saveNewCard = false;
@@ -133,6 +134,7 @@ test.serial(
     "POST / recheckout with new CC (save card) - MASTER (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
             t.pass();
         } else {
             checkoutInput.saveNewCard = true;
@@ -186,6 +188,7 @@ test.serial(
 
 test.serial("POST / recheckout with saved CC (skip-prod)", async t => {
     if (process.env.NODE_ENV == "prod") {
+        t.log("Skip checkout on prod!");
         t.pass();
     } else {
         const matchedCard = await requestCreditcard.getCard(
@@ -237,6 +240,7 @@ test.serial(
     "POST / recheckout with COD - voucher (amount) + credit (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout with voucher on prod!");
             t.pass();
         } else {
             const voucher = await access.getNotUsedVoucher(
@@ -295,6 +299,7 @@ test.serial(
     "POST / recheckout with saved CC - voucher (percentage + max discount) (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout with voucher on prod!");
             t.pass();
         } else {
             const voucher = await access.getVoucher({

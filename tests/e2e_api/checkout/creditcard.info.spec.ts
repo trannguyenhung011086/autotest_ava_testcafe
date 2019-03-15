@@ -83,14 +83,15 @@ test.serial("DELETE / cannot delete invalid creditcard", async t => {
         config.api.creditcard + "/INVALID-ID",
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "INVALID_CREDIT_CARD_OR_CANNOT_DELETE");
+    t.snapshot(res.body);
 });
 
 test.serial("DELETE / can delete creditcard (skip-prod)", async t => {
     if (process.env.NODE_ENV == "prod") {
+        t.log("Skip delete card on prod!");
         t.pass();
     } else {
         let res = await request.get(config.api.creditcard, t.context["cookie"]);
@@ -101,10 +102,10 @@ test.serial("DELETE / can delete creditcard (skip-prod)", async t => {
                 config.api.creditcard + "/" + creditcards[0].id,
                 t.context["cookie"]
             );
-            t.snapshot(res.body);
 
             t.deepEqual(res.statusCode, 200);
             t.true(res.body);
+            t.snapshot(res.body);
         }
     }
 });
@@ -114,8 +115,8 @@ test("GET / cannot access creditcard info with invalid cookie", async t => {
         config.api.creditcard,
         "leflair.connect2.sid=test"
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "Access denied.");
+    t.snapshot(res.body);
 });

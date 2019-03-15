@@ -396,7 +396,10 @@ export class Helper {
         t.deepEqual(typeof orderItem.isCrossBorder, "boolean");
         t.deepEqual(typeof orderItem.isBulky, "boolean");
         t.deepEqual(typeof orderItem.isFirstOrder, "boolean");
-        t.deepEqual(typeof orderItem.isVirtual, "boolean");
+
+        if (orderItem.isVirtual) {
+            t.deepEqual(typeof orderItem.isVirtual, "boolean");
+        }
 
         t.regex(orderItem.tracking, /dhlecommerce\.asia|ghn\.vn/);
         t.truthy(orderItem.user);
@@ -455,13 +458,15 @@ export class Helper {
         t.true(product.retailPrice >= product.salePrice);
         t.deepEqual(typeof product.inStock, "boolean");
         t.deepEqual(typeof product.quantity, "number");
-        // t.deepEqual(typeof product.quantityAvailable, "number");
+        t.deepEqual(typeof product.quantityAvailable, "number");
         t.deepEqual(typeof product.isVirtual, "boolean");
         t.deepEqual(typeof product.isBulky, "boolean");
 
-        // if (product.quantityAvailable <= 0) {
-        //     t.true(product.isVirtual);
-        // }
+        if (product.quantityAvailable <= 0) {
+            t.true(product.isVirtual);
+        } else {
+            t.false(product.isVirtual);
+        }
     }
 
     public validateProductInfo(

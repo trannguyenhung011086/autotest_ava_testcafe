@@ -8,10 +8,11 @@ let sitemap: Model.Sitemap;
 const helper = new Utils.Helper();
 const requestBrands = new Utils.BrandUtils();
 const requestProducts = new Utils.ProductUtils();
+const requestSales = new Utils.SaleUtils();
 
 import test from "ava";
 
-test("GET / get sitemap", async t => {
+test("GET / sitemap", async t => {
     const res = await helper.getPlain(config.api.sitemap);
 
     t.deepEqual(res.statusCode, 200);
@@ -46,10 +47,31 @@ test("GET / get sitemap", async t => {
         "http://www.w3.org/1999/xhtml"
     );
 
-    let categories = 0;
-    let brands = 0;
-    let products = 0;
-    let sales = 0;
+    let sales = await requestSales.getSales(config.api.currentSales);
+    sales = sales.concat(
+        await requestSales.getSales(config.api.todaySales),
+        await requestSales.getSales(config.api.potdSales),
+        await requestSales.getSales(config.api.internationalSales),
+        await requestSales.getSales(config.api.featuredSales)
+    );
+
+    const brands = await requestBrands.getBrandsList();
+
+    let products = await requestProducts.getProducts(config.api.currentSales);
+    products = products.concat(
+        await requestProducts.getProducts(config.api.todaySales),
+        await requestProducts.getProducts(config.api.potdSales),
+        await requestProducts.getProducts(config.api.internationalSales),
+        await requestProducts.getProducts(config.api.featuredSales)
+    );
+
+    const menu: Model.TopMenu = (await helper.get(config.api.cateMenu)).body;
+    const categories = menu.items;
+
+    let sitemapCategories: string[] = [];
+    let sitemapSales: string[] = [];
+    let sitemapBrands: string[] = [];
+    let sitemapProducts: string[] = [];
 
     for (const url of sitemap.urlset.url) {
         t.regex(url.loc._text, /https:\/\/www.leflair.vn/);
@@ -58,62 +80,33 @@ test("GET / get sitemap", async t => {
         t.deepEqual(url.priority._text, "0.8");
 
         if (url.loc._text.match(/\/categories\/.+/)) {
-            categories += 1;
+            sitemapCategories.push(url.loc._text);
         }
         if (url.loc._text.match(/\/brands\/.+/)) {
-            brands += 1;
+            sitemapBrands.push(url.loc._text);
         }
         if (url.loc._text.match(/\/products\/.+/)) {
-            products += 1;
+            sitemapProducts.push(url.loc._text);
         }
         if (url.loc._text.match(/\/sales\/.+/)) {
-            sales += 1;
+            sitemapSales.push(url.loc._text);
         }
     }
 
-    t.deepEqual(categories / 2, 6);
-
-    const brandCount = (await requestBrands.getBrandsList()).length;
-    t.deepEqual(brands / 2, brandCount);
-
-    const home = (await helper.get(config.api.home)).body;
-    t.deepEqual(
-        sales / 2,
-        Array.isArray(home["featured"])
-            ? home["featured"].length
-            : 1 +
-                  home["today"].length +
-                  home["current"].length +
-                  home["potd"].length
+    t.true(
+        sitemapCategories.every(url =>
+            categories.some(category => url.includes(category.id))
+        )
     );
-
-    let domestic = (await requestProducts.getProducts(config.api.featuredSales))
-        .length;
-    domestic += (await requestProducts.getProducts(config.api.currentSales))
-        .length;
-    domestic += (await requestProducts.getProducts(config.api.todaySales))
-        .length;
-    domestic += (await requestProducts.getProducts(config.api.potdSales))
-        .length;
-
-    let international = (await requestProducts.getProducts(
-        config.api.featuredSales,
-        "international"
-    )).length;
-    international += (await requestProducts.getProducts(
-        config.api.currentSales,
-        "international"
-    )).length;
-    international += (await requestProducts.getProducts(
-        config.api.todaySales,
-        "international"
-    )).length;
-    international += (await requestProducts.getProducts(
-        config.api.potdSales,
-        "international"
-    )).length;
-
-    t.log(products / 2, domestic, international);
-
-    t.deepEqual(products / 2, domestic + international);
+    t.true(
+        sitemapBrands.every(url => brands.some(brand => url.includes(brand.id)))
+    );
+    t.true(
+        sitemapSales.every(url => sales.some(sale => url.includes(sale.id)))
+    );
+    t.true(
+        sitemapProducts.every(url =>
+            products.some(product => url.includes(product.id))
+        )
+    );
 });

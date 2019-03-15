@@ -18,10 +18,10 @@ test("GET / check invalid voucher", async t => {
         config.api.voucher + "INVALID-ID",
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "VOUCHER_NOT_EXISTS");
+    t.snapshot(res.body);
 });
 
 test("GET / check expired voucher", async t => {
@@ -35,10 +35,10 @@ test("GET / check expired voucher", async t => {
         config.api.voucher + voucherInfo.code,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "VOUCHER_CAMPAIGN_INVALID_OR_ENDED");
+    t.snapshot(res.body);
 });
 
 test("GET / check not started voucher", async t => {
@@ -52,10 +52,10 @@ test("GET / check not started voucher", async t => {
         config.api.voucher + voucherInfo.code,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "VOUCHER_CAMPAIGN_INVALID_OR_NOT_STARTED");
+    t.snapshot(res.body);
 });
 
 test("GET / check redeemed voucher", async t => {
@@ -71,10 +71,10 @@ test("GET / check redeemed voucher", async t => {
         config.api.voucher + voucherInfo.code,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "VOUCHER_HAS_BEEN_REDEEMED");
+    t.snapshot(res.body);
 });
 
 test("GET / check already used voucher", async t => {
@@ -100,10 +100,10 @@ test("GET / check already used voucher", async t => {
     t.truthy(voucher);
 
     const res = await helper.get(config.api.voucher + voucher.code, cookie);
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "YOU_ALREADY_USED_THIS_VOUCHER");
+    t.snapshot(res.body);
 });
 
 test("GET / check not allowed to use voucher ", async t => {
@@ -118,10 +118,10 @@ test("GET / check not allowed to use voucher ", async t => {
         config.api.voucher + voucherInfo.code,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "NOT_ALLOWED_TO_USE_VOUCHER");
+    t.snapshot(res.body);
 });
 
 test("GET / check valid voucher", async t => {
@@ -137,7 +137,6 @@ test("GET / check valid voucher", async t => {
         config.api.voucher + voucherInfo.code,
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     const voucher: Model.Voucher = res.body;
 
@@ -158,8 +157,8 @@ test("GET / cannot check voucher with invalid cookie", async t => {
         config.api.voucher + "CARD-ID",
         "leflair.connect2.sid=test"
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "Access denied.");
+    t.snapshot(res.body);
 });

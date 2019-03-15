@@ -57,13 +57,13 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(
             res.body.message,
             "International orders must be paid by credit card. Please refresh the page and try again."
         );
+        t.snapshot(res.body);
     }
 );
 
@@ -98,13 +98,13 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(
             res.body.message,
             "International orders must be paid by credit card. Please refresh the page and try again."
         );
+        t.snapshot(res.body);
     }
 );
 
@@ -171,6 +171,7 @@ test.serial(
     "POST / checkout with COD - voucher (amount) + credit (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout with voucher on prod!");
             t.pass();
         } else {
             const voucher = await access.getNotUsedVoucher(
@@ -238,6 +239,7 @@ test.serial(
     "POST / checkout with COD - voucher (percentage + max discount) (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout with voucher on prod!");
             t.pass();
         } else {
             const voucher = await access.getNotUsedVoucher(

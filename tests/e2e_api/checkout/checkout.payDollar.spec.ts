@@ -57,13 +57,13 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(
             res.body.message,
             "International orders must be paid by credit card. Please refresh the page and try again."
         );
+        t.snapshot(res.body);
     }
 );
 

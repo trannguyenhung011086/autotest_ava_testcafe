@@ -9,29 +9,30 @@ import test from "ava";
 
 test("GET / invalid category ID", async t => {
     const resA = await request.get("/api/menus/items/INVALID-ID");
-    t.snapshot(resA.body);
 
     t.deepEqual(resA.statusCode, 500);
     t.deepEqual(
         resA.body.error,
         "Argument passed in must be a single String of 12 bytes or a string of 24 hex characters"
     );
+    t.snapshot(resA.body);
 
     const resB = await request.get("/api/menus/items/5b56d3448f0dd7c0480acd1c");
-    t.snapshot(resB.body);
 
     t.deepEqual(resB.statusCode, 500);
     t.deepEqual(
         resB.body.error,
         "Cannot read property 'subitems' of undefined"
     );
+    t.snapshot(resB.body);
 });
 
 test("GET / top menu", async t => {
     const res = await request.get(config.api.cateMenu);
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 200);
+    t.snapshot(res.body);
+
     const topMenu: Model.TopMenu = res.body;
 
     t.truthy(topMenu.id);
@@ -76,7 +77,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / get featured sales from " + cate, async t => {
+    test("GET / featured sales from " + cate, async t => {
         const sales = await requestSale.getSales(cate + "/sales/featured");
 
         for (const sale of sales) {
@@ -92,7 +93,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / get current sales from " + cate, async t => {
+    test("GET / current sales from " + cate, async t => {
         const featured = await request.get(cate + "/sales/featured?limit=1");
 
         const sales = await requestSale.getSales(

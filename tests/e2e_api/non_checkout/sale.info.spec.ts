@@ -9,59 +9,61 @@ import test from "ava";
 
 test("GET / invalid sale ID", async t => {
     const res = await request.get(config.api.sales + "INVALID-ID");
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(res.body.message, "INVALID_SALE_ID");
+    t.snapshot(res.body);
 });
 
 test("GET / no sale matching", async t => {
     const res = await request.get(
         config.api.sales + "invalid-5bd6c3137cf0476b22488d21"
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(res.body.message, "NO_SALE_MATCHING");
+    t.snapshot(res.body);
 });
 
 test("GET / sale not started", async t => {
     const futureSale = await access.getSale({
         startDate: { $gt: new Date() }
     });
+
     const res = await request.get(config.api.sales + futureSale._id);
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(res.body.message, "SALE_NOT_FOUND");
+    t.snapshot(res.body);
 });
 
 test("GET / sale has ended", async t => {
     const endedSale = await access.getSale({
         endDate: { $lt: new Date() }
     });
+
     const res = await request.get(config.api.sales + endedSale._id);
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 410);
     t.deepEqual(res.body.message, "SALE_HAS_ENDED");
+    t.snapshot(res.body);
 });
 
 test("GET / invalid upcoming sale ID", async t => {
     const res = await request.get(config.api.upcomingSale + "INVALID-ID");
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
+    t.snapshot(res.body);
 });
 
 test("GET / no upcoming sale matching", async t => {
     const res = await request.get(
         config.api.upcomingSale + "566979b534cbcd100061967b"
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(res.body.message, "NO_UPCOMING_SALE_MATCHING");
+    t.snapshot(res.body);
 });
 
 test("GET / upcoming sale ended", async t => {
@@ -69,10 +71,10 @@ test("GET / upcoming sale ended", async t => {
         endDate: { $lt: new Date() }
     });
     const res = await request.get(config.api.upcomingSale + endedSale._id);
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 410);
     t.deepEqual(res.body.message, "SALE_HAS_ENDED");
+    t.snapshot(res.body);
 });
 
 for (const saleType of [
@@ -84,6 +86,8 @@ for (const saleType of [
 ]) {
     test("GET / valid ongoing sale - " + saleType, async t => {
         const sales = await request.getSales(saleType);
+
+        t.true(sales.length > 0);
 
         for (const sale of sales) {
             const res = await request.getSaleInfo(sale.id);
@@ -105,6 +109,8 @@ for (const cate of [
     test("GET / valid ongoing sale from " + cate, async t => {
         const sales = await request.getSales(cate + "/sales/current");
 
+        t.true(sales.length > 0);
+
         for (const sale of sales) {
             const res = await request.getSaleInfo(sale.id);
             request.validateSaleInfo(t, res);
@@ -118,6 +124,8 @@ for (const cate of [
 test("GET / valid ongoing sale ID with filter by category", async t => {
     const sales = await request.getSales(config.api.todaySales);
 
+    t.true(sales.length > 0);
+
     for (const sale of sales) {
         const saleInfo = await request.getSaleInfo(sale.id);
         const filteredSale = await request.getSaleInfo(
@@ -130,8 +138,10 @@ test("GET / valid ongoing sale ID with filter by category", async t => {
     }
 });
 
-test("GET / valid ongoing sale ID with filter by size", async t => {
+test.skip("GET / valid ongoing sale ID with filter by size", async t => {
     const sales = await request.getSales(config.api.currentSales);
+
+    t.true(sales.length > 0);
 
     for (const sale of sales) {
         const saleInfo = await request.getSaleInfo(sale.id);
@@ -146,10 +156,12 @@ test("GET / valid ongoing sale ID with filter by size", async t => {
             });
         }
     }
-});
+}); // wait for WWW-608
 
 test("GET / valid ongoing sale ID with filter by brand", async t => {
     const sales = await request.getSales(config.api.currentSales);
+
+    t.true(sales.length > 0);
 
     for (const sale of sales) {
         const saleInfo = await request.getSaleInfo(sale.id);

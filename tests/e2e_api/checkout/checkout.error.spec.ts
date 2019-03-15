@@ -55,9 +55,9 @@ test.serial("POST / cannot checkout with invalid cookie", async t => {
         },
         "leflair.connect2.sid=test"
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
+    t.snapshot(res.body);
 });
 
 test.serial("POST / cannot checkout with empty data", async t => {
@@ -66,9 +66,9 @@ test.serial("POST / cannot checkout with empty data", async t => {
         {},
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 500);
+    t.snapshot(res.body);
 });
 
 test.serial("POST / cannot checkout without address", async t => {
@@ -82,11 +82,11 @@ test.serial("POST / cannot checkout without address", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.true(res.body.message.includes("SHIPPING_ADDRESS_REQUIRED"));
     t.true(res.body.message.includes("BILLING_ADDRESS_REQUIRED"));
+    t.snapshot(res.body);
 });
 
 test.serial("POST / cannot checkout with empty cart", async t => {
@@ -101,10 +101,10 @@ test.serial("POST / cannot checkout with empty cart", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.true(res.body.message.includes("THERE_ARE_NO_ITEMS_IN_YOUR_ORDER"));
+    t.snapshot(res.body);
 });
 
 test.serial(
@@ -145,12 +145,12 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.true(res.body.message.includes("SHIPPING_PHONE_NUMBER_IS_NOT_VALID"));
         t.true(res.body.message.includes("BILLING_PHONE_NUMBER_IS_NOT_VALID"));
         t.true(res.body.message.includes("INVALID_BILLING_TAX_CODE"));
+        t.snapshot(res.body);
     }
 );
 
@@ -185,10 +185,10 @@ test.serial("POST / cannot checkout without payment method", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.true(res.body.message.includes("PLEASE_SELECT_A_PAYMENT_METHOD"));
+    t.snapshot(res.body);
 });
 
 // validate cart
@@ -380,11 +380,11 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "CART_EXCEEDS_THE_MAXIMUM_SIZE");
         t.deepEqual(res.body.values.quantity, 8);
+        t.snapshot(res.body);
     }
 );
 
@@ -394,6 +394,7 @@ test.serial(
     "POST / cannot checkout with sold out product (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
             t.pass();
         } else {
             let redisItem: string;
@@ -434,7 +435,6 @@ test.serial(
                     },
                     t.context["cookie"]
                 );
-                t.snapshot(res.body);
 
                 t.deepEqual(res.statusCode, 400);
                 t.deepEqual(
@@ -442,6 +442,7 @@ test.serial(
                     "TITLE_IS_OUT_OF_STOCK"
                 );
                 t.deepEqual(res.body.message[0].values.title, item.name);
+                t.snapshot(res.body);
             } catch (err) {
                 throw err;
             } finally {
@@ -460,6 +461,7 @@ test.serial(
     "POST / cannot checkout with limited stock product (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
             t.pass();
         } else {
             let redisItem: string;
@@ -501,7 +503,6 @@ test.serial(
                     },
                     t.context["cookie"]
                 );
-                t.snapshot(res.body);
 
                 t.deepEqual(res.statusCode, 400);
                 t.deepEqual(
@@ -511,6 +512,7 @@ test.serial(
                 t.deepEqual(res.body.message[0].values.title, item.name);
                 t.deepEqual(res.body.data.cart[0].quantity, 1);
                 t.deepEqual(res.body.data.cart[0].availableQuantity, 1);
+                t.snapshot(res.body);
             } catch (err) {
                 throw err;
             } finally {
@@ -529,6 +531,7 @@ test.serial(
     "POST / cannot checkout with sale ended product (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
             t.pass();
         } else {
             let redisItem: string;
@@ -574,7 +577,6 @@ test.serial(
                     },
                     t.context["cookie"]
                 );
-                t.snapshot(res.body);
 
                 t.deepEqual(res.statusCode, 400);
                 t.deepEqual(
@@ -582,6 +584,7 @@ test.serial(
                     "THE_SALE_FOR_TITLE_HAS_ENDED"
                 );
                 t.deepEqual(res.body.message[0].values.title, item.title);
+                t.snapshot(res.body);
             } catch (err) {
                 throw err;
             } finally {
@@ -633,11 +636,11 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "NOT_MEET_MINIMUM_ITEMS");
         t.deepEqual(res.body.data.voucher.numberOfItems, voucher.numberOfItems);
+        t.snapshot(res.body);
     }
 );
 
@@ -678,11 +681,11 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "VOUCHER_NOT_APPLY_FOR_TODAY");
         t.deepEqual(res.body.data.voucher.specificDays, voucher.specificDays);
+        t.snapshot(res.body);
     }
 );
 
@@ -723,10 +726,10 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM");
+        t.snapshot(res.body);
     }
 );
 
@@ -734,6 +737,7 @@ test.serial(
     "POST / cannot checkout with voucher exceeding number of usage (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout with voucher on prod!");
             t.pass();
         } else {
             const voucher = await access.getNotUsedVoucher(
@@ -783,10 +787,10 @@ test.serial(
                 },
                 t.context["cookie"]
             );
-            t.snapshot(res.body);
 
             t.deepEqual(res.statusCode, 400);
             t.deepEqual(res.body.message, "EXCEED_TIME_OF_USAGE");
+            t.snapshot(res.body);
         }
     }
 );
@@ -822,10 +826,10 @@ test.serial("POST / cannot checkout with expired voucher", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "VOUCHER_OR_NOT_VALID");
+    t.snapshot(res.body);
 });
 
 test.serial("POST / cannot checkout with redeemed voucher", async t => {
@@ -859,10 +863,10 @@ test.serial("POST / cannot checkout with redeemed voucher", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "VOUCHER_OR_NOT_VALID");
+    t.snapshot(res.body);
 });
 
 test.serial("POST / cannot checkout with COD using voucher for CC", async t => {
@@ -897,16 +901,17 @@ test.serial("POST / cannot checkout with COD using voucher for CC", async t => {
         },
         t.context["cookie"]
     );
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "REQUIRES_CC_PAYMENT");
+    t.snapshot(res.body);
 });
 
 test.serial(
     "POST / cannot checkout with voucher for Stripe using wrong bin range (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout with voucher on prod!");
             t.pass();
         } else {
             const voucher = await access.getVoucher({
@@ -960,10 +965,10 @@ test.serial(
                 },
                 t.context["cookie"]
             );
-            t.snapshot(res.body);
 
             t.deepEqual(res.statusCode, 400);
             t.deepEqual(res.body.message, "THIS_CC_NOT_ACCEPTABLE");
+            t.snapshot(res.body);
         }
     }
 );
@@ -972,6 +977,7 @@ test.serial(
     "POST / cannot checkout with already used voucher (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout with voucher on prod!");
             t.pass();
         } else {
             const cookie = await request.getLogInCookie(
@@ -1017,10 +1023,10 @@ test.serial(
                 },
                 cookie
             );
-            t.snapshot(res.body);
 
             t.deepEqual(res.statusCode, 400);
             t.deepEqual(res.body.message, "YOU_ALREADY_USED_THIS_VOUCHER");
+            t.snapshot(res.body);
         }
     }
 );
@@ -1060,10 +1066,10 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "NOT_ALLOWED_TO_USE_VOUCHER");
+        t.snapshot(res.body);
     }
 );
 
@@ -1095,10 +1101,10 @@ test.serial(
             },
             t.context["cookie"]
         );
-        t.snapshot(res.body);
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE");
         t.deepEqual(res.body.data.accountCredit, account.accountCredit);
+        t.snapshot(res.body);
     }
 );

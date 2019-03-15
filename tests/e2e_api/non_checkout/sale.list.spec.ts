@@ -34,6 +34,8 @@ for (const saleType of [
     test("GET / ongoing sales - " + saleType, async t => {
         const sales = await request.getSales(saleType);
 
+        t.true(sales.length > 0);
+
         sales.forEach(sale => {
             request.validateSaleList(t, sale);
         });
@@ -49,6 +51,8 @@ for (const cate of [
 ]) {
     test("GET / ongoing sales from " + cate, async t => {
         const sales = await request.getSales(cate + "/sales/current");
+
+        t.true(sales.length > 0);
 
         sales.forEach(sale => {
             request.validateSaleList(t, sale);
@@ -67,6 +71,8 @@ test("GET / international sales", async t => {
 
 test("GET / POTD sales", async t => {
     const sales = await request.getSales(config.api.potdSales);
+
+    t.true(sales.length > 0);
 
     sales.forEach(sale => {
         request.validateSaleList(t, sale);

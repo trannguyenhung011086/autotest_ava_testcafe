@@ -10,45 +10,44 @@ test("POST / empty email", async t => {
     const res = await request.post(config.api.forgot, {
         email: ""
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "EMAIL_ADDRESS_REQUIRED");
+    t.snapshot(res.body);
 });
 
 test("POST / missing email field", async t => {
     const res = await request.post(config.api.forgot, {});
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "EMAIL_ADDRESS_REQUIRED");
+    t.snapshot(res.body);
 });
 
 test("POST / non-existing email", async t => {
     const res = await request.post(config.api.forgot, {
         email: "QA_" + faker.internet.email()
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 404);
     t.deepEqual(res.body.message, "EMAIL_NOT_EXIST");
+    t.snapshot(res.body);
 });
 
 test("POST / wrong format email", async t => {
     const res = await request.post(config.api.forgot, {
         email: ".test%!@#$%^&*()_+<>?@mail.com"
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "REGISTER_INVALID_EMAIL");
+    t.snapshot(res.body);
 });
 
 test("POST / Facebook email", async t => {
     const res = await request.post(config.api.forgot, {
         email: "trannguyenhung011086@gmail.com"
     });
-    t.snapshot(res.body);
 
     if (process.env.NODE_ENV == "prod") {
         t.deepEqual(res.statusCode, 404);
@@ -63,7 +62,6 @@ test("POST / existing email", async t => {
     const res = await request.post(config.api.forgot, {
         email: config.testAccount.email_ex[0]
     });
-    t.snapshot(res.body);
 
     if (process.env.NODE_ENV == "prod") {
         t.deepEqual(res.statusCode, 200);

@@ -11,10 +11,10 @@ test("POST / empty password", async t => {
         password: "",
         token: "TEST_TOKEN"
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "RESET_INVALID_PASSWORD");
+    t.snapshot(res.body);
 });
 
 test("POST / password with length < 7", async t => {
@@ -22,10 +22,10 @@ test("POST / password with length < 7", async t => {
         password: "123456",
         token: "TEST_TOKEN"
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "RESET_INVALID_PASSWORD");
+    t.snapshot(res.body);
 });
 
 test("POST / invalid token", async t => {
@@ -33,8 +33,8 @@ test("POST / invalid token", async t => {
         password: "123456789",
         token: faker.random.uuid
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "COULD_NOT_CHANGE_PASSWORD_TOKEN_EXPIRED");
+    t.snapshot(res.body);
 });

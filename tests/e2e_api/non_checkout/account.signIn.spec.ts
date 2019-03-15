@@ -12,10 +12,10 @@ test("POST / wrong email", async t => {
         email: "QA_" + faker.internet.email(),
         password: faker.internet.password()
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "EMAIL_PASSWORD_INCORRECT");
+    t.snapshot(res.body);
 });
 
 test("POST / wrong password", async t => {
@@ -23,10 +23,10 @@ test("POST / wrong password", async t => {
         email: config.testAccount.email_ex[0],
         password: faker.internet.password()
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "EMAIL_PASSWORD_INCORRECT");
+    t.snapshot(res.body);
 });
 
 test("POST / use Facebook email", async t => {
@@ -34,30 +34,30 @@ test("POST / use Facebook email", async t => {
         email: config.testAccount.facebook,
         password: config.testAccount.passwordFacebook
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "EMAIL_PASSWORD_INCORRECT");
+    t.snapshot(res.body);
 });
 
 test("POST / missing email field", async t => {
     const res = await request.post(config.api.signIn, {
         password: faker.internet.password()
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "EMAIL_PASSWORD_INCORRECT");
+    t.snapshot(res.body);
 });
 
 test("POST / missing password field", async t => {
     const res = await request.post(config.api.signIn, {
         email: "QA_" + faker.internet.email()
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "EMAIL_PASSWORD_INCORRECT");
+    t.snapshot(res.body);
 });
 
 test("POST / empty email and password", async t => {
@@ -65,10 +65,10 @@ test("POST / empty email and password", async t => {
         email: "",
         password: ""
     });
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "EMAIL_PASSWORD_INCORRECT");
+    t.snapshot(res.body);
 });
 
 test("POST / correct email and password - external email", async t => {
@@ -76,7 +76,6 @@ test("POST / correct email and password - external email", async t => {
         email: config.testAccount.email_ex[0].toUpperCase(),
         password: config.testAccount.password_ex
     });
-    t.snapshot(res.body);
 
     const signIn: Model.SignIn = res.body;
 
@@ -99,7 +98,6 @@ test("POST / correct email and password - internal email", async t => {
         email: config.testAccount.email_in,
         password: config.testAccount.password_in
     });
-    t.snapshot(res.body);
 
     const signIn: Model.SignIn = res.body;
 
@@ -114,8 +112,8 @@ test("GET / sign out", async t => {
     );
 
     const res = await request.get(config.api.signOut, cookie);
-    t.snapshot(res.body);
 
     t.deepEqual(res.statusCode, 200);
     t.deepEqual(res.body.message, "SIGNED_OUT_SUCCESSFUL");
+    t.snapshot(res.body);
 });
