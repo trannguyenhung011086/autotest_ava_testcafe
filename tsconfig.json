@@ -1,19 +1,13 @@
 {
-    "compilerOptions": {
-        "target": "esnext",
-        "lib": [
-            "dom",
-            "es2017"
-        ],
-        "moduleResolution": "node",
-        "module": "commonjs",
-        "pretty": true,
-        "downlevelIteration": true,
-        "declaration": true,
-        "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true
-    },
-    "exclude": [
-        "node_modules"
-    ]
+	"compilerOptions": {
+		"target": "esnext",
+		"lib": ["dom", "esnext"],
+		"moduleResolution": "node",
+		"module": "commonjs",
+		"pretty": true,
+		"downlevelIteration": true,
+		"declaration": true,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true
+	}
 }

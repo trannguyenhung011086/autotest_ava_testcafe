@@ -15,7 +15,7 @@ WORKDIR /home/tester
 
 # copy required files
 COPY package.json /home/tester
-COPY jest.setup.js /home/tester
+# COPY . /home/tester
 
 # install packages
 RUN yarn install \
@@ -23,8 +23,8 @@ RUN yarn install \
     && rm -rf /tmp/*
 
 # # set path
-# ENV NODE_PATH=/testcafe/node_modules
-# ENV PATH=$PATH:/testcafe/node_modules/.bin
+# ENV NODE_PATH=/autotest/node_modules
+# ENV PATH=$PATH:/autotest/node_modules/.bin
 
 # USER root
 # COPY docker-entrypoint.sh /

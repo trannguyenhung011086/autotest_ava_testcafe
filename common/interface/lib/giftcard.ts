@@ -1,13 +1,13 @@
 export interface GiftcardModel {
-    code: string
-    amount: number
-    redeemed: boolean
-    usedBy: string
-    expiry: Date
+	code: string;
+	amount: number;
+	redeemed: boolean;
+	usedBy: string;
+	expiry: Date;
 }
 
 export type Giftcard = {
-    id: string,
-    code: string,
-    amount: number
-}
+	id: string;
+	code: string;
+	amount: number;
+};

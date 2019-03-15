@@ -1,23 +1,23 @@
-import { config } from '../../config'
-import * as Model from '../../interface'
-import { createHandyClient } from 'handy-redis'
+import { config } from "../../config";
+import * as Model from "../../interface";
+import { createHandyClient } from "handy-redis";
 
 export class RedisAccessUtils {
     public async getKey(key: string) {
         let client = createHandyClient({
             host: config.stgRedis.host,
             port: config.stgRedis.port
-        })
+        });
         try {
-            const res = await client.get(key)
+            const res = await client.get(key);
             if (!res) {
-                throw 'Cannot get data on Redis!'
+                throw "Cannot get data on Redis!";
             }
-            return JSON.parse(res)
+            return JSON.parse(res);
         } catch (err) {
-            throw { message: 'Error with Redis!', error: err }
+            throw { message: "Error with Redis!", error: err };
         } finally {
-            await client.quit()
+            await client.quit();
         }
     }
 
@@ -25,17 +25,16 @@ export class RedisAccessUtils {
         let client = createHandyClient({
             host: config.stgRedis.host,
             port: config.stgRedis.port
-        })
+        });
         try {
-
-            const res = await client.set(key, value)
-            if (res != 'OK') {
-                throw 'Cannot update data on Redis!'
+            const res = await client.set(key, value);
+            if (res != "OK") {
+                throw "Cannot update data on Redis!";
             }
         } catch (err) {
-            throw { message: 'Error with Redis!', error: err }
+            throw { message: "Error with Redis!", error: err };
         } finally {
-            await client.quit()
+            await client.quit();
         }
     }
 }
