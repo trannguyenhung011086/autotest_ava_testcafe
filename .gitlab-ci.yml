@@ -132,7 +132,6 @@ test_api_non_checkout_prod:
 cleanup:
     stage: cleanup
     script:
-        - (if [ 1==1 ]; then echo "true"; fi)
-        - (if [ ! -z $(docker ps -a -q) ]; then docker stop $(docker ps -a -q); fi)
-        - (if [ ! -z $(docker ps -a -q) ]; then docker rm $(docker ps -a -q); fi)
+        # - docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
+        - docker container prune -f && docker volume prune -f
     when: always
