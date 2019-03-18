@@ -12,6 +12,8 @@ build:
     stage: build
     script:
         - docker build -t hung/autotest .
+    only:
+        - tags
 
 test_api_non_checkout_stg:
     stage: test_stg
@@ -135,3 +137,6 @@ cleanup:
         - docker stop $(docker ps -a -q)
         - docker rm $(docker ps -a -q)
     when: always
+    only:
+        - tags
+        - schedules
