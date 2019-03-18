@@ -12,31 +12,29 @@ build:
     stage: build
     script:
         - docker build -t hung/autotest .
-    only:
-        - tags
 
 test_api_non_checkout_stg:
     stage: test_stg
     script:
-        - docker run --name api_non_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_api_non_checkout_ci
+        - docker run --name api_non_checkout_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/autotest yarn run test_api_non_checkout_ci
     except:
         - schedules
     only:
-        - tags
+        - branches
 
 test_api_checkout_stg:
     stage: test_stg
     script:
-        - docker run --name api_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci
+        - docker run --name api_checkout_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/autotest yarn run test_api_checkout_ci
     except:
         - schedules
     only:
-        - tags
+        - branches
 
 # test_chromium_stg:
 #     stage: test_stg
 #     script:
-#         - docker run --name chromium_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_chromium_ci
+#         - docker run --name chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/autotest yarn run test_chromium_ci
 #     after_script:
 #         - docker cp chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
 #     artifacts:
@@ -46,12 +44,12 @@ test_api_checkout_stg:
 #     except:
 #         - schedules
 #     only:
-#         - tags
+#         - branches
 
 # test_firefox_stg:
 #     stage: test_stg
 #     script:
-#         - docker run --name firefox_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_firefox_ci
+#         - docker run --name firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/autotest yarn run test_firefox_ci
 #     after_script:
 #         - docker cp firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
 #     artifacts:
@@ -61,12 +59,12 @@ test_api_checkout_stg:
 #     except:
 #         - schedules
 #     only:
-#         - tags
+#         - branches
 
 # test_mobile_emu_stg:
 #     stage: test_stg
 #     script:
-#         - docker run --name mobile_emu_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_mobile_emu_ci
+#         - docker run --name mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/autotest yarn run test_mobile_emu_ci
 #     after_script:
 #         - docker cp mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
 #     artifacts:
@@ -76,26 +74,28 @@ test_api_checkout_stg:
 #     except:
 #         - schedules
 #     only:
-#         - tags
+#         - branches
 
 test_api_non_checkout_prod:
     stage: test_prod
     script:
-        - docker run --name api_non_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_non_checkout_ci --match='!*skip-prod*'
+        - docker run --name api_non_checkout_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_api_non_checkout_ci --match='!*skip-prod*'
     only:
         - schedules
+        - master
 
 # test_api_checkout_prod:
 #     stage: test_prod
 #     script:
-#         - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci --match='!*skip-prod*'
+#         - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_api_checkout_ci --match='!*skip-prod*'
 #     only:
 #         - schedules
+#         - master
 
 # test_chromium_prod:
 #     stage: test_prod
 #     script:
-#         - docker run --name chromium_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_chromium_ci
+#         - docker run --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_chromium_ci
 #     after_script:
 #         - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
 #     artifacts:
@@ -104,11 +104,12 @@ test_api_non_checkout_prod:
 #             junit: junit_chromium.xml
 #     only:
 #         - schedules
+#         - master
 
 # test_firefox_prod:
 #     stage: test_prod
 #     script:
-#         - docker run --name firefox_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_firefox_ci
+#         - docker run --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_firefox_ci
 #     after_script:
 #         - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
 #     artifacts:
@@ -117,11 +118,12 @@ test_api_non_checkout_prod:
 #             junit: junit_firefox.xml
 #     only:
 #         - schedules
+#         - master
 
 # test_mobile_emu_prod:
 #     stage: test_prod
 #     script:
-#         - docker run --name mobile_emu_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_mobile_emu_ci
+#         - docker run --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_mobile_emu_ci
 #     after_script:
 #         - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
 #     artifacts:
@@ -130,13 +132,10 @@ test_api_non_checkout_prod:
 #             junit: junit_mobile_emu.xml
 #     only:
 #         - schedules
+#         - master
 
 cleanup:
     stage: cleanup
     script:
-        - docker stop $(docker ps -a -q)
-        - docker rm $(docker ps -a -q)
+        - if [ ! -z $(docker ps -a -q) ]; then docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q); fi
     when: always
-    only:
-        - tags
-        - schedules
