@@ -30,6 +30,8 @@ test("GET / sale not started", async t => {
         startDate: { $gt: new Date() }
     });
 
+    t.truthy(futureSale);
+
     const res = await request.get(config.api.sales + futureSale._id);
 
     t.deepEqual(res.statusCode, 404);
@@ -41,6 +43,8 @@ test("GET / sale has ended", async t => {
     const endedSale = await access.getSale({
         endDate: { $lt: new Date() }
     });
+
+    t.truthy(endedSale);
 
     const res = await request.get(config.api.sales + endedSale._id);
 
@@ -70,6 +74,9 @@ test("GET / upcoming sale ended", async t => {
     const endedSale = await access.getSale({
         endDate: { $lt: new Date() }
     });
+
+    t.truthy(endedSale);
+
     const res = await request.get(config.api.upcomingSale + endedSale._id);
 
     t.deepEqual(res.statusCode, 410);

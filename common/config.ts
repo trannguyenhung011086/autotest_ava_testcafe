@@ -94,6 +94,25 @@ export const config = {
     stripeBase: "https://api.stripe.com",
     payDollarBase: payDollarBase,
     payDollarApi: payDollarApi,
+    bulkyNameList: ["Gối", "Drap", "Ruột Gối", "5 Món"],
+    bulkyTypeList1: [
+        "56ab4ec486d35f11000b732c",
+        "57020368e501710e004c9b8f",
+        "5751598da816261100b587b8",
+        "5940fc05acc7ad11001544d4",
+        "59db3d874c42c3000f5b17b8",
+        "5a0167f7b7de5e000f1525b4",
+        "5a29204edd1b3100104b347b",
+        "5acc39c0ca5b920018a9bfe3"
+    ],
+    bulkyTypeList2: [
+        "56b02af3701a801000ddfbcf",
+        "56f20d31a139730e00884af1",
+        "56f20da3a139730e00884af5",
+        "57106b54e219660e00d1aae2",
+        "57592f93e881530c008eedaf",
+        "57a45f65ee457b1000ddd020"
+    ],
     testAccount: {
         email_in: "qa_tech@leflair.vn",
         password_in: "leflairqa",

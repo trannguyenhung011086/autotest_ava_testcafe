@@ -71,9 +71,13 @@ test("POST / cannot add sale ended product to cart", async t => {
         endDate: { $lt: new Date() }
     });
 
+    t.truthy(endedSale);
+
     const item = await access.getProduct({
         _id: endedSale.products[0].product
     });
+
+    t.truthy(item);
 
     const res = await request.post(
         config.api.cart,

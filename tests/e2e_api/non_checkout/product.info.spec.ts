@@ -3,6 +3,7 @@ import * as Utils from "../../../common/utils";
 import * as Model from "../../../common/interface";
 
 const request = new Utils.ProductUtils();
+const accessDb = new Utils.DbAccessUtils();
 const accessRedis = new Utils.RedisAccessUtils();
 
 import test from "ava";
@@ -198,7 +199,7 @@ test("GET / virtual product", async t => {
     }
 });
 
-test("GET / non-virtual product", async t => {
+test("GET / non-virtual non-bulky product", async t => {
     const product = await request.getVirtualBulkyProductInfo(
         config.api.currentSales,
         false,
@@ -210,6 +211,48 @@ test("GET / non-virtual product", async t => {
     for (const item of product.products) {
         t.false(item.isVirtual);
         t.true(item.quantityAvailable > 0);
+        t.false(item.isBulky);
+    }
+
+    const productQuery = await accessDb.getProduct({
+        "variations.nsId": product.products[0].nsId
+    });
+
+    t.truthy(productQuery);
+
+    const isNameContain = config.bulkyNameList.some(name =>
+        product.title.includes(name)
+    );
+
+    t.false(config.bulkyTypeList1.includes(productQuery.type));
+    t.false(config.bulkyTypeList2.includes(productQuery.type));
+});
+
+test("GET / bulky product", async t => {
+    const product = await request.getVirtualBulkyProductInfo(
+        config.api.currentSales,
+        true,
+        true
+    );
+
+    await request.validateProductInfo(t, product);
+
+    const productQuery = await accessDb.getProduct({
+        "variations.nsId": product.products[0].nsId
+    });
+
+    t.truthy(productQuery);
+
+    const isNameContain = config.bulkyNameList.some(name =>
+        product.title.includes(name)
+    );
+
+    if (isNameContain) {
+        t.log("route 1");
+        t.true(config.bulkyTypeList1.includes(productQuery.type));
+    } else {
+        t.log("route 2");
+        t.true(config.bulkyTypeList1.includes(productQuery.type));
     }
 });
 

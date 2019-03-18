@@ -164,6 +164,7 @@ export interface ProductInfoModel {
     products: Product[];
     variations: Product[];
     name: string;
+    type: string;
 }
 
 export interface BestSellers {

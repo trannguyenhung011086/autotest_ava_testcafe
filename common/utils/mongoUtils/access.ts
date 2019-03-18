@@ -112,11 +112,7 @@ export class DbAccessUtils {
     }
 
     public async getSale(query: Object): Promise<Model.SaleInfoModel> {
-        const sale = await this.getDbData("sales", query);
-        if (!sale) {
-            throw "Cannot get sale!";
-        }
-        return sale;
+        return await this.getDbData("sales", query);
     }
 
     public async getSaleList(query: Object): Promise<Model.SaleInfoModel[]> {
@@ -128,11 +124,7 @@ export class DbAccessUtils {
     }
 
     public async getProduct(query: Object): Promise<Model.ProductInfoModel> {
-        const product = await this.getDbData("products", query);
-        if (!product) {
-            throw "Cannot get product!";
-        }
-        return product;
+        return await this.getDbData("products", query);
     }
 
     public async countUsedVoucher(voucherId: Object): Promise<number> {
