@@ -69,14 +69,14 @@ test_api_checkout_stg:
 test_api_non_checkout_prod:
     stage: test_prod
     script:
-        - docker run --name api_non_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_non_checkout_ci
+        - docker run --name api_non_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_non_checkout_ci -- --match='!*skip-prod*'
     only:
         - schedules
 
 # test_api_checkout_prod:
 #     stage: test_prod
 #     script:
-#         - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci
+#         - docker run --name api_checkout_prod -i -e NODE_ENV=prod -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci -- --match='!*skip-prod*'
 #     only:
 #         - schedules
 

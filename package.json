@@ -1,52 +1,52 @@
 {
-	"name": "e2e-testing-leflair",
-	"ava": {
-		"compileEnhancements": false,
-		"verbose": true,
-		"extensions": [
-			"ts"
-		],
-		"require": [
-			"ts-node/register"
-		]
-	},
-	"version": "1.0.0",
-	"description": "Leflair website automation test",
-	"main": "index.js",
-	"scripts": {
-		"test_api_non_checkout": "./node_modules/.bin/ava tests/e2e_api/ > report/test_api_non_checkout.txt",
-		"test_api_checkout": "./node_modules/.bin/ava tests/e2e_api/ > report/test_api_checkout.txt",
-		"test_chromium": "./node_modules/.bin/testcafe \"chromium --no-sandbox\" tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml",
-		"test_firefox": "./node_modules/.bin/testcafe firefox tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml",
-		"test_mobile_emu": "./node_modules/.bin/testcafe \"chromium:emulation:device=iphone 6 --no-sandbox\" tests/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml",
-		"test_desktop_remote": "./node_modules/.bin/testcafe remote tests/e2e_ui/desktop --qr-code --selector-timeout 15000 --assertion-timeout 5000",
-		"test_mobile_remote": "./node_modules/.bin/testcafe remote tests/e2e_ui/mobile --qr-code --selector-timeout 15000 --assertion-timeout 5000",
-		"test_api_non_checkout_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/ava /dockertests/tests/e2e_api/non_checkout/",
-		"test_api_checkout_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/ava /dockertests/tests/e2e_api/checkout/",
-		"test_chromium_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless --no-sandbox\" /dockertests/tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml",
-		"test_firefox_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe firefox:headless /dockertests/tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml",
-		"test_mobile_emu_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless:emulation:device=iphone 6 --no-sandbox\" /dockertests/tests/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml"
-	},
-	"author": "Hung Tran",
-	"license": "ISC",
-	"dependencies": {
-		"@babel/core": "^7.3.4",
-		"@types/faker": "^4.1.5",
-		"@types/got": "^9.4.1",
-		"@types/mongodb": "^3.1.22",
-		"@types/node": "^11.11.3",
-		"@types/papaparse": "^4.5.9",
-		"@types/qs": "^6.5.2",
-		"ava": "^1.3.1",
-		"faker": "^4.1.0",
-		"got": "^9.6.0",
-		"handy-redis": "^1.5.2",
-		"mongodb": "^3.1.13",
-		"papaparse": "^4.6.3",
-		"testcafe": "^1.1.0",
-		"tough-cookie": "^3.0.1",
-		"ts-node": "^8.0.3",
-		"typescript": "^3.3.3333",
-		"xml-js": "^1.6.11"
-	}
+    "name": "e2e-testing-leflair",
+    "ava": {
+        "compileEnhancements": false,
+        "verbose": true,
+        "extensions": [
+            "ts"
+        ],
+        "require": [
+            "ts-node/register"
+        ]
+    },
+    "version": "1.0.0",
+    "description": "Leflair website automation test",
+    "main": "index.js",
+    "scripts": {
+        "test_api_non_checkout": "./node_modules/.bin/ava tests/e2e_api/non_checkout",
+        "test_api_checkout": "./node_modules/.bin/ava tests/e2e_api/checkout",
+        "test_chromium": "./node_modules/.bin/testcafe \"chromium --no-sandbox\" tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml",
+        "test_firefox": "./node_modules/.bin/testcafe firefox tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml",
+        "test_mobile_emu": "./node_modules/.bin/testcafe \"chromium:emulation:device=iphone 6 --no-sandbox\" tests/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml",
+        "test_desktop_remote": "./node_modules/.bin/testcafe remote tests/e2e_ui/desktop --qr-code --selector-timeout 15000 --assertion-timeout 5000",
+        "test_mobile_remote": "./node_modules/.bin/testcafe remote tests/e2e_ui/mobile --qr-code --selector-timeout 15000 --assertion-timeout 5000",
+        "test_api_non_checkout_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/ava /dockertests/tests/e2e_api/non_checkout",
+        "test_api_checkout_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/ava /dockertests/tests/e2e_api/checkout",
+        "test_chromium_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless --no-sandbox\" /dockertests/tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_chromium.xml",
+        "test_firefox_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe firefox:headless /dockertests/tests/e2e_ui/desktop --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_firefox.xml",
+        "test_mobile_emu_ci": "NODE_ENV=$NODE_ENV MODE=ci ./node_modules/.bin/testcafe \"chromium:headless:emulation:device=iphone 6 --no-sandbox\" /dockertests/tests/e2e_ui/mobile --selector-timeout 15000 --assertion-timeout 5000 --reporter spec,xunit:report/junit_mobile_emu.xml"
+    },
+    "author": "Hung Tran",
+    "license": "ISC",
+    "dependencies": {
+        "@babel/core": "^7.3.4",
+        "@types/faker": "^4.1.5",
+        "@types/got": "^9.4.1",
+        "@types/mongodb": "^3.1.22",
+        "@types/node": "^11.11.3",
+        "@types/papaparse": "^4.5.9",
+        "@types/qs": "^6.5.2",
+        "ava": "^1.3.1",
+        "faker": "^4.1.0",
+        "got": "^9.6.0",
+        "handy-redis": "^1.5.2",
+        "mongodb": "^3.1.13",
+        "papaparse": "^4.6.3",
+        "testcafe": "^1.1.0",
+        "tough-cookie": "^3.0.1",
+        "ts-node": "^8.0.3",
+        "typescript": "^3.3.3333",
+        "xml-js": "^1.6.11"
+    }
 }
