@@ -19,6 +19,8 @@ test_api_non_checkout_stg:
         - docker run --name api_non_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_api_non_checkout_ci
     except:
         - schedules
+    only:
+        - tags
 
 test_api_checkout_stg:
     stage: test_stg
@@ -26,6 +28,8 @@ test_api_checkout_stg:
         - docker run --name api_checkout_stg -i -e NODE_ENV=stg -v `pwd`/:/dockertests hung/autotest yarn run test_api_checkout_ci
     except:
         - schedules
+    only:
+        - tags
 
 # test_chromium_stg:
 #     stage: test_stg
@@ -39,6 +43,8 @@ test_api_checkout_stg:
 #             junit: junit_chromium.xml
 #     except:
 #         - schedules
+#     only:
+#         - tags
 
 # test_firefox_stg:
 #     stage: test_stg
@@ -52,6 +58,8 @@ test_api_checkout_stg:
 #             junit: junit_firefox.xml
 #     except:
 #         - schedules
+#     only:
+#         - tags
 
 # test_mobile_emu_stg:
 #     stage: test_stg
@@ -65,6 +73,8 @@ test_api_checkout_stg:
 #             junit: junit_mobile_emu.xml
 #     except:
 #         - schedules
+#     only:
+#         - tags
 
 test_api_non_checkout_prod:
     stage: test_prod
