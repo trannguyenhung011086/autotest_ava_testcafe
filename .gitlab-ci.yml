@@ -132,6 +132,5 @@ test_api_non_checkout_prod:
 cleanup:
     stage: cleanup
     script:
-        - if [ ! -z $(docker ps -a -q) ]; then docker stop $(docker ps -a -q); fi
-        - if [ ! -z $(docker ps -a -q) ]; then docker rm $(docker ps -a -q); fi
+        - if [[ ! -z $(docker ps -a -q) ]]; then [[ docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)]]; fi
     when: always
