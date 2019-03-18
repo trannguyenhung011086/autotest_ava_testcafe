@@ -132,6 +132,6 @@ test_api_non_checkout_prod:
 cleanup:
     stage: cleanup
     script:
-        # - docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
+        - docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
         - docker container prune -f && docker volume prune -f
     when: always
