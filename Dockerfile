@@ -6,7 +6,8 @@ RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/
     yarn \
     chromium \
     firefox \
-    && apk update
+    && apk update \
+    && apk upgrade
 
 # create non-root user
 RUN addgroup -g 1000 -S tester && \
