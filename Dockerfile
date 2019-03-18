@@ -5,7 +5,7 @@ RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/
     nodejs-current \
     yarn \
     chromium \
-    firefox |
+    firefox \
     && apk update
 
 # create non-root user
