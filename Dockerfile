@@ -1,11 +1,12 @@
 FROM alpine:edge
 
 # install prerequisites
-RUN apk update && apk add \
+RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ add \
     nodejs-current \
     yarn \
     chromium \
-    firefox
+    firefox |
+    && apk update
 
 # create non-root user
 RUN addgroup -g 1000 -S tester && \
