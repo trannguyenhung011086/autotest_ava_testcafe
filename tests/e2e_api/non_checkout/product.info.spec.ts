@@ -220,10 +220,6 @@ test("GET / non-virtual non-bulky product", async t => {
 
     t.truthy(productQuery);
 
-    const isNameContain = config.bulkyNameList.some(name =>
-        product.title.includes(name)
-    );
-
     t.false(config.bulkyTypeList1.includes(productQuery.type));
     t.false(config.bulkyTypeList2.includes(productQuery.type));
 });
