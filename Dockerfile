@@ -1,8 +1,8 @@
 FROM alpine:edge
 
 # install prerequisites
-RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ add \
-    nodejs \
+RUN apk update && apk add \
+    nodejs-current \
     yarn \
     chromium \
     firefox
