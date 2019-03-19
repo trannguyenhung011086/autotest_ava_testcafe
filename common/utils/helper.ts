@@ -12,7 +12,9 @@ export class Helper {
         const options: GotJSONOptions = {
             baseUrl: config.baseUrl,
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "user-agent":
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             json: true,
             throwHttpErrors: false
@@ -31,7 +33,9 @@ export class Helper {
         const options = {
             baseUrl: config.baseUrl,
             headers: {
-                "Content-Type": "text/plain"
+                "Content-Type": "text/plain",
+                "user-agent":
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             throwHttpErrors: false
             // cookieJar: this.cookieJar
@@ -49,7 +53,9 @@ export class Helper {
         const options = {
             baseUrl: config.baseUrl,
             headers: {
-                "Content-Type": "application/html"
+                "Content-Type": "application/html",
+                "user-agent":
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             throwHttpErrors: false
             // cookieJar: this.cookieJar
@@ -72,7 +78,9 @@ export class Helper {
         const options: GotJSONOptions = {
             baseUrl: config.baseUrl,
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "user-agent":
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             body: data,
             json: true,
@@ -97,7 +105,9 @@ export class Helper {
         const options: GotJSONOptions = {
             baseUrl: config.baseUrl,
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "user-agent":
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             body: data,
             json: true,
@@ -122,7 +132,9 @@ export class Helper {
         const options: GotJSONOptions = {
             baseUrl: config.baseUrl,
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/x-www-form-urlencoded",
+                "user-agent":
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             body: data,
             throwHttpErrors: false,
@@ -170,7 +182,9 @@ export class Helper {
         const options: GotJSONOptions = {
             baseUrl: config.baseUrl,
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "user-agent":
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             json: true,
             throwHttpErrors: false
