@@ -1,12 +1,7 @@
-image: node:9.4.0
-
 cache:
     paths:
         - node_modules/
         - .yarn
-
-before_script:  
-  - apt-get update -qq && apt-get install
 
 stages:
     - build
