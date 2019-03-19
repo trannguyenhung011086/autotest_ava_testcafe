@@ -1,3 +1,5 @@
+image: node:latest
+
 cache:
     paths:
         - node_modules/
@@ -12,7 +14,6 @@ build:
     stage: build
     script:
         - docker build -t hung/autotest .
-        - npm install -g yarn
         - yarn install
 
 test_api_sale_relate_stg:
