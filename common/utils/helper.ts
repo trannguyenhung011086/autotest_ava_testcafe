@@ -17,7 +17,8 @@ export class Helper {
                     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             json: true,
-            throwHttpErrors: false
+            throwHttpErrors: false,
+            retry: 5
             // cookieJar: this.cookieJar
         };
         if (cookie) {
@@ -37,7 +38,8 @@ export class Helper {
                 "user-agent":
                     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
-            throwHttpErrors: false
+            throwHttpErrors: false,
+            retry: 5
             // cookieJar: this.cookieJar
         };
         if (cookie) {
@@ -57,7 +59,8 @@ export class Helper {
                 "user-agent":
                     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
-            throwHttpErrors: false
+            throwHttpErrors: false,
+            retry: 5
             // cookieJar: this.cookieJar
         };
         if (cookie) {
@@ -84,7 +87,8 @@ export class Helper {
             },
             body: data,
             json: true,
-            throwHttpErrors: false
+            throwHttpErrors: false,
+            retry: 5
             // cookieJar: this.cookieJar
         };
         if (cookie) {
@@ -111,7 +115,8 @@ export class Helper {
             },
             body: data,
             json: true,
-            throwHttpErrors: false
+            throwHttpErrors: false,
+            retry: 5
             // cookieJar: this.cookieJar
         };
         if (cookie) {
@@ -140,7 +145,8 @@ export class Helper {
             throwHttpErrors: false,
             json: true,
             form: true,
-            followRedirect: false
+            followRedirect: false,
+            retry: 5
             // cookieJar: this.cookieJar
         };
         if (cookie) {
@@ -166,7 +172,8 @@ export class Helper {
             body: data,
             throwHttpErrors: false,
             form: true,
-            followRedirect: false
+            followRedirect: false,
+            retry: 5
             // cookieJar: this.cookieJar
         };
         if (cookie) {
@@ -187,7 +194,8 @@ export class Helper {
                     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
             },
             json: true,
-            throwHttpErrors: false
+            throwHttpErrors: false,
+            retry: 5
             // cookieJar: this.cookieJar
         };
         if (cookie) {
