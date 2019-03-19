@@ -12,6 +12,8 @@ build:
     stage: build
     script:
         - docker build -t hung/autotest .
+        - npm install -g yarn
+        - yarn install
 
 test_api_sale_relate_stg:
     stage: test_stg
@@ -79,18 +81,26 @@ test_mobile_emu_stg:
         - schedules
         - master
 
+# test_api_sale_relate_prod:
+#     stage: test_prod
+#     script:
+#         - docker run --name api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_api_sale_relate_ci --match='!*skip-prod*'
+#     only:
+#         - schedules
+#         - master
+
+# test_api_sale_not_relate_prod:
+#     stage: test_prod
+#     script:
+#         - docker run --name api_sale_not_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_api_sale_not_relate_ci --match='!*skip-prod*'
+#     only:
+#         - schedules
+#         - master
+
 test_api_sale_relate_prod:
     stage: test_prod
     script:
-        - docker run --name api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_api_sale_relate_ci --match='!*skip-prod*'
-    only:
-        - schedules
-        - master
-
-test_api_sale_not_relate_prod:
-    stage: test_prod
-    script:
-        - docker run --name api_sale_not_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/autotest yarn run test_api_sale_not_relate_ci --match='!*skip-prod*'
+        - NODE_ENV=prod MODE=ci yarn run test_api_sale_relate --match='!*skip-prod*'
     only:
         - schedules
         - master
