@@ -1,8 +1,9 @@
-image: node:latest
+image: node
 
 cache:
     paths:
         - node_modules/
+        - .yarn
 
 stages:
     - build
