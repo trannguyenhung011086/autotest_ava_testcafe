@@ -407,12 +407,12 @@ export class Helper {
         t.truthy(orderItem.id);
         t.truthy(orderItem.createdTimestamp);
 
-        t.deepEqual(typeof orderItem.isCrossBorder, "boolean");
+        t.deepEqual(typeof orderItem.isVirtual, "boolean");
         t.deepEqual(typeof orderItem.isBulky, "boolean");
         t.deepEqual(typeof orderItem.isFirstOrder, "boolean");
 
-        if (orderItem.isVirtual) {
-            t.deepEqual(typeof orderItem.isVirtual, "boolean");
+        if (orderItem.isCrossBorder) {
+            t.deepEqual(typeof orderItem.isCrossBorder, "boolean");
         }
 
         t.regex(orderItem.tracking, /dhlecommerce\.asia|ghn\.vn/);
