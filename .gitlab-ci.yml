@@ -86,7 +86,8 @@ mobile_emu_stg:
 api_sale_relate_prod:
     stage: test_prod
     script:
-        - NODE_ENV=prod MODE=ci yarn run test_api_sale_relate --match='!*skip-prod*'
+        # - NODE_ENV=prod MODE=ci yarn run test_api_sale_relate --match='!*skip-prod*'
+        - docker run --dns 8.8.8.8 --name api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
     only:
         - schedules
         - master
@@ -94,7 +95,8 @@ api_sale_relate_prod:
 api_sale_not_relate_prod:
     stage: test_prod
     script:
-        - NODE_ENV=prod MODE=ci yarn run test_api_sale_not_relate --match='!*skip-prod*'
+        # - NODE_ENV=prod MODE=ci yarn run test_api_sale_not_relate --match='!*skip-prod*'
+        - docker run --dns 8.8.8.8 --name api_sale_not_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci
     only:
         - schedules
         - master
