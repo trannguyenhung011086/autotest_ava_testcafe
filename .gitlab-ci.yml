@@ -44,7 +44,7 @@ api_checkout_stg:
 chromium_stg:
     stage: test_stg
     script:
-        - docker run --dns 8.8.8.8 --network host --name chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+        - docker run --dns 8.8.8.8 --name chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
         - docker cp chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
@@ -58,7 +58,7 @@ chromium_stg:
 firefox_stg:
     stage: test_stg
     script:
-        - docker run --dns 8.8.8.8 --network host --name firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+        - docker run --dns 8.8.8.8 --name firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
     after_script:
         - docker cp firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
     artifacts:
@@ -72,7 +72,7 @@ firefox_stg:
 mobile_emu_stg:
     stage: test_stg
     script:
-        - docker run --dns 8.8.8.8 --network host --name mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+        - docker run --dns 8.8.8.8 --name mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
     after_script:
         - docker cp mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
     artifacts:
@@ -110,7 +110,7 @@ api_sale_not_relate_prod:
 chromium_prod:
     stage: test_prod
     script:
-        - docker run --dns 8.8.8.8 --network host --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+        - docker run --dns 8.8.8.8 --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
         - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
@@ -124,7 +124,7 @@ chromium_prod:
 firefox_prod:
     stage: test_prod
     script:
-        - docker run --dns 8.8.8.8 --network host --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+        - docker run --dns 8.8.8.8 --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
     after_script:
         - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
     artifacts:
@@ -138,7 +138,7 @@ firefox_prod:
 mobile_emu_prod:
     stage: test_prod
     script:
-        - docker run --dns 8.8.8.8 --network host --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+        - docker run --dns 8.8.8.8 --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
     after_script:
         - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
     artifacts:
