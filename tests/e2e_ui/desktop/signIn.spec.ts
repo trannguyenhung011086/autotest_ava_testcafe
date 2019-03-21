@@ -5,7 +5,7 @@ import { Pages } from "../page_objects";
 
 const page = new Pages();
 
-fixture("Sign in via email " + config.baseUrl)
+fixture("Sign in via email")
 	.meta({ type: "regression" })
 	.page(config.baseUrl + config.signIn)
 	.requestHooks(page.base.blockPopup);

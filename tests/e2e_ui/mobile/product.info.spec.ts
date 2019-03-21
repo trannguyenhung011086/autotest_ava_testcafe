@@ -6,7 +6,7 @@ import { Pages } from "../page_objects";
 const requestProduct = new Utils.ProductUtils();
 const page = new Pages();
 
-fixture("Check product detail page " + config.baseUrl).meta({
+fixture("Check product detail page").meta({
     type: "regression"
 });
 

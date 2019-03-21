@@ -14,7 +14,7 @@ const mockNonRedirect = RequestMock()
     .onRequestTo(/\/api\/v2\/product\/(?!view-product)/)
     .respond(null, 500, { "access-control-allow-origin": "*" });
 
-fixture("Check product detail page redirect" + config.baseUrl).meta({
+fixture("Check product detail page redirect").meta({
     type: "regression"
 });
 
