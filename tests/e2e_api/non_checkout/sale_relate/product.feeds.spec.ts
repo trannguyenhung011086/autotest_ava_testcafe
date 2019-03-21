@@ -213,7 +213,7 @@ test("GET / Google Merchant product feeds", async t => {
 
     googleMerchantFeeds.feed.entry.forEach(entry => {
         t.true(entry["g:id"]._text.length <= 50);
-        t.true.skip(entry["g:title"]._text.length <= 150); // wait for www-643
+        t.true(entry["g:title"]._text.length <= 150); // wait for www-643
         t.truthy(entry["g:description"]._text);
 
         t.deepEqual(getFeedId(entry["g:link"]._text), entry["g:id"]._text);
@@ -255,9 +255,12 @@ test("GET / Google Merchant product feeds", async t => {
         t.truthy(entry["g:brand"]._text);
         t.truthy(entry["g:mpn"]._text);
         t.deepEqual(entry["g:condition"]._text, "new");
-        t.regex.skip(entry["g:adult"]._text, /yes|no/); // wait for www-643
-        t.true.skip(parseInt(entry["g:multipack"]._text) > 1); // wait for www-643
-        t.regex.skip(entry["g:is_bundle"]._text, /yes|no/); // wait for www-643
+        t.regex(entry["g:adult"]._text, /yes|no/); // wait for www-643
+        t.regex(entry["g:is_bundle"]._text, /yes|no/); // wait for www-643
+
+        if (entry["g:multipack"]) {
+            t.true(parseInt(entry["g:multipack"]._text) > 1);
+        } // wait for www-643
 
         if (entry["g:gender"]._text) {
             t.regex(entry["g:gender"]._text, /male|female|unisex/);
