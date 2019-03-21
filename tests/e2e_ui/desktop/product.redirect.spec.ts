@@ -14,11 +14,11 @@ const mockNonRedirect = RequestMock()
     .onRequestTo(/\/api\/v2\/product\/(?!view-product)/)
     .respond(null, 500, { "access-control-allow-origin": "*" });
 
-fixture("Check product detail page " + config.baseUrl).meta({
+fixture("Check product detail page redirect" + config.baseUrl).meta({
     type: "regression"
 });
 
-test.requestHooks(mockRedirect)(
+test.skip.requestHooks(mockRedirect)(
     "Redirect to homepage when product API returns 403 error code",
     async () => {
         const sales = await requestSale.getSales(config.api.featuredSales);
@@ -32,7 +32,7 @@ test.requestHooks(mockRedirect)(
     }
 );
 
-test.requestHooks(mockNonRedirect)(
+test.skip.requestHooks(mockNonRedirect)(
     "Not redirect to homepage when product API returns 500 error code",
     async () => {
         const sales = await requestSale.getSales(config.api.featuredSales);
