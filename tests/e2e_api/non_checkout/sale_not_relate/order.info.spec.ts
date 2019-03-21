@@ -37,18 +37,6 @@ test("GET / can access orders", async t => {
 test("GET / can see order info using order ID", async t => {
     let orders = await request.getOrders(t.context["cookie"]);
 
-    orders = orders.reduce((result, value) => {
-        const exclude = [
-            "5c5185f6a332d20001a3464e",
-            "5c517d0447ad080001cb2171",
-            "5c516a186c839f000197a25a"
-        ]; // exclude error order. see WWW-639
-        if (!exclude.includes(value.id)) {
-            result.push(value);
-        }
-        return result;
-    }, []);
-
     for (let order of orders) {
         const res = await request.get(
             config.api.orders + "/" + order.id,
@@ -65,17 +53,6 @@ test("GET / can see order info using order ID", async t => {
 test("GET / can see order info using order code", async t => {
     const orders = await request.getOrders(t.context["cookie"]);
     let rand = Math.floor(Math.random() * orders.length);
-
-    // exclude error order. see WWW-639
-    if (
-        [
-            "5c5185f6a332d20001a3464e",
-            "5c517d0447ad080001cb2171",
-            "5c516a186c839f000197a25a"
-        ].includes(orders[rand].id)
-    ) {
-        rand = 0;
-    }
 
     t.log("Test order " + orders[rand].code + " " + orders[rand].id);
 
