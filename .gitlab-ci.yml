@@ -103,6 +103,16 @@ docker_api_sale_relate_prod:
     stage: test_prod
     script:
         - docker run --shm-size=1g --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
+    after_script:
+        - docker run -i -e -v $(pwd)/:/dockertests hung/testcafe nslookup leflair.vn
+    only:
+        - schedules
+        - master
+
+test_dns:
+    stage: test_prod
+    script:
+        - docker run -i -e -v $(pwd)/:/dockertests hung/testcafe nslookup leflair.vn
     only:
         - schedules
         - master
@@ -129,33 +139,33 @@ chromium_prod:
         - schedules
         - master
 
-# firefox_prod:
-#     stage: test_prod
-#     script:
-#         - docker run --shm-size=1g --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
-#     after_script:
-#         - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
-#     artifacts:
-#         expire_in: 1 week
-#         reports:
-#             junit: junit_firefox.xml
-#     only:
-#         - schedules
-#         - master
+firefox_prod:
+    stage: test_prod
+    script:
+        - docker run --shm-size=1g --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+    after_script:
+        - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
+    artifacts:
+        expire_in: 1 week
+        reports:
+            junit: junit_firefox.xml
+    only:
+        - schedules
+        - master
 
-# mobile_emu_prod:
-#     stage: test_prod
-#     script:
-#         - docker run --shm-size=1g --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
-#     after_script:
-#         - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
-#     artifacts:
-#         expire_in: 1 week
-#         reports:
-#             junit: junit_mobile_emu.xml
-#     only:
-#         - schedules
-#         - master
+mobile_emu_prod:
+    stage: test_prod
+    script:
+        - docker run --shm-size=1g --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+    after_script:
+        - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
+    artifacts:
+        expire_in: 1 week
+        reports:
+            junit: junit_mobile_emu.xml
+    only:
+        - schedules
+        - master
 
 cleanup:
     stage: cleanup

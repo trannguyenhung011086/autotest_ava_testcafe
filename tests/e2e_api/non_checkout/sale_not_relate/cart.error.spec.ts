@@ -14,6 +14,10 @@ test.beforeEach(async t => {
     t.context["cookie"] = await request.getGuestCookie();
 });
 
+test.afterEach.always(async t => {
+    await request.emptyCart(t.context["cookie"]);
+});
+
 test("POST / cannot add invalid product to cart", async t => {
     const res = await request.post(
         config.api.cart,

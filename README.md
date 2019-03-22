@@ -1,5 +1,7 @@
 # E2E test for API & UI
 
+**Approach:** dockerize all test files to run test via docker container
+
 _Precondition_
 
 -   Install latest node version
