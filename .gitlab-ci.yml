@@ -44,7 +44,7 @@ api_checkout_stg:
 chromium_stg:
     stage: test_stg
     script:
-        - docker run --name chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+        - docker run --shm-size=1g --name chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
         - docker cp chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
@@ -58,7 +58,7 @@ chromium_stg:
 firefox_stg:
     stage: test_stg
     script:
-        - docker run --name firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+        - docker run --shm-size=1g --name firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
     after_script:
         - docker cp firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
     artifacts:
@@ -72,7 +72,7 @@ firefox_stg:
 mobile_emu_stg:
     stage: test_stg
     script:
-        - docker run --name mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+        - docker run --shm-size=1g --name mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
     after_script:
         - docker cp mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
     artifacts:
@@ -102,7 +102,7 @@ api_sale_not_relate_prod:
 docker_api_sale_relate_prod:
     stage: test_prod
     script:
-        - docker run --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
+        - docker run --shm-size=1g --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
     only:
         - schedules
         - master
@@ -118,7 +118,7 @@ docker_api_sale_relate_prod:
 chromium_prod:
     stage: test_prod
     script:
-        - docker run --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+        - docker run --shm-size=1g --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
         - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
@@ -132,7 +132,7 @@ chromium_prod:
 # firefox_prod:
 #     stage: test_prod
 #     script:
-#         - docker run --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+#         - docker run --shm-size=1g --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
 #     after_script:
 #         - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
 #     artifacts:
@@ -146,7 +146,7 @@ chromium_prod:
 # mobile_emu_prod:
 #     stage: test_prod
 #     script:
-#         - docker run --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+#         - docker run --shm-size=1g --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
 #     after_script:
 #         - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
 #     artifacts:
@@ -160,8 +160,6 @@ chromium_prod:
 cleanup:
     stage: cleanup
     script:
-        - docker logs docker_api_sale_relate_prod
-        - docker logs chromium_prod
         - docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
         - docker container prune -f && docker volume prune -f
     when: always
