@@ -59,63 +59,69 @@ test.serial("GET / all addresses", async t => {
     t.truthy(addresses.shipping);
 });
 
-test("POST / add new shipping address (not duplicated billing address)", async t => {
-    const shipping = await request.generateAddress("shipping", cities);
-    shipping.duplicateBilling = false;
+test.serial(
+    "POST / add new shipping address (not duplicated billing address)",
+    async t => {
+        const shipping = await request.generateAddress("shipping", cities);
+        shipping.duplicateBilling = false;
 
-    const res = await request.post(
-        config.api.addresses,
-        shipping,
-        t.context["cookie"]
-    );
+        const res = await request.post(
+            config.api.addresses,
+            shipping,
+            t.context["cookie"]
+        );
 
-    const addresses: Model.Addresses = res.body;
+        const addresses: Model.Addresses = res.body;
 
-    t.deepEqual(res.statusCode, 200);
-    t.truthy(addresses.shipping[0].id);
-    t.deepEqual(addresses.shipping[0].address, shipping.address);
-    t.deepEqual(addresses.shipping[0].city, shipping.city);
-    t.true(addresses.shipping[0].default);
-    t.deepEqual(addresses.shipping[0].district, shipping.district);
-    t.deepEqual(addresses.shipping[0].firstName, shipping.firstName);
-    t.deepEqual(addresses.shipping[0].lastName, shipping.lastName);
-    t.deepEqual(addresses.shipping[0].phone, shipping.phone);
-});
+        t.deepEqual(res.statusCode, 200);
+        t.truthy(addresses.shipping[0].id);
+        t.deepEqual(addresses.shipping[0].address, shipping.address);
+        t.deepEqual(addresses.shipping[0].city, shipping.city);
+        t.true(addresses.shipping[0].default);
+        t.deepEqual(addresses.shipping[0].district, shipping.district);
+        t.deepEqual(addresses.shipping[0].firstName, shipping.firstName);
+        t.deepEqual(addresses.shipping[0].lastName, shipping.lastName);
+        t.deepEqual(addresses.shipping[0].phone, shipping.phone);
+    }
+);
 
-test("POST / add new shipping address (duplicated billing address)", async t => {
-    const shipping = await request.generateAddress("shipping", cities);
-    shipping.duplicateBilling = true;
+test.serial(
+    "POST / add new shipping address (duplicated billing address)",
+    async t => {
+        const shipping = await request.generateAddress("shipping", cities);
+        shipping.duplicateBilling = true;
 
-    const res = await request.post(
-        config.api.addresses,
-        shipping,
-        t.context["cookie"]
-    );
+        const res = await request.post(
+            config.api.addresses,
+            shipping,
+            t.context["cookie"]
+        );
 
-    const addresses: Model.Addresses = res.body;
+        const addresses: Model.Addresses = res.body;
 
-    t.deepEqual(res.statusCode, 200);
+        t.deepEqual(res.statusCode, 200);
 
-    t.truthy(addresses.shipping[0].id);
-    t.deepEqual(addresses.shipping[0].address, shipping.address);
-    t.deepEqual(addresses.shipping[0].city, shipping.city);
-    t.true(addresses.shipping[0].default);
-    t.deepEqual(addresses.shipping[0].district, shipping.district);
-    t.deepEqual(addresses.shipping[0].firstName, shipping.firstName);
-    t.deepEqual(addresses.shipping[0].lastName, shipping.lastName);
-    t.deepEqual(addresses.shipping[0].phone, shipping.phone);
+        t.truthy(addresses.shipping[0].id);
+        t.deepEqual(addresses.shipping[0].address, shipping.address);
+        t.deepEqual(addresses.shipping[0].city, shipping.city);
+        t.true(addresses.shipping[0].default);
+        t.deepEqual(addresses.shipping[0].district, shipping.district);
+        t.deepEqual(addresses.shipping[0].firstName, shipping.firstName);
+        t.deepEqual(addresses.shipping[0].lastName, shipping.lastName);
+        t.deepEqual(addresses.shipping[0].phone, shipping.phone);
 
-    t.truthy(addresses.billing[0].id);
-    t.deepEqual(addresses.billing[0].address, shipping.address);
-    t.deepEqual(addresses.billing[0].city, shipping.city);
-    t.true(addresses.billing[0].default);
-    t.deepEqual(addresses.billing[0].district, shipping.district);
-    t.deepEqual(addresses.billing[0].firstName, shipping.firstName);
-    t.deepEqual(addresses.billing[0].lastName, shipping.lastName);
-    t.deepEqual(addresses.billing[0].phone, shipping.phone);
-});
+        t.truthy(addresses.billing[0].id);
+        t.deepEqual(addresses.billing[0].address, shipping.address);
+        t.deepEqual(addresses.billing[0].city, shipping.city);
+        t.true(addresses.billing[0].default);
+        t.deepEqual(addresses.billing[0].district, shipping.district);
+        t.deepEqual(addresses.billing[0].firstName, shipping.firstName);
+        t.deepEqual(addresses.billing[0].lastName, shipping.lastName);
+        t.deepEqual(addresses.billing[0].phone, shipping.phone);
+    }
+);
 
-test("POST / add new billing address", async t => {
+test.serial("POST / add new billing address", async t => {
     const billing = await request.generateAddress("billing", cities);
     const res = await request.post(
         config.api.addresses,
@@ -138,7 +144,7 @@ test("POST / add new billing address", async t => {
     t.deepEqual(addresses.billing[0].taxCode, billing.taxCode);
 });
 
-test("PUT / update shipping address", async t => {
+test.serial("PUT / update shipping address", async t => {
     const addresses: Model.Addresses = await request.getAddresses(
         t.context["cookie"]
     );
@@ -172,7 +178,7 @@ test("PUT / update shipping address", async t => {
     t.deepEqual(address.phone, newShipping.phone);
 });
 
-test("PUT / update billing address", async t => {
+test.serial("PUT / update billing address", async t => {
     const addresses: Model.Addresses = await request.getAddresses(
         t.context["cookie"]
     );
@@ -209,7 +215,7 @@ test("PUT / update billing address", async t => {
     t.deepEqual(address.taxCode, newBilling.taxCode);
 });
 
-test("DELETE / delete shipping address", async t => {
+test.serial("DELETE / delete shipping address", async t => {
     const addresses: Model.Addresses = await request.getAddresses(
         t.context["cookie"]
     );
@@ -234,7 +240,7 @@ test("DELETE / delete shipping address", async t => {
     }
 });
 
-test("DELETE / delete billing address", async t => {
+test.serial("DELETE / delete billing address", async t => {
     const addresses: Model.Addresses = await request.getAddresses(
         t.context["cookie"]
     );
@@ -259,7 +265,7 @@ test("DELETE / delete billing address", async t => {
     }
 });
 
-// test('generate fake addressess', async t => {
+// test.serial('generate fake addressess', async t => {
 //     for (const email of config.testAccount.email_ex) {
 //         t.context['cookie'] = await request.getLogInCookie(email,
 //             config.testAccount.password_ex)
