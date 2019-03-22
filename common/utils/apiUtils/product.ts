@@ -235,7 +235,7 @@ export class ProductUtils extends Helper {
         for (const item of matched) {
             const info = await this.getProductInfo(item.id);
             const inStock = info.products.every(input => {
-                return input.inStock === true;
+                return input.inStock === true && input.quantity > 0;
             });
             if (inStock === true) {
                 result = info;
@@ -265,7 +265,7 @@ export class ProductUtils extends Helper {
         for (const item of matched) {
             const info = await this.getProductInfo(item.id);
             const soldOut = info.products.every(input => {
-                return input.inStock === false;
+                return input.inStock === false && input.quantity === 0;
             });
             if (soldOut === true) {
                 result = info;
