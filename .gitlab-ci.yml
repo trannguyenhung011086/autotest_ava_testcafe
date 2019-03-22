@@ -44,7 +44,7 @@ api_checkout_stg:
 chromium_stg:
     stage: test_stg
     script:
-        - docker run --shm-size=1g --network=host --name chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+        - docker run --shm-size=2g --network=host --name chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
         - docker cp chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
@@ -58,7 +58,7 @@ chromium_stg:
 firefox_stg:
     stage: test_stg
     script:
-        - docker run --shm-size=1g --network=host --name firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+        - docker run --shm-size=2g --network=host --name firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
     after_script:
         - docker cp firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
     artifacts:
@@ -72,7 +72,7 @@ firefox_stg:
 mobile_emu_stg:
     stage: test_stg
     script:
-        - docker run --shm-size=1g --network=host --name mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+        - docker run --shm-size=2g --network=host --name mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
     after_script:
         - docker cp mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
     artifacts:
@@ -86,7 +86,10 @@ mobile_emu_stg:
 api_sale_relate_prod:
     stage: test_prod
     script:
-        - NODE_ENV=prod MODE=ci yarn run test_api_sale_relate --match='!*skip-prod*'
+        # - NODE_ENV=prod MODE=ci yarn run test_api_sale_relate --match='!*skip-prod*'
+        - docker run --shm-size=2g --network=host --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
+    after_script:
+        - docker run -i -v $(pwd)/:/dockertests hung/testcafe nslookup leflair.vn
     only:
         - schedules
         - master
@@ -95,24 +98,9 @@ api_sale_not_relate_prod:
     stage: test_prod
     script:
         - NODE_ENV=prod MODE=ci yarn run test_api_sale_not_relate --match='!*skip-prod*'
-    only:
-        - schedules
-        - master
-
-docker_api_sale_relate_prod:
-    stage: test_prod
-    script:
-        - docker run --shm-size=1g --network=host --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
+        - docker run --shm-size=2g --network=host --name docker_api_sale_not_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci
     after_script:
-        - docker run -i -e -v $(pwd)/:/dockertests hung/testcafe nslookup leflair.vn
-    only:
-        - schedules
-        - master
-
-test_dns:
-    stage: test_prod
-    script:
-        - docker run -i -e -v $(pwd)/:/dockertests hung/testcafe nslookup leflair.vn
+        - docker run -i -v $(pwd)/:/dockertests hung/testcafe nslookup leflair.vn
     only:
         - schedules
         - master
@@ -128,7 +116,7 @@ test_dns:
 chromium_prod:
     stage: test_prod
     script:
-        - docker run --shm-size=1g --network=host --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+        - docker run --shm-size=2g --network=host --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
         - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
@@ -142,7 +130,7 @@ chromium_prod:
 firefox_prod:
     stage: test_prod
     script:
-        - docker run --shm-size=1g --network=host --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+        - docker run --shm-size=2g --network=host --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
     after_script:
         - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
     artifacts:
@@ -156,7 +144,7 @@ firefox_prod:
 mobile_emu_prod:
     stage: test_prod
     script:
-        - docker run --shm-size=1g --network=host --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+        - docker run --shm-size=2g --network=host --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
     after_script:
         - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
     artifacts:
