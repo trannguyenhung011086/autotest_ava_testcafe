@@ -99,6 +99,15 @@ api_sale_not_relate_prod:
         - schedules
         - master
 
+docker_api_sale_relate_prod:
+    stage: test_prod
+    script:
+        - docker run --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
+        - docker logs docker_api_sale_relate_prod
+    only:
+        - schedules
+        - master
+
 # api_checkout_prod:
 #     stage: test_prod
 #     script:
@@ -107,47 +116,50 @@ api_sale_not_relate_prod:
 #         - schedules
 #         - master
 
-# chromium_prod:
-#     stage: test_prod
-#     script:
-#         - docker run --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
-#     after_script:
-#         - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
-#     artifacts:
-#         expire_in: 1 week
-#         reports:
-#             junit: junit_chromium.xml
-#     only:
-#         - schedules
-#         - master
+chromium_prod:
+    stage: test_prod
+    script:
+        - docker run --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+    after_script:
+        - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
+        - docker logs chromium_prod
+    artifacts:
+        expire_in: 1 week
+        reports:
+            junit: junit_chromium.xml
+    only:
+        - schedules
+        - master
 
-# firefox_prod:
-#     stage: test_prod
-#     script:
-#         - docker run --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
-#     after_script:
-#         - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
-#     artifacts:
-#         expire_in: 1 week
-#         reports:
-#             junit: junit_firefox.xml
-#     only:
-#         - schedules
-#         - master
+firefox_prod:
+    stage: test_prod
+    script:
+        - docker run --name firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+    after_script:
+        - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
+        - docker logs firefox_prod
+    artifacts:
+        expire_in: 1 week
+        reports:
+            junit: junit_firefox.xml
+    only:
+        - schedules
+        - master
 
-# mobile_emu_prod:
-#     stage: test_prod
-#     script:
-#         - docker run --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
-#     after_script:
-#         - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
-#     artifacts:
-#         expire_in: 1 week
-#         reports:
-#             junit: junit_mobile_emu.xml
-#     only:
-#         - schedules
-#         - master
+mobile_emu_prod:
+    stage: test_prod
+    script:
+        - docker run --name mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+    after_script:
+        - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
+        - docker logs mobile_emu_prod
+    artifacts:
+        expire_in: 1 week
+        reports:
+            junit: junit_mobile_emu.xml
+    only:
+        - schedules
+        - master
 
 cleanup:
     stage: cleanup
