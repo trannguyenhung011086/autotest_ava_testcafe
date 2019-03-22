@@ -21,7 +21,7 @@ api_sale_relate_stg:
     stage: test_stg
     script:
         # - NODE_ENV=stg yarn run test_api_sale_relate
-        - docker run --shm-size=2g --network=host --name api_sale_relate_stg_${CI_JOB_ID} -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_sale_relate_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
     except:
         - schedules
         - master
@@ -30,7 +30,7 @@ api_sale_not_relate_stg:
     stage: test_stg
     script:
         # - NODE_ENV=stg yarn run test_api_sale_not_relate
-        - docker run --shm-size=2g --network=host --name api_sale_not_relate_stg_${CI_JOB_ID} -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_sale_not_relate_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci
     except:
         - schedules
         - master
@@ -39,7 +39,7 @@ api_checkout_stg:
     stage: test_stg
     script:
         # - NODE_ENV=stg yarn run test_api_checkout
-        - docker run --shm-size=2g --network=host --name api_checkout_stg_${CI_JOB_ID} -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_checkout_ci
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_checkout_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_checkout_ci
     except:
         - schedules
         - master
@@ -47,9 +47,9 @@ api_checkout_stg:
 chromium_stg:
     stage: test_stg
     script:
-        - docker run --shm-size=2g --network=host --name chromium_stg_${CI_JOB_ID} -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
-        - docker cp chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
+        - docker cp ${CI_JOB_ID}_chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
         expire_in: 1 week
         reports:
@@ -61,9 +61,9 @@ chromium_stg:
 firefox_stg:
     stage: test_stg
     script:
-        - docker run --shm-size=2g --network=host --name firefox_stg_${CI_JOB_ID} -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
     after_script:
-        - docker cp firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
+        - docker cp ${CI_JOB_ID}_firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
     artifacts:
         expire_in: 1 week
         reports:
@@ -75,9 +75,9 @@ firefox_stg:
 mobile_emu_stg:
     stage: test_stg
     script:
-        - docker run --shm-size=2g --network=host --name mobile_emu_stg_${CI_JOB_ID} -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
     after_script:
-        - docker cp mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
+        - docker cp ${CI_JOB_ID}_mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
     artifacts:
         expire_in: 1 week
         reports:
@@ -90,7 +90,7 @@ api_sale_relate_prod:
     stage: test_prod
     script:
         # - NODE_ENV=prod MODE=ci yarn run test_api_sale_relate --match='!*skip-prod*'
-        - docker run --shm-size=2g --network=host --name api_sale_relate_prod_${CI_JOB_ID} -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci --match='!*skip-prod*'
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci --match='!*skip-prod*'
     only:
         - schedules
         - master
@@ -99,7 +99,7 @@ api_sale_not_relate_prod:
     stage: test_prod
     script:
         # - NODE_ENV=prod MODE=ci yarn run test_api_sale_not_relate --match='!*skip-prod*'
-        - docker run --shm-size=2g --network=host --name api_sale_not_relate_prod_${CI_JOB_ID} -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci --match='!*skip-prod*'
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_sale_not_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci --match='!*skip-prod*'
     only:
         - schedules
         - master
@@ -108,7 +108,7 @@ api_sale_not_relate_prod:
 #     stage: test_prod
 #     script:
 #         # - NODE_ENV=prod MODE=ci yarn run test_api_checkout --match='!*skip-prod*'
-#         - docker run --shm-size=2g --network=host --name api_checkout_prod_${CI_JOB_ID} -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_checkout_ci --match='!*skip-prod*'
+#         - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_checkout_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_checkout_ci --match='!*skip-prod*'
 #     only:
 #         - schedules
 #         - master
@@ -116,9 +116,9 @@ api_sale_not_relate_prod:
 chromium_prod:
     stage: test_prod
     script:
-        - docker run --shm-size=2g --network=host --name chromium_prod_${CI_JOB_ID} -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
-        - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
+        - docker cp ${CI_JOB_ID}_chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
         expire_in: 1 week
         reports:
@@ -130,9 +130,9 @@ chromium_prod:
 # firefox_prod:
 #     stage: test_prod
 #     script:
-#         - docker run --shm-size=2g --network=host --name firefox_prod_${CI_JOB_ID} -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
+#         - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_firefox_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
 #     after_script:
-#         - docker cp firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
+#         - docker cp ${CI_JOB_ID}_firefox_prod:/home/tester/report/junit_firefox.xml junit_firefox.xml
 #     artifacts:
 #         expire_in: 1 week
 #         reports:
@@ -144,9 +144,9 @@ chromium_prod:
 mobile_emu_prod:
     stage: test_prod
     script:
-        - docker run --shm-size=2g --network=host --name mobile_emu_prod_${CI_JOB_ID} -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_mobile_emu_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
     after_script:
-        - docker cp mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
+        - docker cp ${CI_JOB_ID}_mobile_emu_prod:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
     artifacts:
         expire_in: 1 week
         reports:
