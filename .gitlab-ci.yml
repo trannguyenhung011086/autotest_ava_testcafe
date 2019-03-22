@@ -102,7 +102,9 @@ api_sale_not_relate_prod:
 docker_api_sale_relate_prod:
     stage: test_prod
     script:
-        - docker run --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci ; docker logs docker_api_sale_relate_prod
+        - docker run --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
+    after_script:
+        - docker logs docker_api_sale_relate_prod
     only:
         - schedules
         - master
@@ -120,7 +122,8 @@ chromium_prod:
     script:
         - docker run --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
-        - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml ; docker logs chromium_prod
+        # - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
+        - docker logs chromium_prod
     artifacts:
         expire_in: 1 week
         reports:
