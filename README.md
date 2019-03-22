@@ -1,6 +1,6 @@
 # E2E test for API & UI
 
-**Approach:** dockerize all test files to run test via docker container
+**Approach:** dockerize all test files and environments to run test via docker container
 
 _Precondition_
 

@@ -18,7 +18,7 @@ fixture("Check product detail page redirect").meta({
     type: "regression"
 });
 
-test.skip.requestHooks(mockRedirect)(
+test.requestHooks(mockRedirect)(
     "Redirect to homepage when product API returns 403 error code",
     async () => {
         const sales = await requestSale.getSales(config.api.featuredSales);
@@ -32,7 +32,7 @@ test.skip.requestHooks(mockRedirect)(
     }
 );
 
-test.skip.requestHooks(mockNonRedirect)(
+test.requestHooks(mockNonRedirect)(
     "Not redirect to homepage when product API returns 500 error code",
     async () => {
         const sales = await requestSale.getSales(config.api.featuredSales);
