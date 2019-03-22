@@ -103,8 +103,6 @@ docker_api_sale_relate_prod:
     stage: test_prod
     script:
         - docker run --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
-    after_script:
-        - docker logs docker_api_sale_relate_prod
     only:
         - schedules
         - master
@@ -122,8 +120,7 @@ chromium_prod:
     script:
         - docker run --name chromium_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
     after_script:
-        # - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
-        - docker logs chromium_prod
+        - docker cp chromium_prod:/home/tester/report/junit_chromium.xml junit_chromium.xml
     artifacts:
         expire_in: 1 week
         reports:
@@ -163,6 +160,8 @@ chromium_prod:
 cleanup:
     stage: cleanup
     script:
+        - docker logs docker_api_sale_relate_prod
+        - docker logs chromium_prod
         - docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
         - docker container prune -f && docker volume prune -f
     when: always
