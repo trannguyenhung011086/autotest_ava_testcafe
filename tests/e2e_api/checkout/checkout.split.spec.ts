@@ -82,7 +82,6 @@ test.serial("POST / not split SG order when total < 1,000,000", async t => {
 
     t.false(Array.isArray(order));
     t.deepEqual(order.code, `SGVN-${checkout.code}-1`);
-    t.true(order.isCrossBorder);
     t.deepEqual(order.paymentSummary.method, "STRIPE");
 
     for (const product of order.products) {
@@ -133,7 +132,6 @@ test.serial.skip(
 
         t.false(Array.isArray(order));
         t.deepEqual(order.code, `SGVN-${checkout.code}-1`);
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
 
         for (const product of order.products) {
@@ -189,7 +187,6 @@ test.serial("POST / split SG order when total >= 1,000,000", async t => {
         }
         t.true(order.code.includes(checkout.code));
         t.regex(order.code, /SGVN-.+-\d/);
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
     }
 });
@@ -237,7 +234,6 @@ test.serial.skip("POST / split HK order when total >= 1,000,000", async t => {
         }
         t.true(order.code.includes(checkout.code));
         t.regex(order.code, /HKVN-.+-\d/);
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
     }
 });
@@ -642,7 +638,6 @@ test.serial(
             }
             t.true(order.code.includes(checkout.code));
             t.regex(order.code, /SGVN-.+-\d/);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.paymentSummary.method, "STRIPE");
         }
 
