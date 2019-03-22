@@ -20,7 +20,8 @@ build:
 api_sale_relate_stg:
     stage: test_stg
     script:
-        - NODE_ENV=stg yarn run test_api_sale_relate
+        # - NODE_ENV=stg yarn run test_api_sale_relate
+        - docker run --shm-size=2g --network=host --name api_sale_relate_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
     except:
         - schedules
         - master
@@ -28,7 +29,8 @@ api_sale_relate_stg:
 api_sale_not_relate_stg:
     stage: test_stg
     script:
-        - NODE_ENV=stg yarn run test_api_sale_not_relate
+        # - NODE_ENV=stg yarn run test_api_sale_not_relate
+        - docker run --shm-size=2g --network=host --name api_sale_not_relate_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci
     except:
         - schedules
         - master
@@ -36,7 +38,8 @@ api_sale_not_relate_stg:
 api_checkout_stg:
     stage: test_stg
     script:
-        - NODE_ENV=stg yarn run test_api_checkout
+        # - NODE_ENV=stg yarn run test_api_checkout
+        - docker run --shm-size=2g --network=host --name api_checkout_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_checkout_ci
     except:
         - schedules
         - master
@@ -87,9 +90,7 @@ api_sale_relate_prod:
     stage: test_prod
     script:
         # - NODE_ENV=prod MODE=ci yarn run test_api_sale_relate --match='!*skip-prod*'
-        - docker run --shm-size=2g --network=host --name docker_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
-    after_script:
-        - docker run -i -v $(pwd)/:/dockertests hung/testcafe nslookup leflair.vn
+        - docker run --shm-size=2g --network=host --name api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci --match='!*skip-prod*'
     only:
         - schedules
         - master
@@ -97,10 +98,8 @@ api_sale_relate_prod:
 api_sale_not_relate_prod:
     stage: test_prod
     script:
-        - NODE_ENV=prod MODE=ci yarn run test_api_sale_not_relate --match='!*skip-prod*'
-        - docker run --shm-size=2g --network=host --name docker_api_sale_not_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci
-    after_script:
-        - docker run -i -v $(pwd)/:/dockertests hung/testcafe nslookup leflair.vn
+        # - NODE_ENV=prod MODE=ci yarn run test_api_sale_not_relate --match='!*skip-prod*'
+        - docker run --shm-size=2g --network=host --name api_sale_not_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci --match='!*skip-prod*'
     only:
         - schedules
         - master
@@ -108,7 +107,8 @@ api_sale_not_relate_prod:
 # api_checkout_prod:
 #     stage: test_prod
 #     script:
-#         - NODE_ENV=prod MODE=ci yarn run test_api_checkout --match='!*skip-prod*'
+#         # - NODE_ENV=prod MODE=ci yarn run test_api_checkout --match='!*skip-prod*'
+#         - docker run --shm-size=2g --network=host --name api_checkout_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_checkout_ci --match='!*skip-prod*'
 #     only:
 #         - schedules
 #         - master
