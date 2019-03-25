@@ -17,14 +17,18 @@ test("GET / invalid category ID", async t => {
     );
     t.snapshot(resA.body);
 
-    const resB = await request.get("/api/menus/items/5b56d3448f0dd7c0480acd1c");
+    if (process.env.NODE_ENV == "prod") {
+        const resB = await request.get(
+            "/api/menus/items/5b56d3448f0dd7c0480acd1c"
+        );
 
-    t.deepEqual(resB.statusCode, 500);
-    t.deepEqual(
-        resB.body.error,
-        "Cannot read property 'subitems' of undefined"
-    );
-    t.snapshot(resB.body);
+        t.deepEqual(resB.statusCode, 500);
+        t.deepEqual(
+            resB.body.error,
+            "Cannot read property 'subitems' of undefined"
+        );
+        t.snapshot(resB.body);
+    }
 });
 
 test("GET / top menu", async t => {

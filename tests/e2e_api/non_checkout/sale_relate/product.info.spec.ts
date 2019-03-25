@@ -15,96 +15,6 @@ test("GET / invalid product ID", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / product of sale not started (skip-prod)", async t => {
-    if (process.env.NODE_ENV == "prod") {
-        t.log("Skip check on prod!");
-        t.pass();
-    } else {
-        const products = await request.getProducts(config.api.currentSales);
-
-        let redisItem: string;
-        let originalStart: string;
-
-        try {
-            redisItem = await accessRedis.getKey("productId:" + products[0].id);
-            originalStart = redisItem["event"]["startDate"];
-
-            // set date on Redis
-            redisItem["event"]["startDate"] = "2030-02-22T01:00:00.000Z";
-            await accessRedis.setValue(
-                "productId:" + products[0].id,
-                JSON.stringify(redisItem)
-            );
-
-            redisItem = await accessRedis.getKey("productId:" + products[0].id);
-            t.deepEqual(
-                redisItem["event"]["startDate"],
-                "2030-02-22T01:00:00.000Z"
-            );
-
-            const res = await request.get(config.api.product + products[0].id);
-
-            t.deepEqual(res.statusCode, 404);
-            t.deepEqual(res.body.message, "SALE_NOT_FOUND");
-            t.snapshot(res.body);
-        } catch (err) {
-            throw err;
-        } finally {
-            // reset date on Redis
-            redisItem["event"]["startDate"] = originalStart;
-            await accessRedis.setValue(
-                "productId:" + products[0].id,
-                JSON.stringify(redisItem)
-            );
-        }
-    }
-});
-
-test("GET / product of sale ended (skip-prod)", async t => {
-    if (process.env.NODE_ENV == "prod") {
-        t.log("Skip check on prod!");
-        t.pass();
-    } else {
-        const products = await request.getProducts(config.api.currentSales);
-
-        let redisItem: string;
-        let originalEnd: string;
-
-        try {
-            redisItem = await accessRedis.getKey("productId:" + products[0].id);
-            originalEnd = redisItem["event"]["endDate"];
-
-            // set date on Redis
-            redisItem["event"]["endDate"] = "2019-02-18T01:00:00.000Z";
-            await accessRedis.setValue(
-                "productId:" + products[0].id,
-                JSON.stringify(redisItem)
-            );
-
-            redisItem = await accessRedis.getKey("productId:" + products[0].id);
-            t.deepEqual(
-                redisItem["event"]["endDate"],
-                "2019-02-18T01:00:00.000Z"
-            );
-
-            const res = await request.get(config.api.product + products[0].id);
-
-            t.deepEqual(res.statusCode, 404);
-            t.deepEqual(res.body.message, "SALE_HAS_ENDED");
-            t.snapshot(res.body);
-        } catch (err) {
-            throw err;
-        } finally {
-            // reset date on Redis
-            redisItem["event"]["endDate"] = originalEnd;
-            await accessRedis.setValue(
-                "productId:" + products[0].id,
-                JSON.stringify(redisItem)
-            );
-        }
-    }
-});
-
 for (const saleType of [
     config.api.currentSales,
     config.api.todaySales,
@@ -306,4 +216,88 @@ test("GET / product with no color and size", async t => {
 
     t.true(request.validateImage(product.images["All"][0]));
     t.deepEqual(product.products[0].imageKey, "All");
+});
+
+test("GET / product of sale not started (skip-prod)", async t => {
+    if (process.env.NODE_ENV == "prod") {
+        t.log("Skip check on prod!");
+        t.pass();
+    } else {
+        const products = await request.getProducts(config.api.todaySales);
+
+        let redisItem: string = await accessRedis.getKey(
+            "productId:" + products[0].id
+        );
+        const originalStart: string = redisItem["event"]["startDate"];
+
+        try {
+            redisItem["event"]["startDate"] = "2030-02-22T01:00:00.000Z";
+            await accessRedis.setValue(
+                "productId:" + products[0].id,
+                JSON.stringify(redisItem)
+            );
+
+            redisItem = await accessRedis.getKey("productId:" + products[0].id);
+            t.deepEqual(
+                redisItem["event"]["startDate"],
+                "2030-02-22T01:00:00.000Z"
+            );
+
+            const res = await request.get(config.api.product + products[0].id);
+
+            t.deepEqual(res.statusCode, 404);
+            t.deepEqual(res.body.message, "SALE_NOT_FOUND");
+            t.snapshot(res.body);
+        } catch (err) {
+            throw err;
+        } finally {
+            redisItem["event"]["startDate"] = originalStart;
+            await accessRedis.setValue(
+                "productId:" + products[0].id,
+                JSON.stringify(redisItem)
+            );
+        }
+    }
+});
+
+test("GET / product of sale ended (skip-prod)", async t => {
+    if (process.env.NODE_ENV == "prod") {
+        t.log("Skip check on prod!");
+        t.pass();
+    } else {
+        const products = await request.getProducts(config.api.currentSales);
+
+        let redisItem: string = await accessRedis.getKey(
+            "productId:" + products[0].id
+        );
+        const originalEnd: string = redisItem["event"]["endDate"];
+
+        try {
+            redisItem["event"]["endDate"] = "2019-02-18T01:00:00.000Z";
+            await accessRedis.setValue(
+                "productId:" + products[0].id,
+                JSON.stringify(redisItem)
+            );
+
+            redisItem = await accessRedis.getKey("productId:" + products[0].id);
+            t.deepEqual(
+                redisItem["event"]["endDate"],
+                "2019-02-18T01:00:00.000Z"
+            );
+
+            const res = await request.get(config.api.product + products[0].id);
+
+            t.deepEqual(res.statusCode, 404);
+            t.deepEqual(res.body.message, "SALE_HAS_ENDED");
+            t.snapshot(res.body);
+        } catch (err) {
+            throw err;
+        } finally {
+            redisItem["event"]["endDate"] = originalEnd;
+            await accessRedis.setValue(
+                "productId:" + products[0].id,
+                JSON.stringify(redisItem)
+            );
+        }
+    }
 });

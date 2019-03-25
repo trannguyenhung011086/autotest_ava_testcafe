@@ -63,11 +63,7 @@ test("POST / existing email", async t => {
         email: config.testAccount.email_ex[0]
     });
 
-    if (process.env.NODE_ENV == "prod") {
-        t.deepEqual(res.statusCode, 200);
-        t.deepEqual(res.body.message, "RESET_LINK_HAS_BEEN_SENT");
-    } else {
-        t.deepEqual(res.statusCode, 400);
-        t.deepEqual(res.body.message, "COULD_NOT_SEND_EMAIL");
-    }
+    t.deepEqual(res.statusCode, 200);
+    t.deepEqual(res.body.message, "RESET_LINK_HAS_BEEN_SENT");
+    t.snapshot(res.body);
 });

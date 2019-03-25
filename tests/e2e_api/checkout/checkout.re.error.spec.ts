@@ -292,16 +292,12 @@ test.serial(
             t.log("Skip checkout on prod!");
             t.pass();
         } else {
-            let originalQuantity: number;
-            let redisItem: string;
+            let redisItem: string = await accessRedis.getKey(
+                "nsId:" + failedAttemptOrder.products[0].nsId
+            );
+            const originalQuantity: number = redisItem["quantity"];
 
             try {
-                redisItem = await accessRedis.getKey(
-                    "nsId:" + failedAttemptOrder.products[0].nsId
-                );
-                originalQuantity = redisItem["quantity"];
-
-                // set quantity on Redis
                 redisItem["quantity"] = 0;
                 await accessRedis.setValue(
                     "nsId:" + failedAttemptOrder.products[0].nsId,
@@ -342,7 +338,6 @@ test.serial(
             } catch (err) {
                 throw err;
             } finally {
-                // reset quantity on Redis
                 redisItem["quantity"] = originalQuantity;
                 await accessRedis.setValue(
                     "nsId:" + failedAttemptOrder.products[0].nsId,
@@ -360,16 +355,12 @@ test.serial(
             t.log("Skip checkout on prod!");
             t.pass();
         } else {
-            let originalQuantity: number;
-            let redisItem: string;
+            let redisItem: string = await accessRedis.getKey(
+                "nsId:" + failedAttemptOrder.products[0].nsId
+            );
+            const originalQuantity: number = redisItem["quantity"];
 
             try {
-                redisItem = await accessRedis.getKey(
-                    "nsId:" + failedAttemptOrder.products[0].nsId
-                );
-                originalQuantity = redisItem["quantity"];
-
-                // set quantity on Redis
                 redisItem["quantity"] = 1;
                 await accessRedis.setValue(
                     "nsId:" + failedAttemptOrder.products[0].nsId,
@@ -409,7 +400,6 @@ test.serial(
             } catch (err) {
                 throw err;
             } finally {
-                // reset quantity on Redis
                 redisItem["quantity"] = originalQuantity;
                 await accessRedis.setValue(
                     "nsId:" + failedAttemptOrder.products[0].nsId,
@@ -427,17 +417,12 @@ test.serial(
             t.log("Skip checkout on prod!");
             t.pass();
         } else {
-            let originalEnd: string;
-            let redisItem: string;
+            let redisItem: string = await accessRedis.getKey(
+                "productId:" + failedAttemptOrder.products[0].productContentId
+            );
+            const originalEnd: string = redisItem["event"]["endDate"];
 
             try {
-                redisItem = await accessRedis.getKey(
-                    "productId:" +
-                        failedAttemptOrder.products[0].productContentId
-                );
-                originalEnd = redisItem["event"]["endDate"];
-
-                // set date on Redis
                 redisItem["event"]["endDate"] = "2019-02-18T01:00:00.000Z";
                 await accessRedis.setValue(
                     "productId:" +
@@ -479,7 +464,6 @@ test.serial(
             } catch (err) {
                 throw err;
             } finally {
-                // reset date on Redis
                 redisItem["event"]["endDate"] = originalEnd;
                 await accessRedis.setValue(
                     "productId:" +
