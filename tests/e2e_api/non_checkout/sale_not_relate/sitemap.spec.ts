@@ -12,7 +12,8 @@ const requestSales = new Utils.SaleUtils();
 
 import test from "ava";
 
-test("GET / sitemap", async t => {
+// wait for WWW-672
+test.skip("GET / sitemap", async t => {
     const res = await helper.getPlain(config.api.sitemap);
 
     t.deepEqual(res.statusCode, 200);
