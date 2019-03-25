@@ -19,7 +19,7 @@ _Structure_
 
 Example test command: `NODE_ENV=stg ava --verbose tests/e2e_api/`
 
-_Note:_ after verifying failed snapshot tests, use `ava --update-snapshots` to update snapshots
+_Note:_ after verifying failed snapshot tests, add `--update-snapshots` to test run command to update snapshots
 
 ## E2E UI testing
 

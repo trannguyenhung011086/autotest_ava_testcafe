@@ -56,7 +56,8 @@ test("GET / sale has ended", async t => {
 test("GET / invalid upcoming sale ID", async t => {
     const res = await request.get(config.api.upcomingSale + "INVALID-ID");
 
-    t.deepEqual(res.statusCode, 500);
+    t.deepEqual(res.statusCode, 404);
+    t.deepEqual(res.body.message, "NO_UPCOMING_SALE_MATCHING");
     t.snapshot(res.body);
 });
 
