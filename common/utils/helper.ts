@@ -541,6 +541,8 @@ export class Helper {
         t.truthy(res.title);
         t.true(new Date(res.startTime).getTime() < new Date().getTime());
 
+        t.true(res.products.length > 0)
+
         res.products.forEach(product => {
             t.truthy(product.id);
             t.truthy(product.title);

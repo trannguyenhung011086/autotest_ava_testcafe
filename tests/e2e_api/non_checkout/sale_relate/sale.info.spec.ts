@@ -140,6 +140,8 @@ test("GET / valid ongoing sale ID with filter by category", async t => {
             saleInfo.id + "?category=" + saleInfo.filter.category[0].value
         );
 
+        t.true(filteredSale.products.length > 0);
+
         filteredSale.products.forEach(product => {
             t.deepEqual(product.category, saleInfo.filter.category[0].display);
         });
@@ -158,6 +160,8 @@ test.skip("GET / valid ongoing sale ID with filter by size", async t => {
             const filteredSale = await request.getSaleInfo(
                 saleInfo.id + "?size=" + saleInfo.filter.size[0].value
             );
+
+            t.true(filteredSale.products.length > 0);
 
             filteredSale.products.forEach(product => {
                 t.deepEqual(product.size, saleInfo.filter.size[0].display);
@@ -178,6 +182,8 @@ test("GET / valid ongoing sale ID with filter by brand", async t => {
             const filteredSale = await request.getSaleInfo(
                 saleInfo.id + "?brand=" + saleInfo.filter.brand[0].value
             );
+
+            t.true(filteredSale.products.length > 0);
 
             filteredSale.products.forEach(product => {
                 t.deepEqual(product.brand, saleInfo.filter.brand[0].display);

@@ -19,7 +19,10 @@ _Structure_
 
 Example test command: `NODE_ENV=stg ava --verbose tests/e2e_api/`
 
-_Note:_ after verifying failed snapshot tests, add `--update-snapshots` to test run command to update snapshots
+_Note:_
+
+-   after verifying failed snapshot tests, add `--update-snapshots` to test run command to update snapshots
+-   to export ava report to xml, use `ava tests/e2e_api/non_checkout/sale_relate/bestSellers.info.spec.ts --tap | ./node_modules/.bin/tap-xunit | tee report/test.xml`
 
 ## E2E UI testing
 

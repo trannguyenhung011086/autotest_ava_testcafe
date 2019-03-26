@@ -84,8 +84,13 @@ for (const cate of [
     test("GET / featured sales from " + cate, async t => {
         const sales = await requestSale.getSales(cate + "/sales/featured");
 
-        for (const sale of sales) {
-            await request.validateSale(t, sale);
+        if (sales.length > 0) {
+            for (const sale of sales) {
+                await request.validateSale(t, sale);
+            }
+        } else {
+            t.pass()
+            t.log(cate + " does not set featured sale!");
         }
     });
 }

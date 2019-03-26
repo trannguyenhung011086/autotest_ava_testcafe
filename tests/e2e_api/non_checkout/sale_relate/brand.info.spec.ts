@@ -41,7 +41,7 @@ test("GET / brand with no product", async t => {
 });
 
 test("GET / brand with products", async t => {
-    const brand = await request.getBrandWithProducts(config.api.potdSales);
+    const brand = await request.getBrandWithProducts(config.api.todaySales);
 
     t.truthy(brand.id);
     t.truthy(brand.name);
@@ -52,6 +52,8 @@ test("GET / brand with products", async t => {
         t.true(brand.meta.hasOwnProperty("description"));
         t.true(brand.meta.hasOwnProperty("content"));
     }
+
+    t.true(brand.products.length > 0);
 
     brand.products.forEach(product => {
         t.truthy(product.id);
