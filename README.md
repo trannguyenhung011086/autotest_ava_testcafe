@@ -17,12 +17,12 @@ _Structure_
 -   common/utils: store GET/POST/PUT/DELETE class
 -   tests/e2e_api: API test cases
 
-Example test command: `NODE_ENV=stg ava --verbose tests/e2e_api/`
+Example test command: `NODE_ENV=stg ./node_modules/.bin/ava --verbose tests/e2e_api/`
 
 _Note:_
 
 -   after verifying failed snapshot tests, add `--update-snapshots` to test run command to update snapshots
--   to export ava report to xml, use `ava tests/e2e_api/non_checkout/sale_relate/bestSellers.info.spec.ts --tap | ./node_modules/.bin/tap-xunit | tee report/test.xml`
+-   to export ava report to xml, use `./node_modules/.bin/ava tests/e2e_api/non_checkout/sale_relate/bestSellers.info.spec.ts --tap | ./node_modules/.bin/tap-xunit | tee report/test.xml`
 
 ## E2E UI testing
 
@@ -34,7 +34,7 @@ _Structure_
 -   tests/testcafe/e2e_ui/desktop: test cases for desktop theme
 -   tests/testcafe/e2e_ui/mobile: test cases for mobile theme (emulated)
 
-Example test command: `testcafe chromium tests/testcafe/desktop/ --fixture-meta type=regression --test-meta function=signin`
+Example test command: `./node_modules/.bin/testcafe chromium tests/testcafe/desktop/ --fixture-meta type=regression --test-meta function=signin`
 
 ## Run with Gitlab CI
 
@@ -45,6 +45,10 @@ Example test command: `testcafe chromium tests/testcafe/desktop/ --fixture-meta 
         -   use url: https://gitlab.leflair.io/
         -   use token: jAHUz_91yJUkRJm8m_gG
     -   start Gitlab runner on local
+
+# Add living documentation for features
+
+-   use `./node_modules/.bin/featurebook serve features/` to generate HTML for feature documentation
 
 ## TO-DO
 
