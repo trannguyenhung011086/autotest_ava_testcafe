@@ -42,8 +42,50 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid product from - " + cate, async t => {
+    test("GET / valid product from current sale of " + cate, async t => {
         const products = await request.getProducts(cate + "/sales/current");
+
+        t.true(products.length > 0);
+
+        for (let i = 0; i < 15; i++) {
+            const random = Math.floor(Math.random() * products.length);
+            const res = await request.getProductInfo(products[random].id);
+
+            await request.validateProductInfo(t, res);
+        }
+    });
+}
+
+for (const cate of [
+    config.api.cateAccessories,
+    config.api.cateApparel,
+    config.api.cateBagsShoes,
+    config.api.cateHealthBeauty,
+    config.api.cateHomeLifeStyle
+]) {
+    test("GET / valid product from today sale of " + cate, async t => {
+        const products = await request.getProducts(cate + "/sales/today");
+
+        t.true(products.length > 0);
+
+        for (let i = 0; i < 15; i++) {
+            const random = Math.floor(Math.random() * products.length);
+            const res = await request.getProductInfo(products[random].id);
+
+            await request.validateProductInfo(t, res);
+        }
+    });
+}
+
+for (const cate of [
+    config.api.cateAccessories,
+    config.api.cateApparel,
+    config.api.cateBagsShoes,
+    config.api.cateHealthBeauty,
+    config.api.cateHomeLifeStyle
+]) {
+    test("GET / valid product from featured sale of " + cate, async t => {
+        const products = await request.getProducts(cate + "/sales/featured");
 
         t.true(products.length > 0);
 

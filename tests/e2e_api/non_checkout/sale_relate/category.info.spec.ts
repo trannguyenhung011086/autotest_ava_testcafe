@@ -115,3 +115,24 @@ for (const cate of [
         }
     });
 }
+
+for (const cate of [
+    config.api.cateAccessories,
+    config.api.cateApparel,
+    config.api.cateBagsShoes,
+    config.api.cateHealthBeauty,
+    config.api.cateHomeLifeStyle
+]) {
+    test("GET / today sales from " + cate, async t => {
+        const featured = await request.get(cate + "/sales/featured?limit=1");
+
+        const sales = await requestSale.getSales(
+            cate + "/sales/today?excludeId=" + featured.body.id
+        );
+
+        for (const sale of sales) {
+            await request.validateSale(t, sale);
+            t.notDeepEqual(sale.id, featured.body.id);
+        }
+    });
+}

@@ -8,6 +8,7 @@ import test from "ava";
 test("GET / best sellers list", async t => {
     const items = await request.getBestSellers();
 
+    t.true(items.length > 0)
     t.deepEqual.skip(items.length, 16); // wait for WWW-238
 
     items.forEach(item => {

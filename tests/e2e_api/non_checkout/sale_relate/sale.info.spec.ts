@@ -114,8 +114,52 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid ongoing sale from " + cate, async t => {
+    test("GET / valid current sale from " + cate, async t => {
         const sales = await request.getSales(cate + "/sales/current");
+
+        t.true(sales.length > 0);
+
+        for (const sale of sales) {
+            const res = await request.getSaleInfo(sale.id);
+            request.validateSaleInfo(t, res);
+
+            t.deepEqual(res.id, sale.id);
+            t.deepEqual.skip(res.endTime, sale.endTime); // wait for WWW-681
+        }
+    });
+}
+
+for (const cate of [
+    config.api.cateAccessories,
+    config.api.cateApparel,
+    config.api.cateBagsShoes,
+    config.api.cateHealthBeauty,
+    config.api.cateHomeLifeStyle
+]) {
+    test("GET / valid today sale from " + cate, async t => {
+        const sales = await request.getSales(cate + "/sales/today");
+
+        t.true(sales.length > 0);
+
+        for (const sale of sales) {
+            const res = await request.getSaleInfo(sale.id);
+            request.validateSaleInfo(t, res);
+
+            t.deepEqual(res.id, sale.id);
+            t.deepEqual.skip(res.endTime, sale.endTime); // wait for WWW-681
+        }
+    });
+}
+
+for (const cate of [
+    config.api.cateAccessories,
+    config.api.cateApparel,
+    config.api.cateBagsShoes,
+    config.api.cateHealthBeauty,
+    config.api.cateHomeLifeStyle
+]) {
+    test("GET / valid featured sale from " + cate, async t => {
+        const sales = await request.getSales(cate + "/sales/featured");
 
         t.true(sales.length > 0);
 
