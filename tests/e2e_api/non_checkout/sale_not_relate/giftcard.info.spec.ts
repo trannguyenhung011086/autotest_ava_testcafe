@@ -13,7 +13,7 @@ test.beforeEach(async t => {
     );
 });
 
-test("GET / check invalid giftcard", async t => {
+test("Get 500 error code when using invalid giftcard", async t => {
     const res = await helper.get(
         config.api.giftcard + "INVALID-ID",
         t.context["cookie"]
@@ -24,7 +24,7 @@ test("GET / check invalid giftcard", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / check redeemed giftcard", async t => {
+test("Get 500 error code when using redeemed giftcard", async t => {
     const giftcardInfo = await access.getGiftCard({ redeemed: true });
 
     const res = await helper.get(
@@ -37,7 +37,7 @@ test("GET / check redeemed giftcard", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / check not redeemed giftcard", async t => {
+test("Get 200 success code when using not redeemed giftcard", async t => {
     const giftcardInfo = await access.getGiftCard({ redeemed: false });
 
     const res = await helper.get(
@@ -53,7 +53,7 @@ test("GET / check not redeemed giftcard", async t => {
     t.true(giftCard.amount >= 0);
 });
 
-test("GET / cannot check giftcard with invalid cookie", async t => {
+test("Get 401 error code when using giftcard with invalid cookie", async t => {
     const res = await helper.get(
         config.api.giftcard + "CARD-ID",
         "leflair.connect2.sid=test"

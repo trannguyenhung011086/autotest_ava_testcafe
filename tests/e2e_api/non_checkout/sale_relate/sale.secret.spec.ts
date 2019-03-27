@@ -11,7 +11,7 @@ test.before(async t => {
     t.context["cookie"] = await request.getGuestCookie();
 });
 
-test("GET / cannot get secret sale when not call campaign API", async t => {
+test("Get empty result when not call campaign API", async t => {
     const res = await request.get(config.api.secretSales, t.context["cookie"]);
 
     t.deepEqual(res.statusCode, 200);
@@ -19,7 +19,7 @@ test("GET / cannot get secret sale when not call campaign API", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / check secret sale when not call campaign API", async t => {
+test("Check false result when not call campaign API", async t => {
     const res = await request.get(
         config.api.secretSales + "/check",
         t.context["cookie"]
@@ -30,7 +30,7 @@ test("GET / check secret sale when not call campaign API", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / secret sale when call campaign API", async t => {
+test("Get secret sale when call campaign API", async t => {
     const campaign: Model.Campaign = await access.getCampaign({
         endDate: { $gt: new Date() }
     });
@@ -67,7 +67,7 @@ test("GET / secret sale when call campaign API", async t => {
     }
 });
 
-test("GET / check secret sale when call campaign API", async t => {
+test("Check secret sale when call campaign API", async t => {
     const campaign: Model.Campaign = await access.getCampaign({
         endDate: { $gt: new Date() }
     });

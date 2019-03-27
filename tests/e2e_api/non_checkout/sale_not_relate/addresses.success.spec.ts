@@ -32,35 +32,44 @@ test.serial("GET / all cities", async t => {
     });
 });
 
-test.serial("GET / all districts of each city", async t => {
-    for (const city of cities) {
-        const res = await request.get(
-            config.api.addresses + "/cities/" + city.id + "/districts"
-        );
+test.serial(
+    "Get 200 success code when accessing all districts of each city",
+    async t => {
+        for (const city of cities) {
+            const res = await request.get(
+                config.api.addresses + "/cities/" + city.id + "/districts"
+            );
 
-        districts = res.body;
+            districts = res.body;
 
-        t.deepEqual(res.statusCode, 200);
+            t.deepEqual(res.statusCode, 200);
 
-        districts.forEach(district => {
-            t.truthy(district.id);
-            t.truthy(district.name);
-        });
+            districts.forEach(district => {
+                t.truthy(district.id);
+                t.truthy(district.name);
+            });
+        }
     }
-});
-
-test.serial("GET / all addresses", async t => {
-    const res = await request.get(config.api.addresses, t.context["cookie"]);
-
-    const addresses: Model.Addresses = res.body;
-
-    t.deepEqual(res.statusCode, 200);
-    t.truthy(addresses.billing);
-    t.truthy(addresses.shipping);
-});
+);
 
 test.serial(
-    "POST / add new shipping address (not duplicated billing address)",
+    "Get 200 success code when accessing addresses with valid cookie",
+    async t => {
+        const res = await request.get(
+            config.api.addresses,
+            t.context["cookie"]
+        );
+
+        const addresses: Model.Addresses = res.body;
+
+        t.deepEqual(res.statusCode, 200);
+        t.truthy(addresses.billing);
+        t.truthy(addresses.shipping);
+    }
+);
+
+test.serial(
+    "Get 200 success code when adding new shipping address (not duplicated billing address)",
     async t => {
         const shipping = await request.generateAddress("shipping", cities);
         shipping.duplicateBilling = false;
@@ -86,7 +95,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / add new shipping address (duplicated billing address)",
+    "Get 200 success code when adding new shipping address (duplicated billing address)",
     async t => {
         const shipping = await request.generateAddress("shipping", cities);
         shipping.duplicateBilling = true;
@@ -121,7 +130,7 @@ test.serial(
     }
 );
 
-test.serial("POST / add new billing address", async t => {
+test.serial("Get 200 success code when adding new billing address", async t => {
     const billing = await request.generateAddress("billing", cities);
     const res = await request.post(
         config.api.addresses,
@@ -144,7 +153,7 @@ test.serial("POST / add new billing address", async t => {
     t.deepEqual(addresses.billing[0].taxCode, billing.taxCode);
 });
 
-test.serial("PUT / update shipping address", async t => {
+test.serial("Get 200 success code when updating shipping address", async t => {
     const addresses: Model.Addresses = await request.getAddresses(
         t.context["cookie"]
     );
@@ -178,7 +187,7 @@ test.serial("PUT / update shipping address", async t => {
     t.deepEqual(address.phone, newShipping.phone);
 });
 
-test.serial("PUT / update billing address", async t => {
+test.serial("Get 200 success code when updating billing address", async t => {
     const addresses: Model.Addresses = await request.getAddresses(
         t.context["cookie"]
     );
@@ -215,7 +224,7 @@ test.serial("PUT / update billing address", async t => {
     t.deepEqual(address.taxCode, newBilling.taxCode);
 });
 
-test.serial("DELETE / delete shipping address", async t => {
+test.serial("Get 200 success code when deleting shipping address", async t => {
     const addresses: Model.Addresses = await request.getAddresses(
         t.context["cookie"]
     );
@@ -240,7 +249,7 @@ test.serial("DELETE / delete shipping address", async t => {
     }
 });
 
-test.serial("DELETE / delete billing address", async t => {
+test.serial("Get 200 success code when deleting billing address", async t => {
     const addresses: Model.Addresses = await request.getAddresses(
         t.context["cookie"]
     );

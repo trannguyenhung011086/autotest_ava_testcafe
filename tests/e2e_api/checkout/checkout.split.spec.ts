@@ -51,7 +51,7 @@ test.beforeEach(async t => {
         .then(res => res.body);
 });
 
-test.serial("POST / not split SG order when total < 1,000,000", async t => {
+test.serial("Not split SG order when total < 1,000,000", async t => {
     const itemSG1 = await requestProduct.getProductWithCountry("SG", 0, 400000);
     const itemSG2 = await requestProduct.getProductWithCountry(
         "SG",
@@ -94,58 +94,51 @@ test.serial("POST / not split SG order when total < 1,000,000", async t => {
     }
 });
 
-test.serial.skip(
-    "POST / not split HK order when total < 1,000,000",
-    async t => {
-        // skip due to not have HK stock now
-        const itemHK1 = await requestProduct.getProductWithCountry(
-            "HK",
-            0,
-            400000
-        );
-        const itemHK2 = await requestProduct.getProductWithCountry(
-            "HK",
-            400000,
-            500000
-        );
+test.serial.skip("Not split HK order when total < 1,000,000", async t => {
+    // skip due to not have HK stock now
+    const itemHK1 = await requestProduct.getProductWithCountry("HK", 0, 400000);
+    const itemHK2 = await requestProduct.getProductWithCountry(
+        "HK",
+        400000,
+        500000
+    );
 
-        await requestCart.addToCart(itemHK1.id, t.context["cookie"]);
-        await requestCart.addToCart(itemHK2.id, t.context["cookie"]);
+    await requestCart.addToCart(itemHK1.id, t.context["cookie"]);
+    await requestCart.addToCart(itemHK2.id, t.context["cookie"]);
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkoutInput.addresses = addresses;
-        checkoutInput.saveNewCard = false;
-        checkoutInput.stripeSource = stripeSource;
+    checkoutInput.account = await requestAccount.getAccountInfo(
+        t.context["cookie"]
+    );
+    checkoutInput.addresses = addresses;
+    checkoutInput.saveNewCard = false;
+    checkoutInput.stripeSource = stripeSource;
 
-        const checkout = await request.checkoutStripe(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(checkout.orderId);
+    const checkout = await request.checkoutStripe(
+        checkoutInput,
+        t.context["cookie"]
+    );
+    t.truthy(checkout.orderId);
 
-        const order = await requestOrder.getOrderInfo(
-            checkout.code,
-            t.context["cookie"]
-        );
+    const order = await requestOrder.getOrderInfo(
+        checkout.code,
+        t.context["cookie"]
+    );
 
-        t.false(Array.isArray(order));
-        t.deepEqual(order.code, `SGVN-${checkout.code}-1`);
-        t.deepEqual(order.paymentSummary.method, "STRIPE");
+    t.false(Array.isArray(order));
+    t.deepEqual(order.code, `SGVN-${checkout.code}-1`);
+    t.deepEqual(order.paymentSummary.method, "STRIPE");
 
-        for (const product of order.products) {
-            if (product.productId == itemHK1.id) {
-                t.deepEqual(product.salePrice, itemHK1.salePrice);
-            }
-            if (product.productId == itemHK2.id) {
-                t.deepEqual(product.salePrice, itemHK2.salePrice);
-            }
+    for (const product of order.products) {
+        if (product.productId == itemHK1.id) {
+            t.deepEqual(product.salePrice, itemHK1.salePrice);
+        }
+        if (product.productId == itemHK2.id) {
+            t.deepEqual(product.salePrice, itemHK2.salePrice);
         }
     }
-);
+});
 
-test.serial("POST / split SG order when total >= 1,000,000", async t => {
+test.serial("Split SG order when total >= 1,000,000", async t => {
     const itemSG1 = await requestProduct.getProductWithCountry("SG", 0, 800000);
     const itemSG2 = await requestProduct.getProductWithCountry(
         "SG",

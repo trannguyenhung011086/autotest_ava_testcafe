@@ -6,7 +6,7 @@ const request = new Utils.SaleUtils();
 
 import test from "ava";
 
-test("GET / all home sales", async t => {
+test("Check all home sales", async t => {
     const res = await request.get(config.api.home);
 
     const home: Model.Home = res.body;
@@ -31,7 +31,7 @@ for (const saleType of [
     config.api.todaySales,
     config.api.featuredSales
 ]) {
-    test("GET / ongoing sales - " + saleType, async t => {
+    test("Check ongoing sales - " + saleType, async t => {
         const sales = await request.getSales(saleType);
 
         t.true(sales.length > 0);
@@ -49,7 +49,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / ongoing sales from " + cate, async t => {
+    test("Check ongoing sales from " + cate, async t => {
         const sales = await request.getSales(cate + "/sales/current");
 
         t.true(sales.length > 0);
@@ -60,7 +60,7 @@ for (const cate of [
     });
 }
 
-test("GET / international sales", async t => {
+test("Check international sales", async t => {
     const sales = await request.getSales(config.api.internationalSales);
 
     sales.forEach(sale => {
@@ -69,7 +69,7 @@ test("GET / international sales", async t => {
     });
 });
 
-test("GET / POTD sales", async t => {
+test("Check POTD sales", async t => {
     const sales = await request.getSales(config.api.potdSales);
 
     t.true(sales.length > 0);
@@ -85,7 +85,7 @@ test("GET / POTD sales", async t => {
     });
 });
 
-test("GET / Upcoming sales", async t => {
+test("Check Upcoming sales", async t => {
     const dates = await request.getUpcomingSales();
 
     t.true(dates.length > 0);

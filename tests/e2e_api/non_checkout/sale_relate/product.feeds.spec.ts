@@ -32,7 +32,7 @@ test.before(async t => {
     googleCategories = res.body.split("\n");
 });
 
-test("GET / Facebook product feeds", async t => {
+test("Check Facebook product feeds", async t => {
     const res = await helper.getPlain(config.api.feedFacebook);
 
     t.deepEqual(res.statusCode, 200);
@@ -67,7 +67,7 @@ test("GET / Facebook product feeds", async t => {
     t.deepEqual(parsed.errors.length, 0);
 });
 
-test("GET / Google product feeds", async t => {
+test("Check Google product feeds", async t => {
     const res = await helper.getPlain(config.api.feedGoogle);
 
     t.deepEqual(res.statusCode, 200);
@@ -85,7 +85,7 @@ test("GET / Google product feeds", async t => {
     t.deepEqual(parsed.errors.length, 0);
 });
 
-test("GET / Google dynamic product feeds", async t => {
+test("Check Google dynamic product feeds", async t => {
     const res = await helper.getPlain(config.api.feedGoogleDynamic);
 
     t.deepEqual(res.statusCode, 200);
@@ -110,7 +110,7 @@ test("GET / Google dynamic product feeds", async t => {
     t.deepEqual(parsed.errors.length, 0);
 });
 
-test("GET / Criteo product feeds v1", async t => {
+test("Check Criteo product feeds v1", async t => {
     const res = await helper.getPlain(config.api.feedCriteo);
 
     t.deepEqual(res.statusCode, 200);
@@ -146,7 +146,7 @@ test("GET / Criteo product feeds v1", async t => {
 });
 
 // need to improve Criteo feeds format later
-test.skip("GET / Criteo product feeds v2", async t => {
+test.skip("Check Criteo product feeds v2", async t => {
     const res = await helper.getPlain(config.api.feedCriteo);
 
     t.deepEqual(res.statusCode, 200);
@@ -192,7 +192,7 @@ test.skip("GET / Criteo product feeds v2", async t => {
     t.deepEqual(parsed.errors.length, 0);
 });
 
-test("GET / Google Merchant product feeds", async t => {
+test("Check Google Merchant product feeds", async t => {
     const res = await helper.getPlain(config.api.feedGoogleMerchant);
 
     t.deepEqual(res.statusCode, 200);
@@ -284,7 +284,7 @@ test("GET / Google Merchant product feeds", async t => {
     });
 });
 
-test("GET / Insider product feeds", async t => {
+test.skip("Check Insider product feeds", async t => {
     const res = await helper.getPlain(config.api.feedInsider);
 
     t.deepEqual(res.statusCode, 200);
@@ -315,7 +315,7 @@ test("GET / Insider product feeds", async t => {
     });
 });
 
-test("GET / RTB House product feeds", async t => {
+test("Check RTB House product feeds", async t => {
     const res = await helper.getPlain(config.api.feedRtbHouse);
 
     t.deepEqual(res.statusCode, 200);

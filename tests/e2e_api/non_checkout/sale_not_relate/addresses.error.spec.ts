@@ -43,7 +43,7 @@ test.beforeEach(async t => {
     };
 });
 
-test("GET / cannot get non-existing address", async t => {
+test("Get 404 error code when accessing non-existed address", async t => {
     const res = await request.get(
         config.api.addresses + "/" + "INVALID-ID",
         t.context["cookie"]
@@ -54,7 +54,7 @@ test("GET / cannot get non-existing address", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add address missing type", async t => {
+test("Get 400 error code when adding address missing type", async t => {
     const clone = Object.assign({}, address);
     delete clone.type;
 
@@ -69,7 +69,7 @@ test("POST / cannot add address missing type", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add address missing name", async t => {
+test("Get 400 error code when adding address missing name", async t => {
     const clone = Object.assign({}, address);
     delete clone.firstName;
     delete clone.lastName;
@@ -85,7 +85,7 @@ test("POST / cannot add address missing name", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add address missing phone", async t => {
+test("Get 400 error code when adding address missing phone", async t => {
     const clone = Object.assign({}, address);
     delete clone.phone;
 
@@ -100,7 +100,7 @@ test("POST / cannot add address missing phone", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add address missing address", async t => {
+test("Get 400 error code when adding address missing address", async t => {
     const clone = Object.assign({}, address);
     delete clone.address;
 
@@ -115,7 +115,7 @@ test("POST / cannot add address missing address", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add address missing district", async t => {
+test("Get 400 error code when adding address missing district", async t => {
     const clone = Object.assign({}, address);
     delete clone.district;
 
@@ -130,7 +130,7 @@ test("POST / cannot add address missing district", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add address missing city", async t => {
+test("Get 400 error code when adding address missing city", async t => {
     const clone = Object.assign({}, address);
     delete clone.city;
 
@@ -145,7 +145,7 @@ test("POST / cannot add address missing city", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add address with length > 70", async t => {
+test("Get 400 error code when adding address with length > 70", async t => {
     const clone = Object.assign({}, address);
     clone.address = clone.address.repeat(10);
 
@@ -160,7 +160,7 @@ test("POST / cannot add address with length > 70", async t => {
     t.snapshot(res.body);
 });
 
-test.skip("POST / cannot add address with invalid phone", async t => {
+test.skip("Get 400 error code when adding address with invalid phone", async t => {
     const clone = Object.assign({}, address);
     clone.phone = faker.random.number().toString();
 
@@ -175,7 +175,7 @@ test.skip("POST / cannot add address with invalid phone", async t => {
     t.snapshot(res.body);
 }); // wait for WWW-354
 
-test.skip("POST / cannot add address with invalid tax code", async t => {
+test.skip("Get 400 error code when adding address with invalid tax code", async t => {
     const clone = Object.assign({}, address);
     clone.taxCode = faker.random.number().toString();
     clone.type = "billing";
@@ -191,7 +191,7 @@ test.skip("POST / cannot add address with invalid tax code", async t => {
     t.snapshot(res.body);
 }); // wait for WWW-354
 
-test("PUT / cannot update address missing name", async t => {
+test("Get 400 error code when updating address missing name", async t => {
     const clone = Object.assign({}, address);
     delete clone.firstName;
     delete clone.lastName;
@@ -207,7 +207,7 @@ test("PUT / cannot update address missing name", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update address missing phone", async t => {
+test("Get 400 error code when updating address missing phone", async t => {
     const clone = Object.assign({}, address);
     delete clone.phone;
 
@@ -222,7 +222,7 @@ test("PUT / cannot update address missing phone", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update address missing address", async t => {
+test("Get 400 error code when updating address missing address", async t => {
     const clone = Object.assign({}, address);
     delete clone.address;
 
@@ -237,7 +237,7 @@ test("PUT / cannot update address missing address", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update address missing district", async t => {
+test("Get 400 error code when updating address missing district", async t => {
     const clone = Object.assign({}, address);
     delete clone.district;
 
@@ -252,7 +252,7 @@ test("PUT / cannot update address missing district", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update address missing city", async t => {
+test("Get 400 error code when updating address missing city", async t => {
     const clone = Object.assign({}, address);
     delete clone.city;
 
@@ -267,7 +267,7 @@ test("PUT / cannot update address missing city", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update address with length > 70", async t => {
+test("Get 400 error code when updating address with length > 70", async t => {
     const clone = Object.assign({}, address);
     clone.address = clone.address.repeat(10);
 
@@ -282,7 +282,7 @@ test("PUT / cannot update address with length > 70", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update address with invalid phone", async t => {
+test("Get 400 error code when updating address with invalid phone", async t => {
     const clone = Object.assign({}, address);
     clone.phone = faker.random.number().toString();
 
@@ -297,7 +297,7 @@ test("PUT / cannot update address with invalid phone", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update address with invalid tax code", async t => {
+test("Get 400 error code when updating address with invalid tax code", async t => {
     const clone = Object.assign({}, address);
     clone.taxCode = faker.random.number().toString();
     clone.type = "billing";
@@ -310,5 +310,16 @@ test("PUT / cannot update address with invalid tax code", async t => {
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "TAX_CODE_INVALID_FORMAT");
+    t.snapshot(res.body);
+});
+
+test("Get 401 error code when accessing addresses with invalid cookie", async t => {
+    const res = await request.get(
+        config.api.addresses,
+        "leflair.connect2.sid=test"
+    );
+
+    t.deepEqual(res.statusCode, 401);
+    t.deepEqual(res.body.message, "Access denied.");
     t.snapshot(res.body);
 });

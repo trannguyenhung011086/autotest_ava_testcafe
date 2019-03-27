@@ -7,7 +7,7 @@ const access = new Utils.DbAccessUtils();
 
 import test from "ava";
 
-test("GET / invalid sale ID", async t => {
+test("Get 404 error code when accessing invalid sale ID", async t => {
     const res = await request.get(config.api.sales + "INVALID-ID");
 
     t.deepEqual(res.statusCode, 404);
@@ -15,7 +15,7 @@ test("GET / invalid sale ID", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / no sale matching", async t => {
+test("Get 404 error code when accessing no sale matching", async t => {
     const res = await request.get(
         config.api.sales + "invalid-5bd6c3137cf0476b22488d21"
     );
@@ -25,7 +25,7 @@ test("GET / no sale matching", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / sale not started", async t => {
+test("Get 404 error code when accessing sale not started", async t => {
     const futureSale = await access.getSale({
         startDate: { $gt: new Date() }
     });
@@ -39,7 +39,7 @@ test("GET / sale not started", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / sale has ended", async t => {
+test("Get 410 error code when accessing sale has ended", async t => {
     const endedSale = await access.getSale({
         endDate: { $lt: new Date() }
     });
@@ -53,7 +53,7 @@ test("GET / sale has ended", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / invalid upcoming sale ID", async t => {
+test("Get 404 error code when accessing invalid upcoming sale ID", async t => {
     const res = await request.get(config.api.upcomingSale + "INVALID-ID");
 
     t.deepEqual(res.statusCode, 404);
@@ -61,7 +61,7 @@ test("GET / invalid upcoming sale ID", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / no upcoming sale matching", async t => {
+test("Get 404 error code when accessing no upcoming sale matching", async t => {
     const res = await request.get(
         config.api.upcomingSale + "566979b534cbcd100061967b"
     );
@@ -71,7 +71,7 @@ test("GET / no upcoming sale matching", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / upcoming sale ended", async t => {
+test("Get 410 error code when accessing upcoming sale ended", async t => {
     const endedSale = await access.getSale({
         endDate: { $lt: new Date() }
     });
@@ -92,7 +92,7 @@ for (const saleType of [
     config.api.internationalSales,
     config.api.potdSales
 ]) {
-    test("GET / valid ongoing sale - " + saleType, async t => {
+    test("Check valid ongoing sale - " + saleType, async t => {
         const sales = await request.getSales(saleType);
 
         t.true(sales.length > 0);
@@ -114,7 +114,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid current sale from " + cate, async t => {
+    test("Check valid current sale from " + cate, async t => {
         const sales = await request.getSales(cate + "/sales/current");
 
         t.true(sales.length > 0);
@@ -136,7 +136,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid today sale from " + cate, async t => {
+    test("Check valid today sale from " + cate, async t => {
         const sales = await request.getSales(cate + "/sales/today");
 
         t.true(sales.length > 0);
@@ -158,7 +158,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid featured sale from " + cate, async t => {
+    test("Check valid featured sale from " + cate, async t => {
         const sales = await request.getSales(cate + "/sales/featured");
 
         t.true(sales.length > 0);
@@ -173,7 +173,7 @@ for (const cate of [
     });
 }
 
-test("GET / valid ongoing sale ID with filter by category", async t => {
+test("Check valid ongoing sale ID with filter by category", async t => {
     const sales = await request.getSales(config.api.todaySales);
 
     t.true(sales.length > 0);
@@ -192,7 +192,7 @@ test("GET / valid ongoing sale ID with filter by category", async t => {
     }
 });
 
-test.skip("GET / valid ongoing sale ID with filter by size", async t => {
+test.skip("Check valid ongoing sale ID with filter by size", async t => {
     const sales = await request.getSales(config.api.currentSales);
 
     t.true(sales.length > 0);
@@ -214,7 +214,7 @@ test.skip("GET / valid ongoing sale ID with filter by size", async t => {
     }
 }); // wait for WWW-608
 
-test("GET / valid ongoing sale ID with filter by brand", async t => {
+test("Check valid ongoing sale ID with filter by brand", async t => {
     const sales = await request.getSales(config.api.currentSales);
 
     t.true(sales.length > 0);
@@ -236,7 +236,7 @@ test("GET / valid ongoing sale ID with filter by brand", async t => {
     }
 });
 
-test("GET / valid upcoming sale ID", async t => {
+test("Check valid upcoming sale ID", async t => {
     const dates = await request.getUpcomingSales();
 
     t.true(dates.length > 0);

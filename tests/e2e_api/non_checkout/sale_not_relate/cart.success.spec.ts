@@ -16,7 +16,7 @@ test.afterEach.always(async t => {
     await request.emptyCart(t.context["cookie"]);
 });
 
-test("POST / add product to cart as guest", async t => {
+test("Get 200 success code when adding product to cart as guest", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.todaySales,
         1
@@ -41,7 +41,7 @@ test("POST / add product to cart as guest", async t => {
     t.truthy(cart.nsId);
 });
 
-test("POST / add same product to cart", async t => {
+test("Get 200 success code when adding same product to cart", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.currentSales,
         2
@@ -59,7 +59,7 @@ test("POST / add same product to cart", async t => {
     t.deepEqual(cart.quantity, 2);
 });
 
-test("DELETE / remove product from cart", async t => {
+test("Get 200 success code when deleting product from cart", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.todaySales,
         1
@@ -80,7 +80,7 @@ test("DELETE / remove product from cart", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / remove multiple products from cart", async t => {
+test("Get 200 success code when deleting multiple products from cart", async t => {
     const itemA = await requestProduct.getInStockProduct(
         config.api.featuredSales,
         1
@@ -114,7 +114,7 @@ test("PUT / remove multiple products from cart", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / update cart after sign in", async t => {
+test("Get 200 success code when updating cart after sign in", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.currentSales,
         1

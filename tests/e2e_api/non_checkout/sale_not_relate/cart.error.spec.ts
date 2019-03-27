@@ -14,7 +14,7 @@ test.beforeEach(async t => {
     t.context["cookie"] = await request.getGuestCookie();
 });
 
-test("POST / cannot add invalid product to cart", async t => {
+test("Get 500 error code when adding invalid product to cart", async t => {
     const res = await request.post(
         config.api.cart,
         {
@@ -31,7 +31,7 @@ test("POST / cannot add invalid product to cart", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add empty product to cart", async t => {
+test("Get 500 error code when adding empty product to cart", async t => {
     const res = await request.post(
         config.api.cart,
         {
@@ -48,7 +48,7 @@ test("POST / cannot add empty product to cart", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add sold out product to cart", async t => {
+test("Get 500 error code when adding sold out product to cart", async t => {
     const soldOut = await requestProduct.getSoldOutProductInfo(
         config.api.currentSales
     );
@@ -66,7 +66,7 @@ test("POST / cannot add sold out product to cart", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / cannot add sale ended product to cart", async t => {
+test("Get 500 error code when adding sale ended product to cart", async t => {
     const endedSale = await access.getSale({
         endDate: { $lt: new Date() }
     });
@@ -92,7 +92,7 @@ test("POST / cannot add sale ended product to cart", async t => {
     t.snapshot(res.body);
 });
 
-test.skip("POST / cannot add more than 8 unique products", async t => {
+test.skip("Get 500 error code when adding more than 8 unique products", async t => {
     const itemList = await requestProduct.getInStockProducts(
         config.api.currentSales,
         1
@@ -119,7 +119,7 @@ test.skip("POST / cannot add more than 8 unique products", async t => {
     t.snapshot(res.body);
 }); // wait for WWW-618
 
-test("PUT / cannot update quantity in cart to 0", async t => {
+test("Get 500 error code when updating quantity in cart to 0", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.currentSales,
         1
@@ -143,7 +143,7 @@ test("PUT / cannot update quantity in cart to 0", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update invalid quantity in cart", async t => {
+test("Get 500 error code when updating invalid quantity in cart", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.currentSales,
         1
@@ -167,7 +167,7 @@ test("PUT / cannot update invalid quantity in cart", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update more than max quantity in cart", async t => {
+test("Get 403 error code when updating more than max quantity in cart", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.featuredSales,
         1
@@ -190,7 +190,7 @@ test("PUT / cannot update more than max quantity in cart", async t => {
     t.deepEqual(res.body.message, "ALREADY_REACHED_MAX_QUANTITY");
 });
 
-test("DELETE / cannot remove product from cart with wrong cart item", async t => {
+test("Get 404 error code when deleting product from cart with wrong cart item", async t => {
     const res = await request.delete(
         config.api.cart + "INVALID-CART-ID",
         t.context["cookie"]
@@ -204,7 +204,7 @@ test("DELETE / cannot remove product from cart with wrong cart item", async t =>
     t.snapshot(res.body);
 });
 
-test("DELETE / cannot remove product from cart without cart item", async t => {
+test("Get 404 error code when deleting product from cart without cart item", async t => {
     const res = await request.delete(config.api.cart, t.context["cookie"]);
 
     t.deepEqual(res.statusCode, 404);

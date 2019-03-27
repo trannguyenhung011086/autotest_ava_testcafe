@@ -13,7 +13,7 @@ test.before(async t => {
     );
 });
 
-test("GET / cannot see order of another customer", async t => {
+test("Get empty result when accessing order of another customer", async t => {
     const res = await request.get(
         config.api.orders + "/5be3ea348f2a5c000155efbc",
         t.context["cookie"]
@@ -24,7 +24,7 @@ test("GET / cannot see order of another customer", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / can access orders", async t => {
+test("Get 200 success code when accessing orders with valid cookie", async t => {
     const res = await request.get(config.api.orders, t.context["cookie"]);
 
     const orders: Model.OrderSummary[] = res.body;
@@ -34,7 +34,7 @@ test("GET / can access orders", async t => {
     });
 });
 
-test("GET / can see order info using order ID", async t => {
+test("Get 200 success code when accessing order info using order ID", async t => {
     let orders = await request.getOrders(t.context["cookie"]);
 
     for (let order of orders) {
@@ -50,7 +50,7 @@ test("GET / can see order info using order ID", async t => {
     }
 });
 
-test("GET / can see order info using order code", async t => {
+test("Get 200 success code when accessing order info using order code", async t => {
     const orders = await request.getOrders(t.context["cookie"]);
     let rand = Math.floor(Math.random() * orders.length);
 
@@ -71,7 +71,7 @@ test("GET / can see order info using order code", async t => {
     }
 });
 
-test("GET / cannot access order info with invalid cookie", async t => {
+test("Get 401 error code when accessing order info with invalid cookie", async t => {
     const res = await request.get(
         config.api.orders + "/5be3ea348f2a5c000155efbc",
         "leflair.connect2.sid=test"

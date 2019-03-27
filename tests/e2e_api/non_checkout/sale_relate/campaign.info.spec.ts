@@ -7,7 +7,7 @@ const access = new Utils.DbAccessUtils();
 
 import test from "ava";
 
-test("GET / valid campaign name", async t => {
+test("Get 200 success code when accessing valid campaign name", async t => {
     const campaign: Model.Campaign = await access.getCampaign({
         endDate: { $gt: new Date() }
     });
@@ -30,7 +30,7 @@ test("GET / valid campaign name", async t => {
     }
 });
 
-test("GET / invalid campaign name", async t => {
+test("Get 404 error code when accessing invalid campaign name", async t => {
     const res = await request.get(config.api.campaigns + "INVALID-CAMPAIGN");
 
     t.deepEqual(res.statusCode, 404);
@@ -38,7 +38,7 @@ test("GET / invalid campaign name", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / missing campaign name", async t => {
+test("Get 404 error code when accessing missing campaign name", async t => {
     const res = await request.get(config.api.campaigns);
 
     t.deepEqual(res.statusCode, 404);

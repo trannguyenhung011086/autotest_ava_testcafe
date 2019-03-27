@@ -12,7 +12,7 @@ test.beforeEach(async t => {
     t.context["cookie"] = await helper.getGuestCookie();
 });
 
-test("GET / proceed checkout with empty cart", async t => {
+test("Proceed checkout with empty cart", async t => {
     const res = await helper.get(config.api.checkout, t.context["cookie"]);
 
     const checkout: Model.Checkout = res.body;
@@ -22,7 +22,7 @@ test("GET / proceed checkout with empty cart", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / proceed checkout with cart", async t => {
+test("Proceed checkout with cart", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.featuredSales,
         1

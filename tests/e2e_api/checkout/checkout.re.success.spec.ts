@@ -55,7 +55,7 @@ test.beforeEach(async t => {
     await requestCart.emptyCart(t.context["cookie"]);
 });
 
-test.serial("POST / recheckout with COD", async t => {
+test.serial("Order status is Placed when recheckout with COD", async t => {
     const reCheckout = await request.checkoutCod(
         checkoutInput,
         t.context["cookie"]
@@ -75,7 +75,7 @@ test.serial("POST / recheckout with COD", async t => {
 });
 
 test.serial(
-    "POST / recheckout with new CC (not save card) - VISA (skip-prod)",
+    "Order status is Placed when recheckout with new CC (not save card) - VISA (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout on prod!");
@@ -131,7 +131,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / recheckout with new CC (save card) - MASTER (skip-prod)",
+    "Order status is Placed when recheckout with new CC (save card) - MASTER (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout on prod!");
@@ -186,58 +186,61 @@ test.serial(
     }
 );
 
-test.serial("POST / recheckout with saved CC (skip-prod)", async t => {
-    if (process.env.NODE_ENV == "prod") {
-        t.log("Skip checkout on prod!");
-        t.pass();
-    } else {
-        const matchedCard = await requestCreditcard.getCard(
-            "PayDollar",
-            t.context["cookie"]
-        );
-        checkoutInput.methodData = matchedCard;
+test.serial(
+    "Order status is Placed when recheckout with saved CC (skip-prod)",
+    async t => {
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
+            t.pass();
+        } else {
+            const matchedCard = await requestCreditcard.getCard(
+                "PayDollar",
+                t.context["cookie"]
+            );
+            checkoutInput.methodData = matchedCard;
 
-        const reCheckout = await request.checkoutPayDollar(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(reCheckout.orderId);
+            const reCheckout = await request.checkoutPayDollar(
+                checkoutInput,
+                t.context["cookie"]
+            );
+            t.truthy(reCheckout.orderId);
 
-        let order = await requestOrder.getOrderInfo(
-            reCheckout.orderId,
-            t.context["cookie"]
-        );
+            let order = await requestOrder.getOrderInfo(
+                reCheckout.orderId,
+                t.context["cookie"]
+            );
 
-        t.true(reCheckout.creditCard.orderRef.includes(order.code));
-        t.deepEqual(order.status, "pending");
-        t.false(order.isCrossBorder);
-        t.deepEqual(order.paymentSummary.method, "CC");
-        t.deepEqual(order.paymentSummary.shipping, 0);
+            t.true(reCheckout.creditCard.orderRef.includes(order.code));
+            t.deepEqual(order.status, "pending");
+            t.false(order.isCrossBorder);
+            t.deepEqual(order.paymentSummary.method, "CC");
+            t.deepEqual(order.paymentSummary.shipping, 0);
 
-        const payDollarCreditCard: Model.PayDollarCreditCard =
-            reCheckout.creditCard;
-        const result = await request.postFormUrlPlain(
-            config.payDollarApi,
-            payDollarCreditCard,
-            t.context["cookie"],
-            config.payDollarBase
-        );
-        const parse = await request.parsePayDollarRes(result.body);
+            const payDollarCreditCard: Model.PayDollarCreditCard =
+                reCheckout.creditCard;
+            const result = await request.postFormUrlPlain(
+                config.payDollarApi,
+                payDollarCreditCard,
+                t.context["cookie"],
+                config.payDollarBase
+            );
+            const parse = await request.parsePayDollarRes(result.body);
 
-        t.deepEqual(parse.successcode, "0");
-        t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef);
-        t.regex(parse.errMsg, /Transaction completed/);
+            t.deepEqual(parse.successcode, "0");
+            t.deepEqual(parse.Ref, reCheckout.creditCard.orderRef);
+            t.regex(parse.errMsg, /Transaction completed/);
 
-        order = await requestOrder.getOrderInfo(
-            reCheckout.orderId,
-            t.context["cookie"]
-        );
-        t.deepEqual(order.status, "placed");
+            order = await requestOrder.getOrderInfo(
+                reCheckout.orderId,
+                t.context["cookie"]
+            );
+            t.deepEqual(order.status, "placed");
+        }
     }
-});
+);
 
 test.serial(
-    "POST / recheckout with COD - voucher (amount) + credit (skip-prod)",
+    "Order status is Placed when recheckout with COD - voucher (amount) + credit (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout with voucher on prod!");
@@ -296,7 +299,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / recheckout with saved CC - voucher (percentage + max discount) (skip-prod)",
+    "Order status is Placed when recheckout with saved CC - voucher (percentage + max discount) (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout with voucher on prod!");
@@ -360,6 +363,86 @@ test.serial(
                 t.context["cookie"]
             );
             t.deepEqual(order.status, "placed");
+        }
+    }
+);
+
+// validate voucher amount
+
+test.serial(
+    "Validate voucher amount applied for recheckout order (skip-prod)",
+    async t => {
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout with voucher on prod!");
+            t.pass();
+        } else {
+            const voucher = await access.getVoucher({
+                expiry: { $gte: new Date() },
+                used: false,
+                discountType: "percentage",
+                maximumDiscountAmount: { $gt: 0, $lte: 150000 },
+                specificDays: [],
+                customer: { $exists: false },
+                numberOfItems: 0
+            });
+
+            t.truthy(voucher);
+
+            const item = await requestProduct.getProductWithCountry(
+                "VN",
+                2000000,
+                10000000
+            );
+            await requestCart.addToCart(item.id, t.context["cookie"]);
+
+            const info: Model.CheckoutInput = {};
+            info.account = await requestAccount.getAccountInfo(
+                t.context["cookie"]
+            );
+            info.addresses = await requestAddress.getAddresses(
+                t.context["cookie"]
+            );
+            info.voucherId = voucher._id;
+
+            const checkout = await request.checkoutPayDollar(
+                info,
+                t.context["cookie"]
+            );
+
+            t.truthy(checkout.orderId);
+
+            const payDollarCreditCard: Model.PayDollarCreditCard =
+                checkout.creditCard;
+            payDollarCreditCard.cardHolder = "testing";
+            payDollarCreditCard.cardNo = "4335900000140045";
+            payDollarCreditCard.pMethod = "VISA";
+            payDollarCreditCard.epMonth = 7;
+            payDollarCreditCard.epYear = 2020;
+            payDollarCreditCard.securityCode = "333";
+
+            const res = await request.postFormUrlPlain(
+                config.payDollarApi,
+                payDollarCreditCard,
+                t.context["cookie"],
+                config.payDollarBase
+            );
+
+            const parse = await request.parsePayDollarRes(res.body);
+
+            const failedAttempt = await request.failedAttempt(
+                parse.Ref,
+                t.context["cookie"]
+            );
+
+            const order = await requestOrder.getOrderInfo(
+                failedAttempt.orderId,
+                t.context["cookie"]
+            );
+
+            t.true(
+                order.paymentSummary.voucherAmount <=
+                    voucher.maximumDiscountAmount
+            );
         }
     }
 );

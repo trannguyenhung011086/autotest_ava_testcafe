@@ -16,6 +16,12 @@ switch (process.env.NODE_ENV) {
         payDollarApi = "/b2c2/eng/directPay/payComp.jsp";
         stripeKey = "pk_live_2oLGoFep9LLlvVMs1TroLmM1";
         break;
+    case "rc1":
+        baseUrl = "https://www.rc1.leflair.io";
+        payDollarBase = "https://test.paydollar.com";
+        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
+        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        break;
     default:
         baseUrl = "https://www.staging.leflair.io";
         payDollarBase = "https://test.paydollar.com";
@@ -52,6 +58,7 @@ export const config = {
         password: "/api/v2/account/password",
         subscribe: "/api/v2/news/subscribe",
         account: "/api/v2/account",
+        newsletter: "/api/v2/account/subscription",
         addresses: "/api/v2/addresses",
         orders: "/api/v2/user-orders",
         creditcard: "/api/v2/credit-cards",

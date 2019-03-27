@@ -46,33 +46,36 @@ test.beforeEach(async t => {
 
 // validate required data
 
-test.serial("POST / cannot recheckout with invalid cookie", async t => {
-    const res = await request.post(
-        config.api.checkout + "/order/" + failedAttemptOrder.code,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
+test.serial(
+    "Get 500 error code when recheckout with invalid cookie",
+    async t => {
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: [
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    }
+                ],
+                method: "COD",
+                shipping: 25000,
+                accountCredit: 0
             },
-            cart: [
-                {
-                    id: failedAttemptOrder.products[0].id,
-                    quantity: failedAttemptOrder.products[0].quantity,
-                    salePrice: failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            method: "COD",
-            shipping: 25000,
-            accountCredit: 0
-        },
-        "leflair.connect2.sid=test"
-    );
+            "leflair.connect2.sid=test"
+        );
 
-    t.deepEqual(res.statusCode, 500);
-    t.snapshot(res.body);
-});
+        t.deepEqual(res.statusCode, 500);
+        t.snapshot(res.body);
+    }
+);
 
-test.serial("POST / cannot recheckout with empty data", async t => {
+test.serial("Get 500 error code when recheckout with empty data", async t => {
     const res = await request.post(
         config.api.checkout + "/order/" + failedAttemptOrder.code,
         {},
@@ -83,7 +86,7 @@ test.serial("POST / cannot recheckout with empty data", async t => {
     t.snapshot(res.body);
 });
 
-test.serial("POST / cannot recheckout without address", async t => {
+test.serial("Get 400 error code when recheckout without address", async t => {
     const res = await request.post(
         config.api.checkout + "/order/" + failedAttemptOrder.code,
         {
@@ -101,7 +104,7 @@ test.serial("POST / cannot recheckout without address", async t => {
     t.snapshot(res.body);
 });
 
-test.serial("POST / cannot recheckout with empty cart", async t => {
+test.serial("Get 400 error code when recheckout with empty cart", async t => {
     const res = await request.post(
         config.api.checkout + "/order/" + failedAttemptOrder.code,
         {
@@ -120,7 +123,7 @@ test.serial("POST / cannot recheckout with empty cart", async t => {
 });
 
 test.serial(
-    "POST / cannot recheckout with invalid phone and tax code",
+    "Get 400 error code when recheckout with invalid phone and tax code",
     async t => {
         const res = await request.post(
             config.api.checkout + "/order/" + failedAttemptOrder.code,
@@ -153,140 +156,158 @@ test.serial(
     }
 );
 
-test.serial("POST / cannot recheckout without payment method", async t => {
-    const res = await request.post(
-        config.api.checkout + "/order/" + failedAttemptOrder.code,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
+test.serial(
+    "Get 400 error code when recheckout without payment method",
+    async t => {
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: [
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    }
+                ]
             },
-            cart: [
-                {
-                    id: failedAttemptOrder.products[0].id,
-                    quantity: failedAttemptOrder.products[0].quantity,
-                    salePrice: failedAttemptOrder.products[0].salePrice
-                }
-            ]
-        },
-        t.context["cookie"]
-    );
+            t.context["cookie"]
+        );
 
-    t.deepEqual(res.statusCode, 400);
-    t.true(res.body.message.includes("PLEASE_SELECT_A_PAYMENT_METHOD"));
-    t.snapshot(res.body);
-});
+        t.deepEqual(res.statusCode, 400);
+        t.true(res.body.message.includes("PLEASE_SELECT_A_PAYMENT_METHOD"));
+        t.snapshot(res.body);
+    }
+);
 
 // validate cart
 
-test.serial("POST / cannot recheckout with mismatched cart", async t => {
-    const res = await request.post(
-        config.api.checkout + "/order/" + failedAttemptOrder.code,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
-            },
-            cart: [
-                {
-                    id: failedAttemptOrder.products[0].id,
-                    quantity: failedAttemptOrder.products[0].quantity,
-                    salePrice: failedAttemptOrder.products[0].salePrice
+test.serial(
+    "Get 400 error code when recheckout with mismatched cart",
+    async t => {
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
                 },
-                {
-                    id: failedAttemptOrder.products[0].id,
-                    quantity: failedAttemptOrder.products[0].quantity,
-                    salePrice: failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            method: "FREE"
-        },
-        t.context["cookie"]
-    );
-
-    t.deepEqual(res.statusCode, 400);
-    t.deepEqual(res.body.message, "CART_MISMATCH");
-});
-
-test.serial("POST / cannot recheckout with mismatched quantity", async t => {
-    const res = await request.post(
-        config.api.checkout + "/order/" + failedAttemptOrder.code,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
+                cart: [
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    },
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    }
+                ],
+                method: "FREE"
             },
-            cart: [
-                {
-                    id: failedAttemptOrder.products[0].id,
-                    quantity: failedAttemptOrder.products[0].quantity + 1,
-                    salePrice: failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            method: "FREE"
-        },
-        t.context["cookie"]
-    );
+            t.context["cookie"]
+        );
 
-    t.deepEqual(res.statusCode, 400);
-    t.deepEqual(
-        res.body.message[0].message,
-        "QUANTITY_SUBMITTED_NOT_MATCH_IN_THE_CART"
-    );
-});
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message, "CART_MISMATCH");
+    }
+);
 
-test.serial("POST / cannot recheckout with mismatched price", async t => {
-    const res = await request.post(
-        config.api.checkout + "/order/" + failedAttemptOrder.code,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
+test.serial(
+    "Get 400 error code when recheckout with mismatched quantity",
+    async t => {
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: [
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity + 1,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    }
+                ],
+                method: "FREE"
             },
-            cart: [
-                {
-                    id: failedAttemptOrder.products[0].id,
-                    quantity: failedAttemptOrder.products[0].quantity,
-                    salePrice: failedAttemptOrder.products[0].salePrice - 1
-                }
-            ],
-            method: "FREE"
-        },
-        t.context["cookie"]
-    );
+            t.context["cookie"]
+        );
 
-    t.deepEqual(res.statusCode, 400);
-    t.deepEqual(res.body.message[0].message, "PRICE_MISMATCH");
-});
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(
+            res.body.message[0].message,
+            "QUANTITY_SUBMITTED_NOT_MATCH_IN_THE_CART"
+        );
+    }
+);
 
-test.serial("POST / cannot recheckout with invalid product", async t => {
-    const res = await request.post(
-        config.api.checkout + "/order/" + failedAttemptOrder.code,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
+test.serial(
+    "Get 400 error code when recheckout with mismatched price",
+    async t => {
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: [
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice - 1
+                    }
+                ],
+                method: "FREE"
             },
-            cart: [
-                {
-                    id: "INVALID-ID",
-                    quantity: failedAttemptOrder.products[0].quantity,
-                    salePrice: failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            method: "FREE"
-        },
-        t.context["cookie"]
-    );
+            t.context["cookie"]
+        );
 
-    t.deepEqual(res.statusCode, 400);
-    t.deepEqual(res.body.message[0].message, "CART_MISMATCH_CANT_FIND_PRODUCT");
-});
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message[0].message, "PRICE_MISMATCH");
+    }
+);
+
+test.serial(
+    "Get 400 error code when recheckout with invalid product",
+    async t => {
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: [
+                    {
+                        id: "INVALID-ID",
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    }
+                ],
+                method: "FREE"
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(
+            res.body.message[0].message,
+            "CART_MISMATCH_CANT_FIND_PRODUCT"
+        );
+    }
+);
 
 // validate availability
 
 test.serial(
-    "POST / cannot recheckout with sold out product (skip-prod)",
+    "Get 400 error code when recheckout with sold out product (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout on prod!");
@@ -349,7 +370,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / cannot recheckout with limited stock product (skip-prod)",
+    "Get 400 error code when recheckout with limited stock product (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout on prod!");
@@ -411,7 +432,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / cannot recheckout with sale ended product (skip-prod)",
+    "Get 400 error code when recheckout with sale ended product (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout on prod!");
@@ -477,7 +498,7 @@ test.serial(
 
 // validate address
 
-test.skip("POST / cannot recheckout with new address", async t => {
+test.skip("Get 400 error code when recheckout with new address", async t => {
     const res = await request.post(
         config.api.checkout + "/order/" + failedAttemptOrder.code,
         {
@@ -505,7 +526,7 @@ test.skip("POST / cannot recheckout with new address", async t => {
 // validate voucher
 
 test.serial(
-    "POST / cannot recheckout with voucher not meeting min items",
+    "Get 400 error code when recheckout with voucher not meeting min items",
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
@@ -544,7 +565,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / cannot recheckout with voucher not applied for today",
+    "Get 400 error code when recheckout with voucher not applied for today",
     async t => {
         const today = new Date().getDay();
         const voucher = await access.getVoucher({
@@ -585,7 +606,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / cannot recheckout with voucher not meeting min purchase",
+    "Get 400 error code when recheckout with voucher not meeting min purchase",
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
@@ -625,7 +646,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / cannot recheckout with voucher exceeding number of usage",
+    "Get 400 error code when recheckout with voucher exceeding number of usage",
     async t => {
         const vouchers = await access.getVoucherList({
             expiry: { $gte: new Date() },
@@ -672,43 +693,46 @@ test.serial(
     }
 );
 
-test.serial("POST / cannot recheckout with expired voucher", async t => {
-    const voucher = await access.getVoucher({
-        expiry: { $lt: new Date() },
-        binRange: { $exists: false },
-        used: false
-    });
+test.serial(
+    "Get 400 error code when recheckout with expired voucher",
+    async t => {
+        const voucher = await access.getVoucher({
+            expiry: { $lt: new Date() },
+            binRange: { $exists: false },
+            used: false
+        });
 
-    t.truthy(voucher);
+        t.truthy(voucher);
 
-    const res = await request.post(
-        config.api.checkout + "/order/" + failedAttemptOrder.code,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: [
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    }
+                ],
+                method: "COD",
+                shipping: 25000,
+                voucher: voucher._id
             },
-            cart: [
-                {
-                    id: failedAttemptOrder.products[0].id,
-                    quantity: failedAttemptOrder.products[0].quantity,
-                    salePrice: failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            method: "COD",
-            shipping: 25000,
-            voucher: voucher._id
-        },
-        t.context["cookie"]
-    );
+            t.context["cookie"]
+        );
 
-    t.deepEqual(res.statusCode, 400);
-    t.deepEqual(res.body.message, "VOUCHER_OR_NOT_VALID");
-    t.snapshot(res.body);
-});
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message, "VOUCHER_OR_NOT_VALID");
+        t.snapshot(res.body);
+    }
+);
 
 test.serial(
-    "POST / cannot recheckout with COD using voucher for CC",
+    "Get 400 error code when recheckout with COD using voucher for CC",
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
@@ -747,7 +771,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / cannot recheckout with voucher for Stripe using wrong bin range (skip-prod)",
+    "Get 400 error code when recheckout with voucher for Stripe using wrong bin range (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout with voucher on prod!");
@@ -811,7 +835,7 @@ test.serial(
 );
 
 test.serial.skip(
-    "POST / cannot recheckout with already used voucher",
+    "Get 400 error code when recheckout with already used voucher",
     async t => {
         const cookie = await request.getLogInCookie(
             config.testAccount.email_in,
@@ -862,7 +886,7 @@ test.serial.skip(
 ); // wait for WWW-490
 
 test.serial(
-    "POST / cannot recheckout with voucher only used for other customer",
+    "Get 400 error code when recheckout with voucher only used for other customer",
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
@@ -903,7 +927,7 @@ test.serial(
 // validate account credit
 
 test.serial(
-    "POST / cannot recheckout with with more than available credit",
+    "Get 400 error code when recheckout with with more than available credit",
     async t => {
         const account = await requestAccount.getAccountInfo(
             t.context["cookie"]
@@ -932,85 +956,5 @@ test.serial(
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE");
         t.snapshot(res.body);
-    }
-);
-
-// validate voucher amount
-
-test.serial(
-    "Validate voucher amount applied for recheckout order (skip-prod)",
-    async t => {
-        if (process.env.NODE_ENV == "prod") {
-            t.log("Skip checkout with voucher on prod!");
-            t.pass();
-        } else {
-            const voucher = await access.getVoucher({
-                expiry: { $gte: new Date() },
-                used: false,
-                discountType: "percentage",
-                maximumDiscountAmount: { $gt: 0, $lte: 150000 },
-                specificDays: [],
-                customer: { $exists: false },
-                numberOfItems: 0
-            });
-
-            t.truthy(voucher);
-
-            const item = await requestProduct.getProductWithCountry(
-                "VN",
-                2000000,
-                10000000
-            );
-            await requestCart.addToCart(item.id, t.context["cookie"]);
-
-            const info: Model.CheckoutInput = {};
-            info.account = await requestAccount.getAccountInfo(
-                t.context["cookie"]
-            );
-            info.addresses = await requestAddress.getAddresses(
-                t.context["cookie"]
-            );
-            info.voucherId = voucher._id;
-
-            const checkout = await request.checkoutPayDollar(
-                info,
-                t.context["cookie"]
-            );
-
-            t.truthy(checkout.orderId);
-
-            const payDollarCreditCard: Model.PayDollarCreditCard =
-                checkout.creditCard;
-            payDollarCreditCard.cardHolder = "testing";
-            payDollarCreditCard.cardNo = "4335900000140045";
-            payDollarCreditCard.pMethod = "VISA";
-            payDollarCreditCard.epMonth = 7;
-            payDollarCreditCard.epYear = 2020;
-            payDollarCreditCard.securityCode = "333";
-
-            const res = await request.postFormUrlPlain(
-                config.payDollarApi,
-                payDollarCreditCard,
-                t.context["cookie"],
-                config.payDollarBase
-            );
-
-            const parse = await request.parsePayDollarRes(res.body);
-
-            const failedAttempt = await request.failedAttempt(
-                parse.Ref,
-                t.context["cookie"]
-            );
-
-            const order = await requestOrder.getOrderInfo(
-                failedAttempt.orderId,
-                t.context["cookie"]
-            );
-
-            t.true(
-                order.paymentSummary.voucherAmount <=
-                    voucher.maximumDiscountAmount
-            );
-        }
     }
 );

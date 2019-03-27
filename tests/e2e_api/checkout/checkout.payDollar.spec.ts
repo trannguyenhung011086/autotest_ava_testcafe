@@ -30,7 +30,7 @@ test.beforeEach(async t => {
 });
 
 test.serial(
-    "POST / cannot checkout with CC - international product",
+    "Get 400 error code when checkout with CC - international product",
     async t => {
         const item = await requestProduct.getInStockProduct(
             config.api.internationalSales,
@@ -67,7 +67,7 @@ test.serial(
     }
 );
 
-test.serial("POST / cannot checkout with invalid CC", async t => {
+test.serial("Order status is Failed when checkout with invalid CC", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.todaySales,
         1
@@ -113,284 +113,304 @@ test.serial("POST / cannot checkout with invalid CC", async t => {
     t.deepEqual(order.status, "failed");
 });
 
-test.serial("POST / cannot checkout with non-supported CC - JCB", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.todaySales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
+test.serial(
+    "Order status is Pending when checkout with non-supported CC - JCB",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
 
-    checkoutInput.account = await requestAccount.getAccountInfo(
-        t.context["cookie"]
-    );
-    checkoutInput.addresses = addresses;
+        checkoutInput.account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+        checkoutInput.addresses = addresses;
 
-    const checkout = await request.checkoutPayDollar(
-        checkoutInput,
-        t.context["cookie"]
-    );
+        const checkout = await request.checkoutPayDollar(
+            checkoutInput,
+            t.context["cookie"]
+        );
 
-    t.truthy(checkout.orderId);
+        t.truthy(checkout.orderId);
 
-    const payDollarCreditCard: Model.PayDollarCreditCard = checkout.creditCard;
-    payDollarCreditCard.cardHolder = "testing card";
-    payDollarCreditCard.cardNo = "3566002020360505";
-    payDollarCreditCard.pMethod = "JCB";
-    payDollarCreditCard.epMonth = 7;
-    payDollarCreditCard.epYear = 2020;
-    payDollarCreditCard.securityCode = "123";
+        const payDollarCreditCard: Model.PayDollarCreditCard =
+            checkout.creditCard;
+        payDollarCreditCard.cardHolder = "testing card";
+        payDollarCreditCard.cardNo = "3566002020360505";
+        payDollarCreditCard.pMethod = "JCB";
+        payDollarCreditCard.epMonth = 7;
+        payDollarCreditCard.epYear = 2020;
+        payDollarCreditCard.securityCode = "123";
 
-    const result = await request.postFormUrlPlain(
-        config.payDollarApi,
-        payDollarCreditCard,
-        t.context["cookie"],
-        config.payDollarBase
-    );
-    const parse = await request.parsePayDollarRes(result.body);
+        const result = await request.postFormUrlPlain(
+            config.payDollarApi,
+            payDollarCreditCard,
+            t.context["cookie"],
+            config.payDollarBase
+        );
+        const parse = await request.parsePayDollarRes(result.body);
 
-    t.deepEqual(parse.successcode, "-1");
-    t.falsy(parse.Ref);
-    t.regex(
-        parse.errMsg,
-        /Your account doesn\'t support the payment method \(JCB\)/
-    );
+        t.deepEqual(parse.successcode, "-1");
+        t.falsy(parse.Ref);
+        t.regex(
+            parse.errMsg,
+            /Your account doesn\'t support the payment method \(JCB\)/
+        );
 
-    const order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        const order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.deepEqual(order.status, "pending");
-});
+        t.deepEqual(order.status, "pending");
+    }
+);
 
-test.serial("POST / cannot checkout with non-supported CC - AMEX", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.todaySales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
+test.serial(
+    "Order status is Pending when checkout with non-supported CC - AMEX",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
 
-    checkoutInput.account = await requestAccount.getAccountInfo(
-        t.context["cookie"]
-    );
-    checkoutInput.addresses = addresses;
+        checkoutInput.account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+        checkoutInput.addresses = addresses;
 
-    const checkout = await request.checkoutPayDollar(
-        checkoutInput,
-        t.context["cookie"]
-    );
+        const checkout = await request.checkoutPayDollar(
+            checkoutInput,
+            t.context["cookie"]
+        );
 
-    t.truthy(checkout.orderId);
+        t.truthy(checkout.orderId);
 
-    const payDollarCreditCard: Model.PayDollarCreditCard = checkout.creditCard;
-    payDollarCreditCard.cardHolder = "testing card";
-    payDollarCreditCard.cardNo = "378282246310005";
-    payDollarCreditCard.pMethod = "AMEX";
-    payDollarCreditCard.epMonth = 7;
-    payDollarCreditCard.epYear = 2020;
-    payDollarCreditCard.securityCode = "123";
+        const payDollarCreditCard: Model.PayDollarCreditCard =
+            checkout.creditCard;
+        payDollarCreditCard.cardHolder = "testing card";
+        payDollarCreditCard.cardNo = "378282246310005";
+        payDollarCreditCard.pMethod = "AMEX";
+        payDollarCreditCard.epMonth = 7;
+        payDollarCreditCard.epYear = 2020;
+        payDollarCreditCard.securityCode = "123";
 
-    const result = await request.postFormUrlPlain(
-        config.payDollarApi,
-        payDollarCreditCard,
-        t.context["cookie"],
-        config.payDollarBase
-    );
-    const parse = await request.parsePayDollarRes(result.body);
+        const result = await request.postFormUrlPlain(
+            config.payDollarApi,
+            payDollarCreditCard,
+            t.context["cookie"],
+            config.payDollarBase
+        );
+        const parse = await request.parsePayDollarRes(result.body);
 
-    t.deepEqual(parse.successcode, "-1");
-    t.falsy(parse.Ref);
-    t.regex(
-        parse.errMsg,
-        /Your account doesn\'t support the payment method \(AMEX\)/
-    );
+        t.deepEqual(parse.successcode, "-1");
+        t.falsy(parse.Ref);
+        t.regex(
+            parse.errMsg,
+            /Your account doesn\'t support the payment method \(AMEX\)/
+        );
 
-    const order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        const order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.deepEqual(order.status, "pending");
-});
+        t.deepEqual(order.status, "pending");
+    }
+);
 
-test.serial("POST / checkout with new CC (not save card) - VISA", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.todaySales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
+test.serial(
+    "Order status is Placed when checkout with new CC (not save card) - VISA",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
 
-    checkoutInput.account = await requestAccount.getAccountInfo(
-        t.context["cookie"]
-    );
-    checkoutInput.addresses = addresses;
-    checkoutInput.saveNewCard = false;
+        checkoutInput.account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+        checkoutInput.addresses = addresses;
+        checkoutInput.saveNewCard = false;
 
-    const checkout = await request.checkoutPayDollar(
-        checkoutInput,
-        t.context["cookie"]
-    );
+        const checkout = await request.checkoutPayDollar(
+            checkoutInput,
+            t.context["cookie"]
+        );
 
-    t.truthy(checkout.orderId);
+        t.truthy(checkout.orderId);
 
-    let order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        let order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.true(checkout.creditCard.orderRef.includes(order.code));
-    t.deepEqual(order.status, "pending");
-    t.false(order.isCrossBorder);
-    t.deepEqual(order.paymentSummary.method, "CC");
-    t.deepEqual(order.paymentSummary.shipping, 0);
+        t.true(checkout.creditCard.orderRef.includes(order.code));
+        t.deepEqual(order.status, "pending");
+        t.false(order.isCrossBorder);
+        t.deepEqual(order.paymentSummary.method, "CC");
+        t.deepEqual(order.paymentSummary.shipping, 0);
 
-    const payDollarCreditCard: Model.PayDollarCreditCard = checkout.creditCard;
-    payDollarCreditCard.cardHolder = "testing card";
-    payDollarCreditCard.cardNo = "4335900000140045";
-    payDollarCreditCard.pMethod = "VISA";
-    payDollarCreditCard.epMonth = 7;
-    payDollarCreditCard.epYear = 2020;
-    payDollarCreditCard.securityCode = "123";
+        const payDollarCreditCard: Model.PayDollarCreditCard =
+            checkout.creditCard;
+        payDollarCreditCard.cardHolder = "testing card";
+        payDollarCreditCard.cardNo = "4335900000140045";
+        payDollarCreditCard.pMethod = "VISA";
+        payDollarCreditCard.epMonth = 7;
+        payDollarCreditCard.epYear = 2020;
+        payDollarCreditCard.securityCode = "123";
 
-    const result = await request.postFormUrlPlain(
-        config.payDollarApi,
-        payDollarCreditCard,
-        t.context["cookie"],
-        config.payDollarBase
-    );
-    const parse = await request.parsePayDollarRes(result.body);
+        const result = await request.postFormUrlPlain(
+            config.payDollarApi,
+            payDollarCreditCard,
+            t.context["cookie"],
+            config.payDollarBase
+        );
+        const parse = await request.parsePayDollarRes(result.body);
 
-    t.deepEqual(parse.successcode, "0");
-    t.deepEqual(parse.Ref, checkout.creditCard.orderRef);
-    t.regex(parse.errMsg, /Transaction completed/);
+        t.deepEqual(parse.successcode, "0");
+        t.deepEqual(parse.Ref, checkout.creditCard.orderRef);
+        t.regex(parse.errMsg, /Transaction completed/);
 
-    order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.deepEqual(order.status, "placed");
-});
+        t.deepEqual(order.status, "placed");
+    }
+);
 
-test.serial("POST / checkout with new CC (not save card) - MASTER", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.todaySales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
+test.serial(
+    "Order status is Placed when checkout with new CC (not save card) - MASTER",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
 
-    checkoutInput.account = await requestAccount.getAccountInfo(
-        t.context["cookie"]
-    );
-    checkoutInput.addresses = addresses;
-    checkoutInput.saveNewCard = false;
+        checkoutInput.account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+        checkoutInput.addresses = addresses;
+        checkoutInput.saveNewCard = false;
 
-    const checkout = await request.checkoutPayDollar(
-        checkoutInput,
-        t.context["cookie"]
-    );
+        const checkout = await request.checkoutPayDollar(
+            checkoutInput,
+            t.context["cookie"]
+        );
 
-    t.truthy(checkout.orderId);
+        t.truthy(checkout.orderId);
 
-    let order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        let order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.true(checkout.creditCard.orderRef.includes(order.code));
-    t.deepEqual(order.status, "pending");
-    t.false(order.isCrossBorder);
-    t.deepEqual(order.paymentSummary.method, "CC");
-    t.deepEqual(order.paymentSummary.shipping, 0);
+        t.true(checkout.creditCard.orderRef.includes(order.code));
+        t.deepEqual(order.status, "pending");
+        t.false(order.isCrossBorder);
+        t.deepEqual(order.paymentSummary.method, "CC");
+        t.deepEqual(order.paymentSummary.shipping, 0);
 
-    const payDollarCreditCard: Model.PayDollarCreditCard = checkout.creditCard;
-    payDollarCreditCard.cardHolder = "testing card";
-    payDollarCreditCard.cardNo = "5422882800700007";
-    payDollarCreditCard.pMethod = "Master";
-    payDollarCreditCard.epMonth = 7;
-    payDollarCreditCard.epYear = 2020;
-    payDollarCreditCard.securityCode = "123";
+        const payDollarCreditCard: Model.PayDollarCreditCard =
+            checkout.creditCard;
+        payDollarCreditCard.cardHolder = "testing card";
+        payDollarCreditCard.cardNo = "5422882800700007";
+        payDollarCreditCard.pMethod = "Master";
+        payDollarCreditCard.epMonth = 7;
+        payDollarCreditCard.epYear = 2020;
+        payDollarCreditCard.securityCode = "123";
 
-    const result = await request.postFormUrlPlain(
-        config.payDollarApi,
-        payDollarCreditCard,
-        t.context["cookie"],
-        config.payDollarBase
-    );
-    const parse = await request.parsePayDollarRes(result.body);
+        const result = await request.postFormUrlPlain(
+            config.payDollarApi,
+            payDollarCreditCard,
+            t.context["cookie"],
+            config.payDollarBase
+        );
+        const parse = await request.parsePayDollarRes(result.body);
 
-    t.deepEqual(parse.successcode, "0");
-    t.deepEqual(parse.Ref, checkout.creditCard.orderRef);
-    t.regex(parse.errMsg, /Transaction completed/);
+        t.deepEqual(parse.successcode, "0");
+        t.deepEqual(parse.Ref, checkout.creditCard.orderRef);
+        t.regex(parse.errMsg, /Transaction completed/);
 
-    order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.deepEqual(order.status, "placed");
-});
+        t.deepEqual(order.status, "placed");
+    }
+);
 
-test.serial("POST / checkout with new CC (save card) - MASTER", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.todaySales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
+test.serial(
+    "Order status is Placed when checkout with new CC (save card) - MASTER",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
 
-    checkoutInput.account = await requestAccount.getAccountInfo(
-        t.context["cookie"]
-    );
-    checkoutInput.addresses = addresses;
-    checkoutInput.saveNewCard = true;
+        checkoutInput.account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+        checkoutInput.addresses = addresses;
+        checkoutInput.saveNewCard = true;
 
-    const checkout = await request.checkoutPayDollar(
-        checkoutInput,
-        t.context["cookie"]
-    );
+        const checkout = await request.checkoutPayDollar(
+            checkoutInput,
+            t.context["cookie"]
+        );
 
-    t.truthy(checkout.orderId);
+        t.truthy(checkout.orderId);
 
-    let order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        let order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.true(checkout.creditCard.orderRef.includes(order.code));
-    t.deepEqual(order.status, "pending");
-    t.false(order.isCrossBorder);
-    t.deepEqual(order.paymentSummary.method, "CC");
-    t.deepEqual(order.paymentSummary.shipping, 0);
+        t.true(checkout.creditCard.orderRef.includes(order.code));
+        t.deepEqual(order.status, "pending");
+        t.false(order.isCrossBorder);
+        t.deepEqual(order.paymentSummary.method, "CC");
+        t.deepEqual(order.paymentSummary.shipping, 0);
 
-    const payDollarCreditCard: Model.PayDollarCreditCard = checkout.creditCard;
-    payDollarCreditCard.cardHolder = "testing card";
-    payDollarCreditCard.cardNo = "5422882800700007";
-    payDollarCreditCard.pMethod = "Master";
-    payDollarCreditCard.epMonth = 7;
-    payDollarCreditCard.epYear = 2020;
-    payDollarCreditCard.securityCode = "123";
+        const payDollarCreditCard: Model.PayDollarCreditCard =
+            checkout.creditCard;
+        payDollarCreditCard.cardHolder = "testing card";
+        payDollarCreditCard.cardNo = "5422882800700007";
+        payDollarCreditCard.pMethod = "Master";
+        payDollarCreditCard.epMonth = 7;
+        payDollarCreditCard.epYear = 2020;
+        payDollarCreditCard.securityCode = "123";
 
-    const result = await request.postFormUrlPlain(
-        config.payDollarApi,
-        payDollarCreditCard,
-        t.context["cookie"],
-        config.payDollarBase
-    );
-    const parse = await request.parsePayDollarRes(result.body);
+        const result = await request.postFormUrlPlain(
+            config.payDollarApi,
+            payDollarCreditCard,
+            t.context["cookie"],
+            config.payDollarBase
+        );
+        const parse = await request.parsePayDollarRes(result.body);
 
-    t.deepEqual(parse.successcode, "0");
-    t.deepEqual(parse.Ref, checkout.creditCard.orderRef);
-    t.regex(parse.errMsg, /Transaction completed/);
+        t.deepEqual(parse.successcode, "0");
+        t.deepEqual(parse.Ref, checkout.creditCard.orderRef);
+        t.regex(parse.errMsg, /Transaction completed/);
 
-    order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.deepEqual(order.status, "placed");
-});
+        t.deepEqual(order.status, "placed");
+    }
+);
 
-test.serial("POST / checkout with saved CC", async t => {
+test.serial("Order status is Placed when checkout with saved CC", async t => {
     const matchedCard = await requestCreditcard.getCard(
         "PayDollar",
         t.context["cookie"]
@@ -448,7 +468,7 @@ test.serial("POST / checkout with saved CC", async t => {
 });
 
 test.serial(
-    "POST / checkout with new CC (save card) - VISA - voucher (amount) + credit",
+    "Order status is Placed when checkout with new CC (save card) - VISA - voucher (amount) + credit",
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
@@ -532,7 +552,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / checkout with saved CC - voucher (percentage + max discount)",
+    "Order status is Placed when checkout with saved CC - voucher (percentage + max discount)",
     async t => {
         const matchedCard = await requestCreditcard.getCard(
             "PayDollar",

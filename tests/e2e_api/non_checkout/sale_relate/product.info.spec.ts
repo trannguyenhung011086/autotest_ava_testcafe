@@ -7,7 +7,7 @@ const accessRedis = new Utils.RedisAccessUtils();
 
 import test from "ava";
 
-test("GET / invalid product ID", async t => {
+test("Get 404 error code when accessing invalid product ID", async t => {
     const res = await request.get(config.api.product + "INVALID-ID");
 
     t.deepEqual(res.statusCode, 404);
@@ -21,7 +21,7 @@ for (const saleType of [
     config.api.featuredSales,
     config.api.internationalSales
 ]) {
-    test("GET / valid product from ongoing sale " + saleType, async t => {
+    test("Check valid product from ongoing sale " + saleType, async t => {
         const products = await request.getProducts(saleType);
 
         t.true(products.length > 0);
@@ -42,7 +42,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid product from current sale of " + cate, async t => {
+    test("Check valid product from current sale of " + cate, async t => {
         const products = await request.getProducts(cate + "/sales/current");
 
         t.true(products.length > 0);
@@ -63,7 +63,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid product from today sale of " + cate, async t => {
+    test("Check valid product from today sale of " + cate, async t => {
         const products = await request.getProducts(cate + "/sales/today");
 
         t.true(products.length > 0);
@@ -84,7 +84,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid product from featured sale of " + cate, async t => {
+    test("Check valid product from featured sale of " + cate, async t => {
         const products = await request.getProducts(cate + "/sales/featured");
 
         t.true(products.length > 0);
@@ -98,7 +98,7 @@ for (const cate of [
     });
 }
 
-test("GET / valid product from POTD", async t => {
+test("Check valid product from POTD", async t => {
     const products = await request.getProducts(config.api.potdSales);
 
     t.true(products.length > 0);
@@ -111,7 +111,7 @@ test("GET / valid product from POTD", async t => {
     }
 });
 
-test("GET / sold out product", async t => {
+test("Check sold out product", async t => {
     const product = await request.getSoldOutProductInfo(
         config.api.currentSales
     );
@@ -135,7 +135,7 @@ test("GET / sold out product", async t => {
     }
 });
 
-test("GET / virtual product", async t => {
+test("Check virtual product", async t => {
     const product = await request.getVirtualBulkyProductInfo(
         config.api.currentSales,
         true,
@@ -150,7 +150,7 @@ test("GET / virtual product", async t => {
     }
 });
 
-test("GET / non-virtual non-bulky product", async t => {
+test("Check non-virtual non-bulky product", async t => {
     const product = await request.getVirtualBulkyProductInfo(
         config.api.currentSales,
         false,
@@ -175,7 +175,7 @@ test("GET / non-virtual non-bulky product", async t => {
     t.false(config.bulkyTypeList2.includes(productQuery.type));
 });
 
-test("GET / bulky product", async t => {
+test("Check bulky product", async t => {
     const product = await request.getVirtualBulkyProductInfo(
         config.api.currentSales,
         true,
@@ -203,7 +203,7 @@ test("GET / bulky product", async t => {
     }
 });
 
-test("GET / product with sizes", async t => {
+test("Check product with sizes", async t => {
     const product = await request.getProductInfoWithSizes(
         config.api.cateApparel + "/sales/current"
     );
@@ -218,7 +218,7 @@ test("GET / product with sizes", async t => {
     }
 });
 
-test("GET / product with colors", async t => {
+test("Check product with colors", async t => {
     const product = await request.getProductInfoWithColors(
         config.api.cateApparel + "/sales/current"
     );
@@ -249,7 +249,7 @@ test("GET / product with colors", async t => {
     }
 });
 
-test("GET / product with no color and size", async t => {
+test("Check product with no color and size", async t => {
     const product = await request.getProductInfoNoColorSize(
         config.api.currentSales
     );
@@ -260,7 +260,7 @@ test("GET / product with no color and size", async t => {
     t.deepEqual(product.products[0].imageKey, "All");
 });
 
-test("GET / product of sale not started (skip-prod)", async t => {
+test("Get 404 error code when accessing product of sale not started (skip-prod)", async t => {
     if (process.env.NODE_ENV == "prod") {
         t.log("Skip check on prod!");
         t.pass();
@@ -302,7 +302,7 @@ test("GET / product of sale not started (skip-prod)", async t => {
     }
 });
 
-test("GET / product of sale ended (skip-prod)", async t => {
+test("Get 404 error code when accessing product of sale ended (skip-prod)", async t => {
     if (process.env.NODE_ENV == "prod") {
         t.log("Skip check on prod!");
         t.pass();

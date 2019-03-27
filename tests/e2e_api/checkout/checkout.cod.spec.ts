@@ -33,7 +33,7 @@ test.beforeEach(async t => {
 });
 
 test.serial(
-    "POST / cannot checkout with COD - international product",
+    "Get 400 error code when checkout with COD - international product",
     async t => {
         const item = await requestProduct.getInStockProduct(
             config.api.internationalSales,
@@ -68,7 +68,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / cannot checkout with COD - domestic + international product",
+    "Get 400 error code when checkout with COD - domestic + international product",
     async t => {
         const item1 = await requestProduct.getInStockProduct(
             config.api.internationalSales,
@@ -108,35 +108,38 @@ test.serial(
     }
 );
 
-test.serial("POST / checkout with COD", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.todaySales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
+test.serial(
+    "Get 200 success code when checkout with COD - domestic product",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
 
-    checkoutInput.account = await requestAccount.getAccountInfo(
-        t.context["cookie"]
-    );
-    checkoutInput.addresses = addresses;
+        checkoutInput.account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+        checkoutInput.addresses = addresses;
 
-    const checkout = await request.checkoutCod(
-        checkoutInput,
-        t.context["cookie"]
-    );
-    t.truthy(checkout.orderId);
+        const checkout = await request.checkoutCod(
+            checkoutInput,
+            t.context["cookie"]
+        );
+        t.truthy(checkout.orderId);
 
-    const order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        const order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.true(order.code.includes(checkout.code));
-    t.deepEqual(order.status, "placed");
-    t.false(order.isCrossBorder);
-    t.deepEqual(order.paymentSummary.method, "COD");
-    t.deepEqual(order.paymentSummary.shipping, 25000);
-});
+        t.true(order.code.includes(checkout.code));
+        t.deepEqual(order.status, "placed");
+        t.false(order.isCrossBorder);
+        t.deepEqual(order.paymentSummary.method, "COD");
+        t.deepEqual(order.paymentSummary.shipping, 25000);
+    }
+);
 
 test.serial("Compare product details from checkout to order", async t => {
     const item = await requestProduct.getProductWithCountry("VN", 0, 2000000);
@@ -168,7 +171,7 @@ test.serial("Compare product details from checkout to order", async t => {
 });
 
 test.serial(
-    "POST / checkout with COD - voucher (amount) + credit (skip-prod)",
+    "Checkout with COD - voucher (amount) + credit (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout with voucher on prod!");
@@ -236,7 +239,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / checkout with COD - voucher (percentage + max discount) (skip-prod)",
+    "Checkout with COD - voucher (percentage + max discount) (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
             t.log("Skip checkout with voucher on prod!");

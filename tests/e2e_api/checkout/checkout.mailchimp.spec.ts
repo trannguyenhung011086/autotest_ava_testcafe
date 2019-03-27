@@ -28,7 +28,7 @@ test.before(async t => {
     });
 });
 
-test("POST / can send to Mailchimp", async t => {
+test("Get 200 success code when sending to Mailchimp", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.todaySales,
         1

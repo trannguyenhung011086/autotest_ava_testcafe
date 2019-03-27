@@ -120,7 +120,7 @@ test.serial("Not auto-confirm order when sum quantiy >= 5", async t => {
     t.true(sum >= 5);
 });
 
-test.serial("Not auto-confirm international order", async t => {
+test.serial("Not auto-confirm international order (skip-prod)", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.internationalSales,
         1

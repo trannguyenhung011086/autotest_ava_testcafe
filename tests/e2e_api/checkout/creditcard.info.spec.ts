@@ -58,24 +58,30 @@ test.before(async t => {
     t.truthy(checkout.orderId);
 });
 
-test.serial("GET / can access creditcard info", async t => {
-    const res = await request.get(config.api.creditcard, t.context["cookie"]);
+test.serial(
+    "Get 200 success code when accessing creditcard info with valid cookie",
+    async t => {
+        const res = await request.get(
+            config.api.creditcard,
+            t.context["cookie"]
+        );
 
-    const creditcards: Model.CreditCard[] = res.body;
+        const creditcards: Model.CreditCard[] = res.body;
 
-    creditcards.forEach(card => {
-        t.truthy(card.cardholderName);
-        t.truthy(card.id);
-        t.regex(card.lastDigits, /\d{4}/);
-        t.regex(card.type.toLowerCase(), /visa|master/);
+        creditcards.forEach(card => {
+            t.truthy(card.cardholderName);
+            t.truthy(card.id);
+            t.regex(card.lastDigits, /\d{4}/);
+            t.regex(card.type.toLowerCase(), /visa|master/);
 
-        if (card.provider) {
-            t.deepEqual(card.provider, "STRIPE");
-        }
-    });
-});
+            if (card.provider) {
+                t.deepEqual(card.provider, "STRIPE");
+            }
+        });
+    }
+);
 
-test.serial("DELETE / cannot delete invalid creditcard", async t => {
+test.serial("Get 500 error code when deleting invalid creditcard", async t => {
     let res = await request.get(config.api.creditcard, t.context["cookie"]);
     const creditcards: Model.CreditCard[] = res.body;
 
@@ -89,28 +95,34 @@ test.serial("DELETE / cannot delete invalid creditcard", async t => {
     t.snapshot(res.body);
 });
 
-test.serial("DELETE / can delete creditcard (skip-prod)", async t => {
-    if (process.env.NODE_ENV == "prod") {
-        t.log("Skip delete card on prod!");
-        t.pass();
-    } else {
-        let res = await request.get(config.api.creditcard, t.context["cookie"]);
-        const creditcards: Model.CreditCard[] = res.body;
-
-        if (creditcards.length > 0) {
-            res = await request.delete(
-                config.api.creditcard + "/" + creditcards[0].id,
+test.serial(
+    "Get 200 success code when deleting creditcard (skip-prod)",
+    async t => {
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip delete card on prod!");
+            t.pass();
+        } else {
+            let res = await request.get(
+                config.api.creditcard,
                 t.context["cookie"]
             );
+            const creditcards: Model.CreditCard[] = res.body;
 
-            t.deepEqual(res.statusCode, 200);
-            t.true(res.body);
-            t.snapshot(res.body);
+            if (creditcards.length > 0) {
+                res = await request.delete(
+                    config.api.creditcard + "/" + creditcards[0].id,
+                    t.context["cookie"]
+                );
+
+                t.deepEqual(res.statusCode, 200);
+                t.true(res.body);
+                t.snapshot(res.body);
+            }
         }
     }
-});
+);
 
-test("GET / cannot access creditcard info with invalid cookie", async t => {
+test("Get 401 error code when accessing creditcard info with invalid cookie", async t => {
     const res = await request.get(
         config.api.creditcard,
         "leflair.connect2.sid=test"

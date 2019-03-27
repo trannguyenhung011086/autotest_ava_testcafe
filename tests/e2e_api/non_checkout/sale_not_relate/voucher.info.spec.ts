@@ -13,7 +13,7 @@ test.beforeEach(async t => {
     );
 });
 
-test("GET / check invalid voucher", async t => {
+test("Get 400 error code when using invalid voucher", async t => {
     const res = await helper.get(
         config.api.voucher + "INVALID-ID",
         t.context["cookie"]
@@ -24,7 +24,7 @@ test("GET / check invalid voucher", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / check expired voucher", async t => {
+test("Get 400 error code when using expired voucher", async t => {
     const voucherInfo = await access.getVoucher({
         expiry: { $lt: new Date() }
     });
@@ -41,7 +41,7 @@ test("GET / check expired voucher", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / check not started voucher", async t => {
+test("Get 400 error code when using not started voucher", async t => {
     const voucherInfo = await access.getVoucher({
         startDate: { $gt: new Date() }
     });
@@ -58,7 +58,7 @@ test("GET / check not started voucher", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / check redeemed voucher", async t => {
+test("Get 400 error code when using redeemed voucher", async t => {
     const voucherInfo = await access.getVoucher({
         startDate: { $gt: new Date("2018-11-01T14:56:59.301Z") },
         expiry: { $gte: new Date() },
@@ -77,7 +77,7 @@ test("GET / check redeemed voucher", async t => {
     t.snapshot(res.body);
 });
 
-test.skip("GET / check already used voucher", async t => {
+test.skip("Get 400 error code when using already used voucher", async t => {
     const cookie = await helper.getLogInCookie(
         config.testAccount.email_in,
         config.testAccount.password_in
@@ -106,7 +106,7 @@ test.skip("GET / check already used voucher", async t => {
     t.snapshot(res.body);
 }); // wait for WWW-490
 
-test("GET / check not allowed to use voucher ", async t => {
+test("Get 400 error code when using not allowed to use voucher ", async t => {
     const voucherInfo = await access.getVoucher({
         expiry: { $gte: new Date() },
         customer: { $exists: true }
@@ -124,7 +124,7 @@ test("GET / check not allowed to use voucher ", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / check valid voucher", async t => {
+test("Get 200 success code when using valid voucher", async t => {
     const voucherInfo = await access.getVoucher({
         expiry: { $gte: new Date() },
         oncePerAccount: false,
@@ -152,7 +152,7 @@ test("GET / check valid voucher", async t => {
     t.true(voucher.hasOwnProperty("specificDays"));
 });
 
-test("GET / cannot check voucher with invalid cookie", async t => {
+test("Get 401 error code when using voucher with invalid cookie", async t => {
     const res = await helper.get(
         config.api.voucher + "CARD-ID",
         "leflair.connect2.sid=test"

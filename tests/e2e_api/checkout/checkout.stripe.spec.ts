@@ -37,90 +37,100 @@ test.beforeEach(async t => {
     await requestCart.emptyCart(t.context["cookie"]);
 });
 
-test.serial("POST / cannot checkout with declined Stripe", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.internationalSales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
+test.serial(
+    "Get 500 error code when checkout with declined Stripe",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.internationalSales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
 
-    const account = await requestAccount.getAccountInfo(t.context["cookie"]);
+        const account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
 
-    stripeData["card[number]"] = "4000000000000002";
-    const stripeSource = await request
-        .postFormUrl(
-            "/v1/sources",
-            stripeData,
-            t.context["cookie"],
-            config.stripeBase
-        )
-        .then(res => res.body);
+        stripeData["card[number]"] = "4000000000000002";
+        const stripeSource = await request
+            .postFormUrl(
+                "/v1/sources",
+                stripeData,
+                t.context["cookie"],
+                config.stripeBase
+            )
+            .then(res => res.body);
 
-    const res = await request.post(
-        config.api.checkout,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
+        const res = await request.post(
+            config.api.checkout,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: account.cart,
+                method: "STRIPE",
+                methodData: stripeSource
             },
-            cart: account.cart,
-            method: "STRIPE",
-            methodData: stripeSource
-        },
-        t.context["cookie"]
-    );
+            t.context["cookie"]
+        );
 
-    t.deepEqual(res.statusCode, 500);
-    t.deepEqual(res.body.message, "STRIPE_CUSTOMER_ERROR");
-    t.deepEqual(res.body.error.type, "StripeCardError");
-    t.deepEqual(res.body.error.code, "card_declined");
-    t.deepEqual(res.body.error.message, "Your card was declined.");
-});
-
-test.serial("POST / cannot checkout with unsupported Stripe", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.internationalSales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
-
-    const account = await requestAccount.getAccountInfo(t.context["cookie"]);
-
-    stripeData["card[number]"] = "3566002020360505"; // JCB
-    const stripeSource = await request
-        .postFormUrl(
-            "/v1/sources",
-            stripeData,
-            t.context["cookie"],
-            config.stripeBase
-        )
-        .then(res => res.body);
-
-    t.truthy(stripeSource["error"]["code"], "card_declined");
-
-    const res = await request.post(
-        config.api.checkout,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
-            },
-            cart: account.cart,
-            method: "STRIPE",
-            methodData: stripeSource
-        },
-        t.context["cookie"]
-    );
-
-    t.deepEqual(res.statusCode, 500);
-    t.deepEqual(res.body.message, "STRIPE_CUSTOMER_ERROR");
-    t.deepEqual(res.body.error.type, "StripeInvalidRequestError");
-    t.deepEqual(res.body.error.code, "parameter_missing");
-    t.deepEqual(res.body.error.message, "Missing required param: source.");
-});
+        t.deepEqual(res.statusCode, 500);
+        t.deepEqual(res.body.message, "STRIPE_CUSTOMER_ERROR");
+        t.deepEqual(res.body.error.type, "StripeCardError");
+        t.deepEqual(res.body.error.code, "card_declined");
+        t.deepEqual(res.body.error.message, "Your card was declined.");
+    }
+);
 
 test.serial(
-    "POST / checkout with new Stripe (not save card) - VISA",
+    "Get 500 error code when checkout with unsupported Stripe",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.internationalSales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
+
+        const account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+
+        stripeData["card[number]"] = "3566002020360505"; // JCB
+        const stripeSource = await request
+            .postFormUrl(
+                "/v1/sources",
+                stripeData,
+                t.context["cookie"],
+                config.stripeBase
+            )
+            .then(res => res.body);
+
+        t.truthy(stripeSource["error"]["code"], "card_declined");
+
+        const res = await request.post(
+            config.api.checkout,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: account.cart,
+                method: "STRIPE",
+                methodData: stripeSource
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 500);
+        t.deepEqual(res.body.message, "STRIPE_CUSTOMER_ERROR");
+        t.deepEqual(res.body.error.type, "StripeInvalidRequestError");
+        t.deepEqual(res.body.error.code, "parameter_missing");
+        t.deepEqual(res.body.error.message, "Missing required param: source.");
+    }
+);
+
+test.serial(
+    "Order status is Placed when checkout with new Stripe (not save card) - VISA",
     async t => {
         const item = await requestProduct.getInStockProduct(
             config.api.internationalSales,
@@ -164,7 +174,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / checkout with new Stripe (not save card) - MASTER",
+    "Order status is Placed when checkout with new Stripe (not save card) - MASTER",
     async t => {
         const item = await requestProduct.getInStockProduct(
             config.api.internationalSales,
@@ -207,85 +217,91 @@ test.serial(
     }
 );
 
-test.serial("POST / checkout with new Stripe (save card) - VISA", async t => {
-    const item = await requestProduct.getInStockProduct(
-        config.api.internationalSales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
+test.serial(
+    "Order status is Placed when checkout with new Stripe (save card) - VISA",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.internationalSales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
 
-    stripeData["card[number]"] = "4000000000000077";
+        stripeData["card[number]"] = "4000000000000077";
 
-    checkoutInput.account = await requestAccount.getAccountInfo(
-        t.context["cookie"]
-    );
-    checkoutInput.addresses = addresses;
-    checkoutInput.saveNewCard = true;
-    checkoutInput.stripeSource = await request
-        .postFormUrl(
-            "/v1/sources",
-            stripeData,
-            t.context["cookie"],
-            config.stripeBase
-        )
-        .then(res => res.body);
+        checkoutInput.account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+        checkoutInput.addresses = addresses;
+        checkoutInput.saveNewCard = true;
+        checkoutInput.stripeSource = await request
+            .postFormUrl(
+                "/v1/sources",
+                stripeData,
+                t.context["cookie"],
+                config.stripeBase
+            )
+            .then(res => res.body);
 
-    const checkout = await request.checkoutStripe(
-        checkoutInput,
-        t.context["cookie"]
-    );
-    t.truthy(checkout.orderId);
+        const checkout = await request.checkoutStripe(
+            checkoutInput,
+            t.context["cookie"]
+        );
+        t.truthy(checkout.orderId);
 
-    const order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
+        const order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
 
-    t.true(order.code.includes(checkout.code));
-    t.deepEqual(order.status, "placed");
-    t.true(order.isCrossBorder);
-    t.deepEqual(order.paymentSummary.method, "STRIPE");
-    t.deepEqual(order.paymentSummary.shipping, 0);
-});
-
-test.serial("POST / checkout with saved Stripe", async t => {
-    const matchedCard = await requestCreditcard.getCard(
-        "Stripe",
-        t.context["cookie"]
-    );
-
-    const item = await requestProduct.getInStockProduct(
-        config.api.internationalSales,
-        1
-    );
-    await requestCart.addToCart(item.id, t.context["cookie"]);
-
-    checkoutInput.account = await requestAccount.getAccountInfo(
-        t.context["cookie"]
-    );
-    checkoutInput.addresses = addresses;
-    checkoutInput.methodData = matchedCard;
-
-    const checkout = await request.checkoutStripe(
-        checkoutInput,
-        t.context["cookie"]
-    );
-    t.truthy(checkout.orderId);
-
-    const order = await requestOrder.getOrderInfo(
-        checkout.orderId,
-        t.context["cookie"]
-    );
-
-    t.true(order.code.includes(checkout.code));
-    t.deepEqual(order.status, "placed");
-    t.true(order.isCrossBorder);
-    t.deepEqual(order.paymentSummary.method, "STRIPE");
-    t.deepEqual(order.paymentSummary.shipping, 0);
-});
+        t.true(order.code.includes(checkout.code));
+        t.deepEqual(order.status, "placed");
+        t.true(order.isCrossBorder);
+        t.deepEqual(order.paymentSummary.method, "STRIPE");
+        t.deepEqual(order.paymentSummary.shipping, 0);
+    }
+);
 
 test.serial(
-    "POST / checkout with new Stripe (save card) - MASTER - voucher (amount) + credit",
+    "Order status is Placed when checkout with saved Stripe",
+    async t => {
+        const matchedCard = await requestCreditcard.getCard(
+            "Stripe",
+            t.context["cookie"]
+        );
+
+        const item = await requestProduct.getInStockProduct(
+            config.api.internationalSales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
+
+        checkoutInput.account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+        checkoutInput.addresses = addresses;
+        checkoutInput.methodData = matchedCard;
+
+        const checkout = await request.checkoutStripe(
+            checkoutInput,
+            t.context["cookie"]
+        );
+        t.truthy(checkout.orderId);
+
+        const order = await requestOrder.getOrderInfo(
+            checkout.orderId,
+            t.context["cookie"]
+        );
+
+        t.true(order.code.includes(checkout.code));
+        t.deepEqual(order.status, "placed");
+        t.true(order.isCrossBorder);
+        t.deepEqual(order.paymentSummary.method, "STRIPE");
+        t.deepEqual(order.paymentSummary.shipping, 0);
+    }
+);
+
+test.serial(
+    "Order status is Placed when checkout with new Stripe (save card) - MASTER - voucher (amount) + credit",
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
@@ -354,7 +370,7 @@ test.serial(
 );
 
 test.serial(
-    "POST / checkout with saved Stripe - voucher (percentage + max discount)",
+    "Order status is Placed when checkout with saved Stripe - voucher (percentage + max discount)",
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },

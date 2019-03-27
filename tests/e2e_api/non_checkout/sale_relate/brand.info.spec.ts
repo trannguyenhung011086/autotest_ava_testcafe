@@ -6,7 +6,7 @@ const request = new Utils.BrandUtils();
 
 import test from "ava";
 
-test("GET / brands directory", async t => {
+test("Check brands directory", async t => {
     const res = await request.get(config.api.brands);
 
     const brands: Model.brands = res.body;
@@ -24,7 +24,7 @@ test("GET / brands directory", async t => {
     }
 });
 
-test("GET / brand with no product", async t => {
+test("Check brand with no product", async t => {
     const brand = await request.getBrandWithNoProduct();
 
     t.truthy(brand.id);
@@ -40,7 +40,7 @@ test("GET / brand with no product", async t => {
     t.deepEqual(brand.products.length, 0);
 });
 
-test("GET / brand with products", async t => {
+test("Check brand with products", async t => {
     const brand = await request.getBrandWithProducts(config.api.todaySales);
 
     t.truthy(brand.id);

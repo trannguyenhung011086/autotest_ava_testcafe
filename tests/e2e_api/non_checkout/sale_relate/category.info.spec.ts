@@ -7,7 +7,7 @@ const requestSale = new Utils.SaleUtils();
 
 import test from "ava";
 
-test("GET / invalid category ID", async t => {
+test("Get 500 error code when accessing invalid category ID", async t => {
     const resA = await request.get("/api/menus/items/INVALID-ID");
 
     t.deepEqual(resA.statusCode, 500);
@@ -31,7 +31,7 @@ test("GET / invalid category ID", async t => {
     }
 });
 
-test("GET / top menu", async t => {
+test("Check top menu", async t => {
     const res = await request.get(config.api.cateMenu);
 
     t.deepEqual(res.statusCode, 200);
@@ -64,7 +64,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / valid category ID - " + cate, async t => {
+    test("Check valid category ID - " + cate, async t => {
         const res = await request.get(cate);
 
         t.deepEqual(res.statusCode, 200);
@@ -81,7 +81,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / featured sales from " + cate, async t => {
+    test("Check featured sales from " + cate, async t => {
         const sales = await requestSale.getSales(cate + "/sales/featured");
 
         if (sales.length > 0) {
@@ -89,7 +89,7 @@ for (const cate of [
                 await request.validateSale(t, sale);
             }
         } else {
-            t.pass()
+            t.pass();
             t.log(cate + " does not set featured sale!");
         }
     });
@@ -102,7 +102,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / current sales from " + cate, async t => {
+    test("Check current sales from " + cate, async t => {
         const featured = await request.get(cate + "/sales/featured?limit=1");
 
         const sales = await requestSale.getSales(
@@ -123,7 +123,7 @@ for (const cate of [
     config.api.cateHealthBeauty,
     config.api.cateHomeLifeStyle
 ]) {
-    test("GET / today sales from " + cate, async t => {
+    test("Check today sales from " + cate, async t => {
         const featured = await request.get(cate + "/sales/featured?limit=1");
 
         const sales = await requestSale.getSales(

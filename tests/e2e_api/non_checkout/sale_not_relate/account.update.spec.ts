@@ -13,7 +13,7 @@ test.beforeEach(async t => {
     );
 });
 
-test("GET / account info", async t => {
+test("Get 200 success code when accessing account info with valid cookie", async t => {
     const res = await request.get(config.api.account, t.context["cookie"]);
 
     const account: Model.Account = res.body;
@@ -36,9 +36,11 @@ test("GET / account info", async t => {
     if (account.nsId) {
         t.truthy(account.nsId);
     }
+
+    t.deepEqual(typeof account.setting.subscribed, "boolean");
 });
 
-test("PUT / can change name", async t => {
+test("Get 200 success code when changing name with valid cookie", async t => {
     const firstName = "QA_" + faker.name.firstName();
     const lastName = "QA_" + faker.name.lastName();
 
@@ -58,7 +60,7 @@ test("PUT / can change name", async t => {
     t.deepEqual(signIn.lastName, lastName);
 });
 
-test.skip("PUT / cannot change email", async t => {
+test.skip("Get 400 error code when changing email", async t => {
     const res = await request.put(
         config.api.account,
         {
@@ -71,7 +73,7 @@ test.skip("PUT / cannot change email", async t => {
     t.deepEqual(res.body.message, "USER_UPDATE_ERROR");
 }); // wait for WWW-335
 
-test("PUT / cannot update with wrong cookie", async t => {
+test("Get 401 error code when updating account info with invalid cookie", async t => {
     const res = await request.put(
         config.api.account,
         {
@@ -86,7 +88,7 @@ test("PUT / cannot update with wrong cookie", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / wrong current password", async t => {
+test("Get 400 error code when using wrong current password to update password", async t => {
     const res = await request.put(
         config.api.password,
         {
@@ -101,7 +103,7 @@ test("PUT / wrong current password", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / empty current password", async t => {
+test("Get 400 error code when using empty current password to update password", async t => {
     const res = await request.put(
         config.api.password,
         {
@@ -116,7 +118,7 @@ test("PUT / empty current password", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / new password has length < 7", async t => {
+test("Get 400 error code when using current password with length < 7 to update password", async t => {
     const res = await request.put(
         config.api.password,
         {
@@ -131,7 +133,7 @@ test("PUT / new password has length < 7", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / empty new password", async t => {
+test("Get 400 error code when using empty new password to update password", async t => {
     const res = await request.put(
         config.api.password,
         {
@@ -146,7 +148,7 @@ test("PUT / empty new password", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / can change password", async t => {
+test("Get 200 success code when updating valid password", async t => {
     const res = await request.put(
         config.api.password,
         {
@@ -161,7 +163,7 @@ test("PUT / can change password", async t => {
     t.snapshot(res.body);
 });
 
-test("PUT / cannot update password with wrong cookie", async t => {
+test("Get 401 error code when updating password with invalid cookie", async t => {
     const res = await request.put(
         config.api.password,
         {
@@ -175,3 +177,75 @@ test("PUT / cannot update password with wrong cookie", async t => {
     t.deepEqual(res.body.message, "Access denied.");
     t.snapshot(res.body);
 });
+
+test("Get 400 error code when using invalid subscription status", async t => {
+    const res = await request.put(
+        config.api.newsletter,
+        {
+            subscriptionStatus: ""
+        },
+        t.context["cookie"]
+    );
+
+    t.deepEqual(res.statusCode, 400);
+    t.deepEqual(res.body.message, "INVALID_SUBSCRIPTION_STATUS");
+    t.snapshot(res.body);
+});
+
+test("Get 401 error code when updating subscription status with invalid cookie", async t => {
+    const res = await request.put(
+        config.api.newsletter,
+        {
+            subscriptionStatus: true
+        },
+        "leflair.connect2.sid=test"
+    );
+
+    t.deepEqual(res.statusCode, 401);
+    t.deepEqual(res.body.message, "Access denied.");
+    t.snapshot(res.body);
+});
+
+test.serial(
+    "Get 200 success code when updating subscription status to true",
+    async t => {
+        let res = await request.put(
+            config.api.newsletter,
+            {
+                subscriptionStatus: true
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 200);
+        t.deepEqual(res.body.message, "STATUS_CHANGED");
+        t.snapshot(res.body);
+
+        res = await request.get(config.api.account, t.context["cookie"]);
+        const account: Model.Account = res.body;
+
+        t.true(account.setting.subscribed);
+    }
+);
+
+test.serial(
+    "Get 200 success code when updating subscription status to false",
+    async t => {
+        let res = await request.put(
+            config.api.newsletter,
+            {
+                subscriptionStatus: false
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 200);
+        t.deepEqual(res.body.message, "STATUS_CHANGED");
+        t.snapshot(res.body);
+
+        res = await request.get(config.api.account, t.context["cookie"]);
+        const account: Model.Account = res.body;
+
+        t.false(account.setting.subscribed);
+    }
+);
