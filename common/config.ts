@@ -24,11 +24,11 @@ switch (process.env.NODE_ENV) {
 }
 
 let stgRedisHost = "35.240.219.41";
-let stgMongo = "mongodb://35.187.252.42";
+let stgMongo = "mongodb://35.240.219.41";
 
 if (process.env.MODE == "ci") {
     stgRedisHost = "10.148.0.45";
-    stgMongo = "mongodb://10.148.0.47";
+    stgMongo = "mongodb://10.148.0.45";
 }
 
 export const config = {

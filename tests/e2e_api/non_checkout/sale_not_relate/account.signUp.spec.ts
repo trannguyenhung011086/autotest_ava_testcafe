@@ -7,7 +7,7 @@ const request = new Utils.AccountUtils();
 
 import test from "ava";
 
-test("POST / empty email and password", async t => {
+test("Get 400 error code when using empty email and password", async t => {
     const res = await request.post(config.api.signUp, {
         email: "",
         password: "",
@@ -20,7 +20,7 @@ test("POST / empty email and password", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / wrong format email", async t => {
+test("Get 400 error code when using wrong format email", async t => {
     const res = await request.post(config.api.signUp, {
         email: ".test%!@#$%^&*()_+<>?@mail.com",
         password: faker.internet.password,
@@ -33,7 +33,7 @@ test("POST / wrong format email", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / length < 7 password", async t => {
+test("Get 500 error code when using password with length < 7", async t => {
     const res = await request.post(config.api.signUp, {
         email: "QA_" + faker.internet.email(),
         password: "123",
@@ -49,7 +49,7 @@ test("POST / length < 7 password", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / existing account", async t => {
+test("Get 400 error code when using existed account", async t => {
     const res = await request.post(config.api.signUp, {
         email: config.testAccount.email_ex[1],
         password: config.testAccount.password_ex,
@@ -62,7 +62,7 @@ test("POST / existing account", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / missing email field", async t => {
+test("Get 400 error code when missing email field", async t => {
     const res = await request.post(config.api.signUp, {
         password: faker.internet.password()
     });
@@ -72,7 +72,7 @@ test("POST / missing email field", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / missing password field", async t => {
+test("Get 500 error code when missing password field", async t => {
     const res = await request.post(config.api.signUp, {
         email: "QA_" + faker.internet.email()
     });
@@ -85,7 +85,7 @@ test("POST / missing password field", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / successful", async t => {
+test("Get 200 success code when using non-existed credentials", async t => {
     const email = "QA_" + faker.internet.email();
     const res = await request.post(config.api.signUp, {
         email: email,

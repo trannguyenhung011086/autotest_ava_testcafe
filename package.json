@@ -36,7 +36,7 @@
         "@types/faker": "^4.1.5",
         "@types/got": "^9.4.1",
         "@types/mongodb": "^3.1.22",
-        "@types/node": "^11.11.7",
+        "@types/node": "^11.12.0",
         "@types/papaparse": "^4.5.9",
         "@types/qs": "^6.5.2",
         "ava": "^1.4.0",

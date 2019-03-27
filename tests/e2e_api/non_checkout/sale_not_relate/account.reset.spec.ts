@@ -6,7 +6,7 @@ const request = new Utils.AccountUtils();
 
 import test from "ava";
 
-test("POST / empty password", async t => {
+test("Get 400 error code when using empty password", async t => {
     const res = await request.post(config.api.reset, {
         password: "",
         token: "TEST_TOKEN"
@@ -17,7 +17,7 @@ test("POST / empty password", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / password with length < 7", async t => {
+test("Get 400 error code when using password with length < 7", async t => {
     const res = await request.post(config.api.reset, {
         password: "123456",
         token: "TEST_TOKEN"
@@ -28,7 +28,7 @@ test("POST / password with length < 7", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / invalid token", async t => {
+test("Get 400 error code when using invalid token", async t => {
     const res = await request.post(config.api.reset, {
         password: "123456789",
         token: faker.random.uuid

@@ -7,7 +7,7 @@ const request = new Utils.AccountUtils();
 
 import test from "ava";
 
-test("POST / wrong email", async t => {
+test("Get 401 error code when using wrong email", async t => {
     const res = await request.post(config.api.signIn, {
         email: "QA_" + faker.internet.email(),
         password: faker.internet.password()
@@ -18,7 +18,7 @@ test("POST / wrong email", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / wrong password", async t => {
+test("Get 401 error code when using wrong password", async t => {
     const res = await request.post(config.api.signIn, {
         email: config.testAccount.email_ex[0],
         password: faker.internet.password()
@@ -29,7 +29,7 @@ test("POST / wrong password", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / use Facebook email", async t => {
+test("Get 401 error code when using Facebook email", async t => {
     const res = await request.post(config.api.signIn, {
         email: config.testAccount.facebook,
         password: config.testAccount.passwordFacebook
@@ -40,7 +40,7 @@ test("POST / use Facebook email", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / missing email field", async t => {
+test("Get 401 error code when missing email field", async t => {
     const res = await request.post(config.api.signIn, {
         password: faker.internet.password()
     });
@@ -50,7 +50,7 @@ test("POST / missing email field", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / missing password field", async t => {
+test("Get 401 error code when missing password field", async t => {
     const res = await request.post(config.api.signIn, {
         email: "QA_" + faker.internet.email()
     });
@@ -60,7 +60,7 @@ test("POST / missing password field", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / empty email and password", async t => {
+test("Get 401 error code when using empty email and password", async t => {
     const res = await request.post(config.api.signIn, {
         email: "",
         password: ""
@@ -71,7 +71,7 @@ test("POST / empty email and password", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / correct email and password - external email", async t => {
+test("Get 200 success code when using correct email and password - external email", async t => {
     const res = await request.post(config.api.signIn, {
         email: config.testAccount.email_ex[0].toUpperCase(),
         password: config.testAccount.password_ex
@@ -93,7 +93,7 @@ test("POST / correct email and password - external email", async t => {
     t.true(Array.isArray(signIn.cart));
 });
 
-test("POST / correct email and password - internal email", async t => {
+test("Get 200 success code when using correct email and password - internal email", async t => {
     const res = await request.post(config.api.signIn, {
         email: config.testAccount.email_in,
         password: config.testAccount.password_in
@@ -105,7 +105,7 @@ test("POST / correct email and password - internal email", async t => {
     t.true(signIn.preview);
 });
 
-test("GET / sign out", async t => {
+test("Get 200 success code when sign out", async t => {
     const cookie = await request.getLogInCookie(
         config.testAccount.email_ex[1],
         config.testAccount.password_ex

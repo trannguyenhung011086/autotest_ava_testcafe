@@ -810,53 +810,56 @@ test.serial(
     }
 );
 
-test.serial("POST / cannot recheckout with already used voucher", async t => {
-    const cookie = await request.getLogInCookie(
-        config.testAccount.email_in,
-        config.testAccount.password_in
-    );
+test.serial.skip(
+    "POST / cannot recheckout with already used voucher",
+    async t => {
+        const cookie = await request.getLogInCookie(
+            config.testAccount.email_in,
+            config.testAccount.password_in
+        );
 
-    const customer1 = await access.getCustomerInfo({
-        email: config.testAccount.email_in.toLowerCase()
-    });
+        const customer1 = await access.getCustomerInfo({
+            email: config.testAccount.email_in.toLowerCase()
+        });
 
-    const voucher = await access.getUsedVoucher(
-        {
-            expiry: { $gte: new Date() },
-            binRange: { $exists: false },
-            used: false,
-            oncePerAccount: true
-        },
-        customer1
-    );
-
-    t.truthy(voucher);
-
-    const res = await request.post(
-        config.api.checkout + "/order/" + failedAttemptOrder.code,
-        {
-            address: {
-                shipping: addresses.shipping[0],
-                billing: addresses.billing[0]
+        const voucher = await access.getUsedVoucher(
+            {
+                expiry: { $gte: new Date() },
+                binRange: { $exists: false },
+                used: false,
+                oncePerAccount: true
             },
-            cart: [
-                {
-                    id: failedAttemptOrder.products[0].id,
-                    quantity: failedAttemptOrder.products[0].quantity,
-                    salePrice: failedAttemptOrder.products[0].salePrice
-                }
-            ],
-            method: "COD",
-            shipping: 25000,
-            voucher: voucher._id
-        },
-        cookie
-    );
+            customer1
+        );
 
-    t.deepEqual(res.statusCode, 400);
-    t.deepEqual(res.body.message, "YOU_ALREADY_USED_THIS_VOUCHER");
-    t.snapshot(res.body);
-});
+        t.truthy(voucher);
+
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: [
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    }
+                ],
+                method: "COD",
+                shipping: 25000,
+                voucher: voucher._id
+            },
+            cookie
+        );
+
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message, "YOU_ALREADY_USED_THIS_VOUCHER");
+        t.snapshot(res.body);
+    }
+); // wait for WWW-490
 
 test.serial(
     "POST / cannot recheckout with voucher only used for other customer",

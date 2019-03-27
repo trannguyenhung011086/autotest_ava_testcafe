@@ -964,7 +964,7 @@ test.serial(
     }
 );
 
-test.serial(
+test.serial.skip(
     "POST / cannot checkout with already used voucher (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
@@ -1020,7 +1020,7 @@ test.serial(
             t.snapshot(res.body);
         }
     }
-);
+); // wait for WWW-490
 
 test.serial(
     "POST / cannot checkout with voucher only used for other customer",

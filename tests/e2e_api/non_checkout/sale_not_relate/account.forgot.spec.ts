@@ -6,7 +6,7 @@ const request = new Utils.AccountUtils();
 
 import test from "ava";
 
-test("POST / empty email", async t => {
+test("Get 400 error code when using empty email", async t => {
     const res = await request.post(config.api.forgot, {
         email: ""
     });
@@ -16,7 +16,7 @@ test("POST / empty email", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / missing email field", async t => {
+test("Get 400 error code when missing email field", async t => {
     const res = await request.post(config.api.forgot, {});
 
     t.deepEqual(res.statusCode, 400);
@@ -24,7 +24,7 @@ test("POST / missing email field", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / non-existing email", async t => {
+test("Get 404 error code when using non-existed email", async t => {
     const res = await request.post(config.api.forgot, {
         email: "QA_" + faker.internet.email()
     });
@@ -34,7 +34,7 @@ test("POST / non-existing email", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / wrong format email", async t => {
+test("Get 400 error code when using wrong format email", async t => {
     const res = await request.post(config.api.forgot, {
         email: ".test%!@#$%^&*()_+<>?@mail.com"
     });
@@ -44,7 +44,7 @@ test("POST / wrong format email", async t => {
     t.snapshot(res.body);
 });
 
-test("POST / Facebook email", async t => {
+test("Get 404 error code when using Facebook email", async t => {
     const res = await request.post(config.api.forgot, {
         email: "trannguyenhung011086@gmail.com"
     });
@@ -58,7 +58,7 @@ test("POST / Facebook email", async t => {
     }
 });
 
-test("POST / existing email", async t => {
+test("Get 200 success code when using existed email", async t => {
     const res = await request.post(config.api.forgot, {
         email: config.testAccount.email_ex[0]
     });

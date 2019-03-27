@@ -77,7 +77,7 @@ test("GET / check redeemed voucher", async t => {
     t.snapshot(res.body);
 });
 
-test("GET / check already used voucher", async t => {
+test.skip("GET / check already used voucher", async t => {
     const cookie = await helper.getLogInCookie(
         config.testAccount.email_in,
         config.testAccount.password_in
@@ -104,7 +104,7 @@ test("GET / check already used voucher", async t => {
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "YOU_ALREADY_USED_THIS_VOUCHER");
     t.snapshot(res.body);
-});
+}); // wait for WWW-490
 
 test("GET / check not allowed to use voucher ", async t => {
     const voucherInfo = await access.getVoucher({
