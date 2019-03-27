@@ -289,7 +289,6 @@ test("Get 404 error code when accessing product of sale not started (skip-prod)"
 
             t.deepEqual(res.statusCode, 404);
             t.deepEqual(res.body.message, "SALE_NOT_FOUND");
-            t.snapshot(res.body);
         } catch (err) {
             throw err;
         } finally {
@@ -331,7 +330,6 @@ test("Get 404 error code when accessing product of sale ended (skip-prod)", asyn
 
             t.deepEqual(res.statusCode, 404);
             t.deepEqual(res.body.message, "SALE_HAS_ENDED");
-            t.snapshot(res.body);
         } catch (err) {
             throw err;
         } finally {
