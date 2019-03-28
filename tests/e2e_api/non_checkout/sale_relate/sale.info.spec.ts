@@ -89,6 +89,7 @@ for (const saleType of [
     config.api.currentSales,
     config.api.todaySales,
     config.api.featuredSales,
+    config.api.internationalSales,
     config.api.potdSales
 ]) {
     test("Check valid ongoing sale - " + saleType, async t => {
@@ -105,25 +106,6 @@ for (const saleType of [
         }
     });
 }
-
-test("Check valid ongoing sale - international", async t => {
-    const sales = await request.getSales(config.api.internationalSales);
-
-    if (sales.length == 0) {
-        t.pass();
-        t.log("There are <= 5 international sales -> hidden!");
-    } else {
-        t.true(sales.length > 5);
-
-        for (const sale of sales) {
-            const res = await request.getSaleInfo(sale.id);
-            request.validateSaleInfo(t, res);
-
-            t.deepEqual(res.id, sale.id);
-            t.deepEqual.skip(res.endTime, sale.endTime); // wait for WWW-681
-        }
-    }
-});
 
 for (const cate of [
     config.api.cateAccessories,

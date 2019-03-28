@@ -63,17 +63,12 @@ for (const cate of [
 test("Check international sales", async t => {
     const sales = await request.getSales(config.api.internationalSales);
 
-    if (sales.length == 0) {
-        t.pass();
-        t.log("There are <= 5 international sales -> hidden!");
-    } else {
-        t.true(sales.length > 5);
+    t.true(sales.length > 0);
 
-        sales.forEach(sale => {
-            request.validateSaleList(t, sale);
-            t.true(sale.international);
-        });
-    }
+    sales.forEach(sale => {
+        request.validateSaleList(t, sale);
+        t.true(sale.international);
+    });
 });
 
 test("Check POTD sales", async t => {
