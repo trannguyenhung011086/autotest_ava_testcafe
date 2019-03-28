@@ -61,7 +61,7 @@ test("Check brand with products", async t => {
         t.true(request.validateImage(product.image));
         t.true(request.validateImage(product.image2));
         t.deepEqual(typeof product.numberOfVariations, "number");
-        t.true(product.quantity >= 0);
+        t.deepEqual(typeof product.quantity, "number");
         t.true(product.queryParams.includes("?"));
         t.true(product.retailPrice >= product.salePrice);
         t.true(product.slug.includes(product.id));

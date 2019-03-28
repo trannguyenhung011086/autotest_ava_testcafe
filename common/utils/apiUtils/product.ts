@@ -63,6 +63,10 @@ export class ProductUtils extends Helper {
             saleList = domestic;
         }
 
+        if (saleList.length == 0 && domestic.length == 0) {
+            saleList = international;
+        }
+
         for (const sale of saleList) {
             const saleInfo = await new SaleUtils().getSaleInfo(sale.id);
 
