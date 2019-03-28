@@ -4,7 +4,6 @@ cache:
 
 stages:
     - build
-    - test_stg
     - test_prod
     - cleanup
 
@@ -16,75 +15,6 @@ build:
     script:
         - docker build -t hung/testcafe .
         # - yarn install
-
-api_sale_relate_stg:
-    stage: test_stg
-    script:
-        # - NODE_ENV=stg yarn run test_api_sale_relate
-        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_sale_relate_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci
-    except:
-        - schedules
-        - master
-
-api_sale_not_relate_stg:
-    stage: test_stg
-    script:
-        # - NODE_ENV=stg yarn run test_api_sale_not_relate
-        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_sale_not_relate_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci
-    except:
-        - schedules
-        - master
-
-api_checkout_stg:
-    stage: test_stg
-    script:
-        # - NODE_ENV=stg yarn run test_api_checkout
-        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_checkout_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_checkout_ci
-    except:
-        - schedules
-        - master
-
-chromium_stg:
-    stage: test_stg
-    script:
-        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_chromium_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_chromium_ci
-    after_script:
-        - docker cp ${CI_JOB_ID}_chromium_stg:/home/tester/report/junit_chromium.xml junit_chromium.xml
-    artifacts:
-        expire_in: 1 week
-        reports:
-            junit: junit_chromium.xml
-    except:
-        - schedules
-        - master
-
-firefox_stg:
-    stage: test_stg
-    script:
-        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_firefox_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_firefox_ci
-    after_script:
-        - docker cp ${CI_JOB_ID}_firefox_stg:/home/tester/report/junit_firefox.xml junit_firefox.xml
-    artifacts:
-        expire_in: 1 week
-        reports:
-            junit: junit_firefox.xml
-    except:
-        - schedules
-        - master
-
-mobile_emu_stg:
-    stage: test_stg
-    script:
-        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_mobile_emu_stg -i -e NODE_ENV=stg -v $(pwd)/:/dockertests hung/testcafe yarn run test_mobile_emu_ci
-    after_script:
-        - docker cp ${CI_JOB_ID}_mobile_emu_stg:/home/tester/report/junit_mobile_emu.xml junit_mobile_emu.xml
-    artifacts:
-        expire_in: 1 week
-        reports:
-            junit: junit_mobile_emu.xml
-    except:
-        - schedules
-        - master
 
 api_sale_relate_prod:
     stage: test_prod
