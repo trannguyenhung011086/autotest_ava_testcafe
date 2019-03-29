@@ -1097,6 +1097,18 @@ test.serial(
     }
 );
 
+test.serial.todo(
+    "Get 400 error code when checkout with voucher used by another customer -> VOUCHER_ALREADY_USED"
+);
+
+test.serial.todo(
+    "Get 400 error code when checkout with more than 1 voucher in a campaign -> VOUCHER_PER_CAMPAIGN"
+);
+
+test.serial.todo(
+    "Get 400 error code when checkout with voucher for expired campaign -> VOUCHER_CAMPAIGN_INVALID_OR_ENDED"
+);
+
 // validate account credit
 
 test.serial(
