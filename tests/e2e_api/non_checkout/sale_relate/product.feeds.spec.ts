@@ -192,7 +192,7 @@ test.skip("Check Criteo product feeds v2", async t => {
     t.deepEqual(parsed.errors.length, 0);
 });
 
-test("Check Google Merchant product feeds", async t => {
+test.only("Check Google Merchant product feeds", async t => {
     const res = await helper.getPlain(config.api.feedGoogleMerchant);
 
     t.deepEqual(res.statusCode, 200);
@@ -210,6 +210,8 @@ test("Check Google Merchant product feeds", async t => {
         googleMerchantFeeds.feed._attributes["xmlns:g"],
         "http://base.google.com/ns/1.0"
     );
+
+    let mismatch = [];
 
     googleMerchantFeeds.feed.entry.forEach(entry => {
         t.true(entry["g:id"]._text.length <= 50);
@@ -251,6 +253,12 @@ test("Check Google Merchant product feeds", async t => {
             googleCategories.includes(entry["g:google_product_category"]._text)
         ); // wait for WWW-641
 
+        if (
+            !googleCategories.includes(entry["g:google_product_category"]._text)
+        ) {
+            mismatch.push(entry["g:google_product_category"]._text);
+        } // find mismatch google category
+
         t.truthy(entry["g:product_type"]._text);
         t.truthy(entry["g:brand"]._text);
         t.truthy(entry["g:mpn"]._text);
@@ -282,6 +290,9 @@ test("Check Google Merchant product feeds", async t => {
         t.true(entry.hasOwnProperty("g:shipping"));
         t.true(entry.hasOwnProperty("g:tax"));
     });
+
+    mismatch = [...new Set(mismatch)];
+    // t.log(mismatch);
 });
 
 test.skip("Check Insider product feeds", async t => {

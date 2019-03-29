@@ -57,20 +57,20 @@ test("Check top menu", async t => {
     });
 });
 
-test("Check hidden international cateogory when sales <= 5", async t => {
+test("Check international cateogory on top menu when sales <= 5", async t => {
     const menu = (await request.get(config.api.cateMenu + "&salesCount=true"))
         .body;
 
     const sales = await requestSale.getSales(config.api.internationalSales);
 
     if (sales.length <= 5) {
-        t.log("International sales <= 5");
+        t.log("International sales <= 5 -> hidden");
         menu.items.forEach(item => {
             t.notDeepEqual(item.id, "5b56d3328f0dd7c0480acd38");
             t.notDeepEqual(item.type, "international");
         });
     } else {
-        t.log("International sales > 5");
+        t.log("International sales > 5 -> displayed");
         t.deepEqual(
             menu.items[menu.items.length - 1].id,
             "5b56d3328f0dd7c0480acd38"
