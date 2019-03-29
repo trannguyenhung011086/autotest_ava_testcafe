@@ -346,7 +346,7 @@ export class Helper {
         t: ExecutionContext,
         order: Model.OrderSummary
     ) {
-        if (order.code) {
+        if (order.code && !order.code.match(/TEST/)) {
             t.regex(order.code, /^SG|HK|VN/);
         }
 
@@ -398,7 +398,6 @@ export class Helper {
         t.truthy(product.title);
         t.true(product.slug.includes(product.productContentId));
         t.true.skip(product.retailPrice >= product.salePrice);
-        t.true(product.salePrice <= product.totalSalePrice);
         t.true(product.quantity > 0);
         t.true(this.validateImage(product.image));
         t.deepEqual(typeof product.returnable, "boolean");
@@ -541,7 +540,7 @@ export class Helper {
         t.truthy(res.title);
         t.true(new Date(res.startTime).getTime() < new Date().getTime());
 
-        t.true(res.products.length > 0) // check empty sale
+        t.true(res.products.length > 0); // check empty sale
 
         res.products.forEach(product => {
             t.truthy(product.id);

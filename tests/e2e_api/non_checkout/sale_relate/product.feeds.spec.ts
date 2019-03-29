@@ -192,7 +192,7 @@ test.skip("Check Criteo product feeds v2", async t => {
     t.deepEqual(parsed.errors.length, 0);
 });
 
-test.only("Check Google Merchant product feeds", async t => {
+test("Check Google Merchant product feeds", async t => {
     const res = await helper.getPlain(config.api.feedGoogleMerchant);
 
     t.deepEqual(res.statusCode, 200);
