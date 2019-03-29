@@ -61,7 +61,7 @@ test("Check Facebook product feeds", async t => {
         t.deepEqual(feed.condition, "new");
 
         // category must comply with https://www.google.com/basepages/producttype/taxonomy.en-US.txt
-        t.true.skip(googleCategories.includes(feed.google_product_category)); // wait for WWW-641
+        t.true(googleCategories.includes(feed.google_product_category)); // wait for WWW-641
     });
 
     t.deepEqual(parsed.errors.length, 0);
@@ -211,8 +211,6 @@ test("Check Google Merchant product feeds", async t => {
         "http://base.google.com/ns/1.0"
     );
 
-    let mismatch = [];
-
     googleMerchantFeeds.feed.entry.forEach(entry => {
         t.true(entry["g:id"]._text.length <= 50);
         t.true(entry["g:title"]._text.length <= 150); // wait for www-643
@@ -249,15 +247,9 @@ test("Check Google Merchant product feeds", async t => {
         t.true(retail_price >= sale_price);
 
         // category must comply with https://www.google.com/basepages/producttype/taxonomy.en-US.txt
-        t.true.skip(
+        t.true(
             googleCategories.includes(entry["g:google_product_category"]._text)
         ); // wait for WWW-641
-
-        if (
-            !googleCategories.includes(entry["g:google_product_category"]._text)
-        ) {
-            mismatch.push(entry["g:google_product_category"]._text);
-        } // find mismatch google category
 
         t.truthy(entry["g:product_type"]._text);
         t.truthy(entry["g:brand"]._text);
@@ -290,9 +282,6 @@ test("Check Google Merchant product feeds", async t => {
         t.true(entry.hasOwnProperty("g:shipping"));
         t.true(entry.hasOwnProperty("g:tax"));
     });
-
-    mismatch = [...new Set(mismatch)];
-    // t.log(mismatch);
 });
 
 test.skip("Check Insider product feeds", async t => {
