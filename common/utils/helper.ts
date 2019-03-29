@@ -400,15 +400,32 @@ export class Helper {
         t.true.skip(product.retailPrice >= product.salePrice);
         t.true(product.quantity > 0);
         t.true(this.validateImage(product.image));
-        t.deepEqual(typeof product.returnable, "boolean");
         t.truthy(product.type);
         t.truthy(product.brand._id);
         t.truthy(product.brand.name);
-        t.truthy(product.nsId);
         t.truthy(product.productId);
+
+        if (product.returnable) {
+            t.deepEqual(typeof product.returnable, "boolean");
+        }
+        if (product.nsId) {
+            t.truthy(product.nsId);
+        }
+        if (product.queryParams) {
+            t.truthy(product.queryParams);
+        }
+        if (product.isVirtual) {
+            t.deepEqual(typeof product.isVirtual, "boolean");
+        }
+        if (product.isBulky) {
+            t.deepEqual(typeof product.isBulky, "boolean");
+        }
     }
 
     public validateOrderDetail(t: ExecutionContext, orderItem: Model.Order) {
+        if (orderItem.status == undefined) {
+            t.log(orderItem);
+        }
         this.validateOrderSummary(t, orderItem);
 
         t.truthy(orderItem.id);
@@ -429,9 +446,13 @@ export class Helper {
         this.validateAddress(t, orderItem.address.shipping);
         this.validatePayment(t, orderItem.paymentSummary);
 
-        orderItem.products.forEach(product => {
-            this.validateProduct(t, product);
-        });
+        if (orderItem.products.length == 0) {
+            t.log("Order " + orderItem.code + " has deleted products!");
+        } else {
+            orderItem.products.forEach(product => {
+                this.validateProduct(t, product);
+            });
+        }
     }
 
     public validateCategory(t: ExecutionContext, menu: Model.CategoryMenu) {

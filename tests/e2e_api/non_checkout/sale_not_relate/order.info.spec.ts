@@ -51,23 +51,22 @@ test("Get 200 success code when accessing order info using order ID", async t =>
 });
 
 test("Get 200 success code when accessing order info using order code", async t => {
-    const orders = await request.getOrders(t.context["cookie"]);
-    let rand = Math.floor(Math.random() * orders.length);
+    let orders = await request.getOrders(t.context["cookie"]);
 
-    t.log("Test order " + orders[rand].code + " " + orders[rand].id);
+    for (let order of orders) {
+        const res = await request.get(
+            config.api.orders + "/" + order.code,
+            t.context["cookie"]
+        );
+        t.deepEqual(res.statusCode, 200);
 
-    const res = await request.get(
-        config.api.orders + "/" + orders[rand].code,
-        t.context["cookie"]
-    );
-    t.deepEqual(res.statusCode, 200);
-
-    if (Array.isArray(res.body)) {
-        for (const item of res.body) {
-            request.validateOrderDetail(t, item);
+        if (Array.isArray(res.body)) {
+            for (const item of res.body) {
+                request.validateOrderDetail(t, item);
+            }
+        } else {
+            request.validateOrderDetail(t, res.body);
         }
-    } else {
-        request.validateOrderDetail(t, res.body);
     }
 });
 
