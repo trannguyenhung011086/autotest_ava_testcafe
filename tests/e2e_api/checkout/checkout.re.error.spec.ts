@@ -355,7 +355,6 @@ test.serial(
                     res.body.message[0].values.title,
                     failedAttemptOrder.products[0].title
                 );
-                t.snapshot(res.body);
             } catch (err) {
                 throw err;
             } finally {
@@ -481,7 +480,6 @@ test.serial(
                     res.body.message[0].values.title,
                     failedAttemptOrder.products[0].title
                 );
-                t.snapshot(res.body);
             } catch (err) {
                 throw err;
             } finally {
@@ -608,13 +606,22 @@ test.serial(
 test.serial(
     "Get 400 error code when recheckout with voucher not meeting min purchase",
     async t => {
-        const voucher = await access.getVoucher({
-            expiry: { $gte: new Date() },
-            used: false,
-            binRange: { $exists: false },
-            minimumPurchase: { $gte: failedAttemptOrder.products[0].salePrice },
-            numberOfUsage: null
+        const customer = await access.getCustomerInfo({
+            email: config.testAccount.email_ex[2].toLowerCase()
         });
+
+        const voucher = await access.getNotUsedVoucher(
+            {
+                expiry: { $gte: new Date() },
+                used: false,
+                binRange: { $exists: false },
+                minimumPurchase: {
+                    $gte: failedAttemptOrder.products[0].salePrice
+                },
+                numberOfUsage: null
+            },
+            customer
+        );
 
         t.truthy(voucher);
 
@@ -834,7 +841,7 @@ test.serial(
     }
 );
 
-test.serial.skip(
+test.serial(
     "Get 400 error code when recheckout with already used voucher",
     async t => {
         const cookie = await request.getLogInCookie(

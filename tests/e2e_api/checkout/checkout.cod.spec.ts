@@ -135,7 +135,6 @@ test.serial(
 
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.status, "placed");
-        t.false(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "COD");
         t.deepEqual(order.paymentSummary.shipping, 25000);
     }
@@ -177,19 +176,16 @@ test.serial(
             t.log("Skip checkout with voucher on prod!");
             t.pass();
         } else {
-            const voucher = await access.getNotUsedVoucher(
-                {
-                    expiry: { $gte: new Date() },
-                    used: false,
-                    discountType: "amount",
-                    minimumPurchase: 0,
-                    numberOfItems: 0,
-                    customer: { $exists: false },
-                    numberOfUsage: null,
-                    binRange: { $exists: false }
-                },
-                customer
-            );
+            const voucher = await access.getVoucher({
+                expiry: { $gte: new Date() },
+                minimumPurchase: 0,
+                numberOfItems: 0,
+                customer: { $exists: false },
+                numberOfUsage: null,
+                binRange: { $exists: false },
+                multipleUser: true,
+                oncePerAccount: false
+            });
 
             t.truthy(voucher);
 
@@ -220,6 +216,7 @@ test.serial(
                 checkoutInput,
                 t.context["cookie"]
             );
+
             t.truthy(checkout.orderId);
 
             const order = await requestOrder.getOrderInfo(
@@ -229,71 +226,10 @@ test.serial(
 
             t.true(order.code.includes(checkout.code));
             t.deepEqual(order.status, "placed");
-            t.false(order.isCrossBorder);
             t.deepEqual(order.paymentSummary.method, "COD");
             t.deepEqual(order.paymentSummary.shipping, 25000);
             t.deepEqual(order.paymentSummary.voucherAmount, voucher.amount);
             t.deepEqual(Math.abs(order.paymentSummary.accountCredit), credit);
-        }
-    }
-);
-
-test.serial(
-    "Checkout with COD - voucher (percentage + max discount) (skip-prod)",
-    async t => {
-        if (process.env.NODE_ENV == "prod") {
-            t.log("Skip checkout with voucher on prod!");
-            t.pass();
-        } else {
-            const voucher = await access.getNotUsedVoucher(
-                {
-                    expiry: { $gte: new Date() },
-                    used: false,
-                    discountType: "percentage",
-                    specificDays: [],
-                    customer: { $exists: false },
-                    numberOfItems: 0,
-                    numberOfUsage: null,
-                    binRange: { $exists: false }
-                },
-                customer
-            );
-
-            t.truthy(voucher);
-
-            const item = await requestProduct.getInStockProduct(
-                config.api.todaySales,
-                1,
-                500000
-            );
-            await requestCart.addToCart(item.id, t.context["cookie"]);
-
-            checkoutInput.account = await requestAccount.getAccountInfo(
-                t.context["cookie"]
-            );
-            checkoutInput.addresses = addresses;
-            checkoutInput.voucherId = voucher._id;
-
-            const checkout = await request.checkoutCod(
-                checkoutInput,
-                t.context["cookie"]
-            );
-            t.truthy(checkout.orderId);
-
-            const order = await requestOrder.getOrderInfo(
-                checkout.orderId,
-                t.context["cookie"]
-            );
-
-            t.true(order.code.includes(checkout.code));
-            t.deepEqual(order.status, "placed");
-            t.false(order.isCrossBorder);
-            t.deepEqual(order.paymentSummary.method, "COD");
-            t.deepEqual(order.paymentSummary.shipping, 25000);
-            t.true(
-                order.paymentSummary.voucherAmount <=
-                    voucher.maximumDiscountAmount
-            );
         }
     }
 );

@@ -160,7 +160,6 @@ test.serial("Not auto-confirm international order (skip-prod)", async t => {
         t.context["cookie"]
     );
     t.deepEqual(order.status, "placed");
-    t.true(order.isCrossBorder);
 });
 
 test.serial("Auto-confirm order for regular customer", async t => {

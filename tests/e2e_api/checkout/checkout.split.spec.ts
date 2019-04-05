@@ -261,13 +261,11 @@ test.serial("POST / split SG and VN order", async t => {
     for (const order of orders) {
         if (order.products[0].productId == itemSG.id) {
             t.deepEqual(order.code, `SGVN-${checkout.code}-1`);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemSG.salePrice);
             t.deepEqual(order.paymentSummary.total, itemSG.salePrice);
         }
         if (order.products[0].productId == itemVN.id) {
             t.deepEqual(order.code, `VN-${checkout.code}`);
-            t.false(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemVN.salePrice);
             t.deepEqual(order.paymentSummary.total, itemVN.salePrice);
         }
@@ -306,13 +304,11 @@ test.serial.skip("POST / split HK and VN order", async t => {
     for (const order of orders) {
         if (order.products[0].productId == itemHK.id) {
             t.deepEqual(order.code, `HKVN-${checkout.code}-1`);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemHK.salePrice);
             t.deepEqual(order.paymentSummary.total, itemHK.salePrice);
         }
         if (order.products[0].productId == itemVN.id) {
             t.deepEqual(order.code, `VN-${checkout.code}`);
-            t.false(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemVN.salePrice);
             t.deepEqual(order.paymentSummary.total, itemVN.salePrice);
         }
@@ -362,13 +358,11 @@ test.serial("POST / split multiple SG and VN order", async t => {
     for (const order of orders) {
         if (order.products[0].productId == itemSG1.id) {
             t.regex(order.code, /SGVN-.+-\d/);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemSG1.salePrice);
             t.deepEqual(order.paymentSummary.total, itemSG1.salePrice);
         }
         if (order.products[0].productId == itemSG2.id) {
             t.regex(order.code, /SGVN-.+-\d/);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemSG2.salePrice);
             t.deepEqual(order.paymentSummary.total, itemSG2.salePrice);
         }
@@ -377,7 +371,6 @@ test.serial("POST / split multiple SG and VN order", async t => {
             order.products[0].productId == itemVN2.id
         ) {
             t.deepEqual(order.code, `VN-${checkout.code}`);
-            t.false(order.isCrossBorder);
         }
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.paymentSummary.method, "STRIPE");
@@ -427,13 +420,11 @@ test.serial.skip("POST / split multiple HK and VN order", async t => {
     for (const order of orders) {
         if (order.products[0].productId == itemHK1.id) {
             t.regex(order.code, /HKVN-.+-\d/);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemHK1.salePrice);
             t.deepEqual(order.paymentSummary.total, itemHK1.salePrice);
         }
         if (order.products[0].productId == itemHK2.id) {
             t.regex(order.code, /HKVN-.+-\d/);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemHK2.salePrice);
             t.deepEqual(order.paymentSummary.total, itemHK2.salePrice);
         }
@@ -442,7 +433,6 @@ test.serial.skip("POST / split multiple HK and VN order", async t => {
             order.products[0].productId == itemVN2.id
         ) {
             t.deepEqual(order.code, `VN-${checkout.code}`);
-            t.false(order.isCrossBorder);
         }
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.paymentSummary.method, "STRIPE");
@@ -482,19 +472,16 @@ test.serial.skip("POST / split SG, HK and VN order", async t => {
     for (const order of orders) {
         if (order.products[0].productId == itemSG.id) {
             t.deepEqual(order.code, `SGVN-${checkout.code}-1`);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemSG.salePrice);
             t.deepEqual(order.paymentSummary.total, itemSG.salePrice);
         }
         if (order.products[0].productId == itemHK.id) {
             t.deepEqual(order.code, `HKVN-${checkout.code}-1`);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemHK.salePrice);
             t.deepEqual(order.paymentSummary.total, itemHK.salePrice);
         }
         if (order.products[0].productId == itemVN.id) {
             t.deepEqual(order.code, `VN-${checkout.code}`);
-            t.false(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemVN.salePrice);
             t.deepEqual(order.paymentSummary.total, itemVN.salePrice);
         }
@@ -503,18 +490,14 @@ test.serial.skip("POST / split SG, HK and VN order", async t => {
 });
 
 test.serial("POST / split SG and VN order - voucher (amount)", async t => {
-    const voucher = await access.getNotUsedVoucher(
-        {
-            expiry: { $gte: new Date() },
-            used: false,
-            discountType: "amount",
-            minimumPurchase: 0,
-            numberOfItems: 0,
-            oncePerAccount: true,
-            customer: { $exists: false }
-        },
-        customer
-    );
+    const voucher = await access.getVoucher({
+        expiry: { $gte: new Date() },
+        discountType: "amount",
+        minimumPurchase: 0,
+        numberOfItems: 0,
+        multipleUser: true,
+        oncePerAccount: false
+    });
     t.truthy(voucher);
 
     const itemSG = await requestProduct.getProductWithCountry("SG", 0, 2000000);
@@ -547,12 +530,10 @@ test.serial("POST / split SG and VN order - voucher (amount)", async t => {
     for (const order of orders) {
         if (order.products[0].productId == itemSG.id) {
             t.deepEqual(order.code, `SGVN-${checkout.code}-1`);
-            t.true(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemSG.salePrice);
         }
         if (order.products[0].productId == itemVN.id) {
             t.deepEqual(order.code, `VN-${checkout.code}`);
-            t.false(order.isCrossBorder);
             t.deepEqual(order.products[0].salePrice, itemVN.salePrice);
         }
         t.deepEqual(order.paymentSummary.method, "STRIPE");
@@ -570,11 +551,11 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
-            binRange: "433590,542288,555555,400000",
+            binRange: "433590,542288,555555,400000,4111",
             discountType: "percentage",
             maximumDiscountAmount: { $gt: 0 },
-            specificDays: []
+            multipleUser: true,
+            oncePerAccount: false
         });
         t.truthy(voucher);
 

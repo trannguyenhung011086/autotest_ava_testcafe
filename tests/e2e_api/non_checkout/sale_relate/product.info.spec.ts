@@ -175,7 +175,7 @@ test("Check non-virtual non-bulky product", async t => {
     t.false(config.bulkyTypeList2.includes(productQuery.type));
 });
 
-test("Check bulky product", async t => {
+test.skip("Check bulky product", async t => {
     const product = await request.getVirtualBulkyProductInfo(
         config.api.currentSales,
         true,

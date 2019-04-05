@@ -266,25 +266,38 @@ export class Helper {
         return /^[a-z]*$/.test(input);
     }
 
-    public calculateLeadTime(isVirtual: boolean, isBulky: boolean) {
+    public calculateLeadTime(isVirtual: boolean, country?: string) {
         const dayOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const from = new Date();
         const to = new Date();
 
         // set base date
         from.setDate(from.getDate() + 2);
-        to.setDate(to.getDate() + 7);
+        to.setDate(to.getDate() + 6);
 
         // update date
-        if (isVirtual && !isBulky) {
+        // if (isVirtual && !isBulky) {
+        //     from.setDate(from.getDate() + 2);
+        //     to.setDate(to.getDate() + 3);
+        // } else if (!isVirtual && isBulky) {
+        //     from.setDate(from.getDate() + 1);
+        //     to.setDate(to.getDate() + 2);
+        // } else if (isVirtual && isBulky) {
+        //     from.setDate(from.getDate() + 3);
+        //     to.setDate(to.getDate() + 5);
+        // }
+        if (isVirtual) {
             from.setDate(from.getDate() + 2);
             to.setDate(to.getDate() + 3);
-        } else if (!isVirtual && isBulky) {
-            from.setDate(from.getDate() + 1);
-            to.setDate(to.getDate() + 2);
-        } else if (isVirtual && isBulky) {
-            from.setDate(from.getDate() + 3);
-            to.setDate(to.getDate() + 5);
+        }
+
+        if (country == "SG") {
+            from.setDate(from.getDate() + 5);
+            to.setDate(to.getDate() + 6);
+        }
+        if (country == "HK") {
+            from.setDate(from.getDate() + 7);
+            to.setDate(to.getDate() + 8);
         }
 
         // count for Sunday

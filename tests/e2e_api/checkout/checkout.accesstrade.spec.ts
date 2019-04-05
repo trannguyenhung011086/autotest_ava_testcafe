@@ -21,7 +21,7 @@ test.beforeEach(async t => {
     addresses = await requestAddress.getAddresses(t.context["cookie"]);
 });
 
-test("Get 200 success code when sending valid order to AccessTrade", async t => {
+test.skip("Get 200 success code when sending valid order to AccessTrade", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.currentSales,
         1
@@ -52,7 +52,7 @@ test("Get 200 success code when sending valid order to AccessTrade", async t => 
     t.true(res.body.status);
 });
 
-test("Get 404 error code when sending valid order to AccessTrade without cookie", async t => {
+test.skip("Get 404 error code when sending valid order to AccessTrade without cookie", async t => {
     const item = await requestProduct.getInStockProduct(
         config.api.currentSales,
         1

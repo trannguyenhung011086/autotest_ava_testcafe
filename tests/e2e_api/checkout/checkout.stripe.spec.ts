@@ -167,7 +167,6 @@ test.serial(
 
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.status, "placed");
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
         t.deepEqual(order.paymentSummary.shipping, 0);
     }
@@ -211,7 +210,6 @@ test.serial(
 
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.status, "placed");
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
         t.deepEqual(order.paymentSummary.shipping, 0);
     }
@@ -255,7 +253,6 @@ test.serial(
 
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.status, "placed");
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
         t.deepEqual(order.paymentSummary.shipping, 0);
     }
@@ -294,7 +291,6 @@ test.serial(
 
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.status, "placed");
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
         t.deepEqual(order.paymentSummary.shipping, 0);
     }
@@ -305,12 +301,10 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
-            binRange: "433590,542288,555555,400000",
+            binRange: "433590,542288,555555,400000,4111",
             discountType: "amount",
-            amount: { $gt: 0 },
-            specificDays: [],
-            numberOfUsage: null
+            multipleUser: true,
+            oncePerAccount: false
         });
         t.truthy(voucher);
 
@@ -361,7 +355,6 @@ test.serial(
 
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.status, "placed");
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
         t.deepEqual(order.paymentSummary.shipping, 0);
         t.deepEqual(order.paymentSummary.voucherAmount, voucher.amount);
@@ -374,12 +367,11 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
-            binRange: "433590,542288,555555,400000",
+            binRange: "433590,542288,555555,400000,4111",
             discountType: "percentage",
             maximumDiscountAmount: { $gt: 0 },
-            specificDays: [],
-            numberOfUsage: null
+            multipleUser: true,
+            oncePerAccount: false
         });
         t.truthy(voucher);
 
@@ -414,7 +406,6 @@ test.serial(
 
         t.true(order.code.includes(checkout.code));
         t.deepEqual(order.status, "placed");
-        t.true(order.isCrossBorder);
         t.deepEqual(order.paymentSummary.method, "STRIPE");
         t.deepEqual(order.paymentSummary.shipping, 0);
         t.true(

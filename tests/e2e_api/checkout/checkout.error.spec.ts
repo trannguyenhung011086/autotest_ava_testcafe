@@ -408,7 +408,41 @@ test.serial(
 
 // validate availability
 
-test.serial(
+test.serial.skip(
+    "Get 400 error when checkout with removed product",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.currentSales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
+
+        const account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+
+        await requestCart.emptyCart(t.context["cookie"]);
+
+        const res = await request.post(
+            config.api.checkout,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: account.cart,
+                method: "FREE"
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message[0].message, "THE_ITEM_IS_NOT_FOUND");
+        t.deepEqual(res.body.message[0].values.title, item.name);
+    }
+); // wait for WWW-757
+
+test.serial.skip(
     "Get 400 error code when checkout with sold out product (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
@@ -458,7 +492,6 @@ test.serial(
                     "TITLE_IS_OUT_OF_STOCK"
                 );
                 t.deepEqual(res.body.message[0].values.title, item.name);
-                t.snapshot(res.body);
             } catch (err) {
                 throw err;
             } finally {
@@ -470,9 +503,9 @@ test.serial(
             }
         }
     }
-);
+); // wait for WWW-757
 
-test.serial(
+test.serial.skip(
     "Get 400 error code when checkout with limited stock product (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
@@ -525,7 +558,6 @@ test.serial(
                 t.deepEqual(res.body.message[0].values.title, item.name);
                 t.deepEqual(res.body.data.cart[0].quantity, 1);
                 t.deepEqual(res.body.data.cart[0].availableQuantity, 1);
-                t.snapshot(res.body);
             } catch (err) {
                 throw err;
             } finally {
@@ -537,7 +569,7 @@ test.serial(
             }
         }
     }
-);
+); // wait for WWW-757
 
 test.serial(
     "Get 400 error code when checkout with sale ended product (skip-prod)",
@@ -594,7 +626,6 @@ test.serial(
                     "THE_SALE_FOR_TITLE_HAS_ENDED"
                 );
                 t.deepEqual(res.body.message[0].values.title, item.title);
-                t.snapshot(res.body);
             } catch (err) {
                 throw err;
             } finally {
@@ -605,6 +636,42 @@ test.serial(
                 );
             }
         }
+    }
+);
+
+// validate account credit
+
+test.serial(
+    "Get 400 error code when checkout with more than available credit",
+    async t => {
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
+        const account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+
+        const res = await request.post(
+            config.api.checkout,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: account.cart,
+                method: "COD",
+                shipping: 25000,
+                accountCredit: account.accountCredit + 1
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message, "USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE");
+        t.deepEqual(res.body.data.accountCredit, account.accountCredit);
+        t.snapshot(res.body);
     }
 );
 
@@ -997,7 +1064,7 @@ test.serial(
     }
 );
 
-test.serial.skip(
+test.serial(
     "Get 400 error code when checkout with already used voucher (skip-prod)",
     async t => {
         if (process.env.NODE_ENV == "prod") {
@@ -1097,23 +1164,31 @@ test.serial(
     }
 );
 
-test.serial.todo(
-    "Get 400 error code when checkout with voucher used by another customer -> VOUCHER_ALREADY_USED"
-);
-
-test.serial.todo(
-    "Get 400 error code when checkout with more than 1 voucher in a campaign -> VOUCHER_PER_CAMPAIGN"
-);
-
-test.serial.todo(
-    "Get 400 error code when checkout with voucher for expired campaign -> VOUCHER_CAMPAIGN_INVALID_OR_ENDED"
-);
-
-// validate account credit
-
 test.serial(
-    "Get 400 error code when checkout with more than available credit",
+    "Get 400 error code when checkout with voucher used by another customer",
     async t => {
+        const voucherList = await access.getVoucherList({
+            oncePerAccountForCampaign: false,
+            used: false,
+            expiry: { $gt: new Date() },
+            multipleUser: false,
+            customer: { $exists: false },
+            numberOfItems: 0,
+            binRange: { $exists: false }
+        });
+
+        let matched: Model.VoucherModel;
+
+        for (const voucher of voucherList) {
+            const used = await access.countUsedVoucher(voucher._id);
+            if (used > 0) {
+                matched = voucher;
+                break;
+            }
+        }
+
+        t.truthy(matched);
+
         const item = await requestProduct.getInStockProduct(
             config.api.todaySales,
             1
@@ -1133,14 +1208,97 @@ test.serial(
                 cart: account.cart,
                 method: "COD",
                 shipping: 25000,
-                accountCredit: account.accountCredit + 1
+                voucher: matched._id,
+                accountCredit: account.accountCredit
             },
             t.context["cookie"]
         );
 
         t.deepEqual(res.statusCode, 400);
-        t.deepEqual(res.body.message, "USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE");
-        t.deepEqual(res.body.data.accountCredit, account.accountCredit);
+        t.deepEqual(res.body.message, "VOUCHER_ALREADY_USED");
+        t.snapshot(res.body);
+    }
+);
+
+test.serial(
+    "Get 400 error code when checkout with more than 1 voucher in a campaign (skip-prod)",
+    async t => {
+        const voucher = await access.getVoucher({
+            oncePerAccountForCampaign: true,
+            used: false,
+            campaign: "Grab Rewards Premium "
+        });
+
+        t.truthy(voucher);
+
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
+        const account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+
+        const res = await request.post(
+            config.api.checkout,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: account.cart,
+                method: "COD",
+                shipping: 25000,
+                voucher: voucher._id,
+                accountCredit: account.accountCredit
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message, "VOUCHER_PER_CAMPAIGN");
+        t.snapshot(res.body);
+    }
+);
+
+test.serial(
+    "Get 400 error code when checkout with voucher for expired secret campaign",
+    async t => {
+        const voucher = await access.getVoucher({
+            webCampaign: { $exists: true },
+            expiry: { $lt: new Date() }
+        });
+
+        t.truthy(voucher);
+
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
+        const account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+
+        const res = await request.post(
+            config.api.checkout,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: account.cart,
+                method: "COD",
+                shipping: 25000,
+                voucher: voucher._id,
+                accountCredit: account.accountCredit
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message, "VOUCHER_CAMPAIGN_INVALID_OR_ENDED");
         t.snapshot(res.body);
     }
 );

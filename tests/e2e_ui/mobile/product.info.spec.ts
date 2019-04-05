@@ -26,15 +26,11 @@ test("Check lead time not display for sold out product", async () => {
 });
 
 test("Check lead time display for virtual product", async () => {
-    const product = await requestProduct.getVirtualBulkyProductInfo(
-        config.api.currentSales,
-        true,
-        false
-    );
+    const product = await requestProduct.getVirtualProductInfo("SG", true);
 
     const calculateLeadTime = requestProduct.calculateLeadTime(
         product.products[0].isVirtual,
-        product.products[0].isBulky
+        "SG"
     );
     const from = calculateLeadTime.from.day + " " + calculateLeadTime.from.date;
     const to = calculateLeadTime.to.day + " " + calculateLeadTime.to.date;
@@ -49,61 +45,11 @@ test("Check lead time display for virtual product", async () => {
 });
 
 test("Check lead time display for non-virtual product", async () => {
-    const product = await requestProduct.getVirtualBulkyProductInfo(
-        config.api.featuredSales,
-        false,
-        false
-    );
+    const product = await requestProduct.getVirtualProductInfo("SG", false);
 
     const calculateLeadTime = requestProduct.calculateLeadTime(
         product.products[0].isVirtual,
-        product.products[0].isBulky
-    );
-    const from = calculateLeadTime.from.day + " " + calculateLeadTime.from.date;
-    const to = calculateLeadTime.to.day + " " + calculateLeadTime.to.date;
-
-    await t
-        .navigateTo(config.baseUrl + "/en/products/" + product.id)
-        .expect(page.product.leadTime.visible)
-        .ok();
-
-    const leadTime = await page.product.getLeadTime();
-    await t.expect(leadTime).eql(from + " - " + to);
-});
-
-test("Check lead time display for virtual & bulky product", async () => {
-    const product = await requestProduct.getVirtualBulkyProductInfo(
-        config.api.cateHomeLifeStyle + "/sales/current",
-        true,
-        true
-    );
-
-    const calculateLeadTime = requestProduct.calculateLeadTime(
-        product.products[0].isVirtual,
-        product.products[0].isBulky
-    );
-    const from = calculateLeadTime.from.day + " " + calculateLeadTime.from.date;
-    const to = calculateLeadTime.to.day + " " + calculateLeadTime.to.date;
-
-    await t
-        .navigateTo(config.baseUrl + "/en/products/" + product.id)
-        .expect(page.product.leadTime.visible)
-        .ok();
-
-    const leadTime = await page.product.getLeadTime();
-    await t.expect(leadTime).eql(from + " - " + to);
-});
-
-test("Check lead time display for bulky product", async () => {
-    const product = await requestProduct.getVirtualBulkyProductInfo(
-        config.api.cateHomeLifeStyle + "/sales/current",
-        false,
-        true
-    );
-
-    const calculateLeadTime = requestProduct.calculateLeadTime(
-        product.products[0].isVirtual,
-        product.products[0].isBulky
+        "SG"
     );
     const from = calculateLeadTime.from.day + " " + calculateLeadTime.from.date;
     const to = calculateLeadTime.to.day + " " + calculateLeadTime.to.date;

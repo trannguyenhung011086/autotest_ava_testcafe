@@ -322,6 +322,44 @@ export class ProductUtils extends Helper {
         }
     }
 
+    public async getVirtualProductInfo(country: string, virtual: boolean) {
+        const sales = await new DbAccessUtils().getSaleList({
+            country: country,
+            startDate: { $lt: new Date() },
+            endDate: { $gte: new Date() }
+        });
+        const inStockList = [];
+
+        for (const sale of sales.slice(0, 3)) {
+            const saleInfo = await new SaleUtils().getSaleInfo(sale._id);
+
+            saleInfo.products.forEach(product => {
+                if (product.soldOut === false) {
+                    inStockList.push(product);
+                }
+            });
+        }
+
+        if (inStockList.length == 0) {
+            throw `There is no product with stock from ${country}!`;
+        }
+
+        for (const item of inStockList) {
+            const info = await this.getProductInfo(item.id);
+
+            const checkVirtual = info.products.every(
+                product =>
+                    product.inStock === true && product.isVirtual === true
+            );
+
+            if (virtual && checkVirtual) {
+                return info;
+            } else if (!virtual && !checkVirtual) {
+                return info;
+            }
+        }
+    }
+
     public async getVirtualBulkyProductInfo(
         saleType: string,
         virtual: boolean,
