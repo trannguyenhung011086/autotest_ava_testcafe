@@ -13,3 +13,4 @@ export { CreditCardUtils } from "./apiUtils/creditcard";
 export { OrderUtils } from "./apiUtils/order";
 export { ProductUtils } from "./apiUtils/product";
 export { SaleUtils } from "./apiUtils/sale";
+export { MenusUtils } from "./apiUtils/menus";

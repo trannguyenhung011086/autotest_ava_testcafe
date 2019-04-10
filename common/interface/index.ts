@@ -13,3 +13,4 @@ export * from "./lib/campaign";
 export * from "./lib/productFeeds";
 export * from "./lib/caching";
 export * from "./lib/sitemap";
+export * from "./lib/menus";

@@ -496,13 +496,31 @@ export class Helper {
         t.truthy(sale.id);
         t.truthy(sale.title);
         t.truthy(sale.endTime);
-        t.true(this.validateImage(sale.image1));
+
+        if (sale.image) {
+            t.true(this.validateImage(sale.image));
+        }
+        if (sale.image1) {
+            t.true(this.validateImage(sale.image1));
+        }
+        if (sale.image2) {
+            t.true(this.validateImage(sale.image2));
+        }
+        if (sale.image3) {
+            t.true(this.validateImage(sale.image3));
+        }
+        if (sale.image4) {
+            t.true(this.validateImage(sale.image4));
+        }
+
         t.deepEqual(typeof sale.international, "boolean");
 
         if (sale.potd === false) {
             t.true(sale.slug.includes(sale.id));
-        } else if (sale.potd === true) {
-            t.false(sale.slug.includes(sale.id));
+        }
+        if (sale.potd === true) {
+            t.true(sale.slug.includes(sale.product.id));
+            t.truthy(sale.product.name);
         }
     }
 
@@ -640,5 +658,84 @@ export class Helper {
         }
 
         t.deepEqual(typeof sale.international, "boolean");
+    }
+
+    public validateMenus(t: ExecutionContext, menu: Model.Menus) {
+        t.truthy(menu.id);
+        t.truthy(menu.displayName.en);
+        t.truthy(menu.displayName.vn);
+        t.truthy(menu.slug.en);
+        t.truthy(menu.slug.vn);
+        t.true(Array.isArray(menu.categories));
+
+        try {
+            menu.breadcrumbs.forEach(breadcrumb => {
+                t.truthy(breadcrumb.id);
+                t.truthy(breadcrumb.displayName.en);
+                t.truthy(breadcrumb.displayName.vn);
+                t.truthy(breadcrumb.slug.en);
+                t.truthy(breadcrumb.slug.vn);
+                t.deepEqual(typeof breadcrumb.index, "number");
+            });
+        } catch (e) {
+            menu["breadcrums"].forEach(breadcrumb => {
+                t.truthy(breadcrumb.id);
+                t.truthy(breadcrumb.displayName.en);
+                t.truthy(breadcrumb.displayName.vn);
+                t.truthy(breadcrumb.slug.en);
+                t.truthy(breadcrumb.slug.vn);
+                t.deepEqual(typeof breadcrumb.index, "number");
+            });
+        }
+
+        if (menu.parentId) {
+            t.truthy(menu.parentId);
+        }
+    }
+
+    public validateMenuProduct(t: ExecutionContext, product: Model.Products) {
+        t.truthy(product.saleProductId);
+        t.truthy(product.title);
+
+        // wait for WWW-764
+        t.true.skip(this.validateImage(product.image));
+        t.true.skip(this.validateImage(product.image2));
+
+        t.true(product.retailPrice >= product.salePrice);
+        t.truthy(product.category);
+        t.truthy(product.brand);
+        t.true(product.slug.includes(product.id));
+
+        if (product.color && product.color.length > 0) {
+            t.deepEqual(product.queryParams, "?color=" + product.color);
+        }
+    }
+
+    public validateMenuProductVariation(
+        t: ExecutionContext,
+        product: Model.Products
+    ) {
+        t.truthy(product.title);
+        t.truthy(product.nsId);
+
+        // wait for WWW-764
+        t.true.skip(this.validateImage(product.image));
+        t.true.skip(this.validateImage(product.image2));
+
+        t.true(product.retailPrice >= product.salePrice);
+        t.truthy(product.category);
+        t.truthy(product.brand);
+        t.true(product.slug.includes(product.id));
+        t.true(product.numberOfVariations > 0);
+        t.deepEqual(typeof product.soldOut, "boolean");
+        t.deepEqual(typeof product.isSecretSale, "boolean");
+        t.deepEqual(typeof product.quantity, "number");
+
+        t.notDeepEqual(typeof product.size, "undefined");
+        t.notDeepEqual(typeof product.color, "undefined");
+
+        if (product.color.length > 0) {
+            t.deepEqual(product.queryParams, "?color=" + product.color);
+        }
     }
 }

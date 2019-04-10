@@ -22,6 +22,12 @@ switch (process.env.NODE_ENV) {
         payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
         stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
         break;
+    case "dev4":
+        baseUrl = "https://www.dev4.leflair.io";
+        payDollarBase = "https://test.paydollar.com";
+        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
+        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        break;
     default:
         baseUrl = "https://www.staging.leflair.io";
         payDollarBase = "https://test.paydollar.com";
@@ -95,7 +101,11 @@ export const config = {
         feedInsider: "/api/v1/insider",
         feedGoogleMerchant: "/api/v1/google-merchant",
         feedRtbHouse: "/api/v1/rtb-house",
-        sitemap: "/api/v2/sitemap.xml"
+        sitemap: "/api/v2/sitemap.xml",
+        menus: "/api/psv/v1/menus/",
+        menuSales: "/api/psv/v1/sales/by-menu/",
+        menuProducts: "/api/psv/v1/products/by-menu/",
+        menuProductVariations: "/api/psv/v1/products/variations/by-menu/"
     },
     stripeKey: stripeKey,
     stripeBase: "https://api.stripe.com",

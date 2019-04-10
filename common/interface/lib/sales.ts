@@ -17,6 +17,7 @@ export type Products = {
     product: string;
     isSecretSale: boolean;
     nsId: string;
+    saleProductId?: string;
 };
 
 export type Product = {
@@ -127,6 +128,7 @@ export interface SalesModel {
         salePrice: number;
         retailPrice: number;
         images: string[];
+        name: string;
     };
 }
 
