@@ -77,7 +77,7 @@ test("Get 400 error code when using redeemed voucher", async t => {
     t.snapshot(res.body);
 });
 
-test.skip("Get 400 error code when using already used voucher", async t => {
+test("Get 400 error code when using already used voucher", async t => {
     const cookie = await helper.getLogInCookie(
         config.testAccount.email_in,
         config.testAccount.password_in

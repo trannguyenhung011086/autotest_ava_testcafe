@@ -668,25 +668,14 @@ export class Helper {
         t.truthy(menu.slug.vn);
         t.true(Array.isArray(menu.categories));
 
-        try {
-            menu.breadcrumbs.forEach(breadcrumb => {
-                t.truthy(breadcrumb.id);
-                t.truthy(breadcrumb.displayName.en);
-                t.truthy(breadcrumb.displayName.vn);
-                t.truthy(breadcrumb.slug.en);
-                t.truthy(breadcrumb.slug.vn);
-                t.deepEqual(typeof breadcrumb.index, "number");
-            });
-        } catch (e) {
-            menu["breadcrums"].forEach(breadcrumb => {
-                t.truthy(breadcrumb.id);
-                t.truthy(breadcrumb.displayName.en);
-                t.truthy(breadcrumb.displayName.vn);
-                t.truthy(breadcrumb.slug.en);
-                t.truthy(breadcrumb.slug.vn);
-                t.deepEqual(typeof breadcrumb.index, "number");
-            });
-        }
+        menu.breadcrumbs.forEach(breadcrumb => {
+            t.truthy(breadcrumb.id);
+            t.truthy(breadcrumb.displayName.en);
+            t.truthy(breadcrumb.displayName.vn);
+            t.truthy(breadcrumb.slug.en);
+            t.truthy(breadcrumb.slug.vn);
+            t.deepEqual(typeof breadcrumb.index, "number");
+        });
 
         if (menu.parentId) {
             t.truthy(menu.parentId);
@@ -696,19 +685,9 @@ export class Helper {
     public validateMenuProduct(t: ExecutionContext, product: Model.Products) {
         t.truthy(product.saleProductId);
         t.truthy(product.title);
-
-        // wait for WWW-764
-        t.true.skip(this.validateImage(product.image));
-        t.true.skip(this.validateImage(product.image2));
-
-        t.true(product.retailPrice >= product.salePrice);
         t.truthy(product.category);
         t.truthy(product.brand);
         t.true(product.slug.includes(product.id));
-
-        if (product.color && product.color.length > 0) {
-            t.deepEqual(product.queryParams, "?color=" + product.color);
-        }
     }
 
     public validateMenuProductVariation(
@@ -719,8 +698,8 @@ export class Helper {
         t.truthy(product.nsId);
 
         // wait for WWW-764
-        t.true.skip(this.validateImage(product.image));
-        t.true.skip(this.validateImage(product.image2));
+        t.true(this.validateImage(product.image));
+        t.true(this.validateImage(product.image2));
 
         t.true(product.retailPrice >= product.salePrice);
         t.truthy(product.category);

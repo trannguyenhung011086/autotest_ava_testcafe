@@ -165,7 +165,7 @@ test.serial("Compare product details from checkout to order", async t => {
     t.deepEqual(cart.productContentId, order.products[0].productContentId);
     t.deepEqual(cart.productId, order.products[0].productId);
     t.deepEqual(cart.nsId, order.products[0].nsId);
-    t.deepEqual.skip(cart.retailPrice, order.products[0].retailPrice); // wait for WWW-570
+    t.deepEqual(cart.retailPrice, order.products[0].retailPrice); // wait for WWW-570
     t.deepEqual(cart.salePrice, order.products[0].salePrice);
 });
 

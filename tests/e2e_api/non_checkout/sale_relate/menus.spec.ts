@@ -93,7 +93,8 @@ test("Get 400 error code when get menu using invalid menu", async t => {
     const res = await request.get(config.api.menus + "invalid");
 
     t.deepEqual(res.statusCode, 400);
-    t.deepEqual(res.body.message, "MENU_NOT_FOUND");
+    t.deepEqual(res.body.message, "NOT_FOUND");
+    t.snapshot(res.body);
 });
 
 test("Get each menu using menu ID", async t => {
@@ -152,6 +153,7 @@ test("Get 400 error when get sales by menu using menu ID", async t => {
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "MENU_NOT_FOUND");
+        t.snapshot(res.body);
     }
 });
 
@@ -160,17 +162,17 @@ test("Get 400 error when get sales by menu using invalid menu", async t => {
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MENU_NOT_FOUND");
+    t.snapshot(res.body);
 });
 
 test("Get sales by menu using menu EN slug", async t => {
     for (const menu of allMenus) {
         const sales = await request.getSalesByMenu(menu.slug.en);
 
-        if (menu.slug.en == "international") {
-            t.deepEqual(sales.length, 0);
+        if (sales.length == 0) {
+            t.log(menu.slug.en + " has no sale!");
+            t.pass();
         } else {
-            t.true(sales.length > 0);
-
             sales.forEach(sale => {
                 request.validateSale(t, sale);
             });
@@ -182,11 +184,10 @@ test("Get sales by menu using menu VN slug", async t => {
     for (const menu of allMenus) {
         const sales = await request.getSalesByMenu(menu.slug.vn);
 
-        if (menu.slug.vn == "international") {
-            t.deepEqual(sales.length, 0);
+        if (sales.length == 0) {
+            t.log(menu.slug.vn + " has no sale!");
+            t.pass();
         } else {
-            t.true(sales.length > 0);
-
             sales.forEach(sale => {
                 request.validateSale(t, sale);
             });
@@ -200,13 +201,13 @@ test("Get featured sales by menu", async t => {
             menu.slug.vn + "?featured=true"
         );
 
-        if (sales.length > 0) {
+        if (sales.length == 0) {
+            t.log("There is no featured sale for menu " + menu.slug.vn);
+            t.pass();
+        } else {
             sales.forEach(sale => {
                 request.validateSale(t, sale);
             });
-        } else {
-            t.log("There is no featured sale for menu " + menu.slug.vn);
-            t.pass();
         }
     }
 });
@@ -217,13 +218,13 @@ test("Get today sales by menu", async t => {
             menu.slug.vn + "?today=true"
         );
 
-        if (sales.length > 0) {
+        if (sales.length == 0) {
+            t.log("There is no today sale for menu " + menu.slug.vn);
+            t.pass();
+        } else {
             sales.forEach(sale => {
                 request.validateSale(t, sale);
             });
-        } else {
-            t.log("There is no today sale for menu " + menu.slug.vn);
-            t.pass();
         }
     }
 });
@@ -234,27 +235,32 @@ test("Get featured today sales by menu", async t => {
             menu.slug.vn + "?today=true&featured=true"
         );
 
-        if (sales.length > 0) {
+        if (sales.length == 0) {
+            t.log("There is no featured today sale for menu " + menu.slug.vn);
+            t.pass();
+        } else {
             sales.forEach(sale => {
                 request.validateSale(t, sale);
             });
-        } else {
-            t.log("There is no featured today sale for menu " + menu.slug.vn);
-            t.pass();
         }
     }
 });
 
-test("Get sales by menu excluding random sale ID", async t => {
+test("Get sales by menu excluding sale ID", async t => {
     for (const menu of menusExInt) {
         const sales = await request.getSalesByMenu(menu.slug.vn);
-        const rand = Math.floor(Math.random() * sales.length);
+
+        if (sales.length == 0) {
+            continue;
+        }
+
         const filteredSales = await request.getSalesByMenu(
-            menu.slug.en + "?excludeId=" + sales[rand].id
+            menu.slug.en + "?excludeId=" + sales[0].id
         );
+        t.truthy(filteredSales);
 
         filteredSales.forEach(sale => {
-            t.notDeepEqual(sale.id, sales[rand].id);
+            t.notDeepEqual(sale.id, sales[0].id);
             request.validateSale(t, sale);
         });
     }
@@ -263,9 +269,15 @@ test("Get sales by menu excluding random sale ID", async t => {
 test("Get future sales by menu using previewOffset", async t => {
     for (const menu of menusExInt) {
         const sales = await request.getSalesByMenu(menu.slug.vn);
+
+        if (sales.length == 0) {
+            continue;
+        }
+
         const futureSales = await request.getSalesByMenu(
             menu.slug.vn + "?previewOffset=7"
         );
+        t.truthy(futureSales);
 
         sales.forEach(sale => {
             futureSales.forEach(future => {
@@ -283,6 +295,7 @@ test("Get 400 error when get products by menu using menu ID", async t => {
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "MENU_NOT_FOUND");
+        t.snapshot(res.body);
     }
 });
 
@@ -291,6 +304,7 @@ test("Get 400 error when get products by menu using invalid menu", async t => {
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MENU_NOT_FOUND");
+    t.snapshot(res.body);
 });
 
 test("Get products by menu using menu EN slug", async t => {
@@ -382,9 +396,15 @@ test("Get products by menu using pageIndex", async t => {
 test("Get future products by menu using previewOffset", async t => {
     for (const menu of menusExInt) {
         const products = await request.getProductsByMenu(menu.slug.en);
+
+        if (products.data.length == 0) {
+            continue;
+        }
+
         const futureProducts = await request.getProductsByMenu(
             menu.slug.en + "?previewOffset=7"
         );
+        t.truthy(futureProducts);
 
         products.data.forEach(product => {
             futureProducts.data.forEach(future => {
@@ -404,6 +424,7 @@ test("Get 400 error when get product variations by menu using menu ID", async t 
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "MENU_NOT_FOUND");
+        t.snapshot(res.body);
     }
 });
 
@@ -412,6 +433,7 @@ test("Get 400 error when get product variations by menu using invalid menu", asy
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message, "MENU_NOT_FOUND");
+    t.snapshot(res.body);
 });
 
 test("Get product variations by menu using menu EN slug", async t => {

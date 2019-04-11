@@ -201,7 +201,7 @@ test.skip("Check bulky product", async t => {
         t.log("bulky type list 2");
         t.true(config.bulkyTypeList2.includes(productQuery.type.toString()));
     }
-});
+}); // will remove at WWW-716
 
 test("Check product with sizes", async t => {
     const product = await request.getProductInfoWithSizes(

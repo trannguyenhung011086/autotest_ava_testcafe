@@ -57,8 +57,12 @@ test("Check Facebook product feeds", async t => {
 
         t.true(new Date(start).getTime() < new Date(end).getTime());
 
-        t.deepEqual.skip(feed.availability, "in stock"); // wait for WWW-640
+        t.deepEqual(feed.availability, "in stock"); // wait for WWW-640
         t.deepEqual(feed.condition, "new");
+
+        if (!googleCategories.includes(feed.google_product_category)) {
+            console.log(feed.google_product_category);
+        } // log mismatch category
 
         // category must comply with https://www.google.com/basepages/producttype/taxonomy.en-US.txt
         t.true(googleCategories.includes(feed.google_product_category)); // wait for WWW-641
@@ -123,7 +127,7 @@ test("Check Criteo product feeds v1", async t => {
         t.true(helper.validateImage(feed.bigimage));
         t.truthy(feed.category);
         t.truthy(feed.description);
-        t.deepEqual.skip(feed.instock, "true"); // wait for WWW-640
+        t.deepEqual(feed.instock, "true"); // wait for WWW-640
         t.truthy(feed.name);
         t.truthy(feed.extra_brand);
 
@@ -239,12 +243,18 @@ test("Check Google Merchant product feeds", async t => {
 
         t.true(helper.validateImage(entry["g:image_link"]._text));
 
-        t.deepEqual.skip(entry["g:availability"]._text, "in stock"); // wait for WWW-640
+        t.deepEqual(entry["g:availability"]._text, "in stock"); // wait for WWW-640
 
         const retail_price = parseInt(entry["g:price"]._text);
         const sale_price = parseInt(entry["g:sale_price"]._text);
 
         t.true(retail_price >= sale_price);
+
+        if (
+            !googleCategories.includes(entry["g:google_product_category"]._text)
+        ) {
+            console.log(entry["g:google_product_category"]._text);
+        } // log mismatch category
 
         // category must comply with https://www.google.com/basepages/producttype/taxonomy.en-US.txt
         t.true(
@@ -284,7 +294,7 @@ test("Check Google Merchant product feeds", async t => {
     });
 });
 
-test.skip("Check Insider product feeds", async t => {
+test("Check Insider product feeds", async t => {
     const res = await helper.getPlain(config.api.feedInsider);
 
     t.deepEqual(res.statusCode, 200);
@@ -305,7 +315,7 @@ test.skip("Check Insider product feeds", async t => {
         t.true(helper.validateImage(product.image_url._text));
         t.truthy(product.description._text);
         t.truthy(product.category._text);
-        t.deepEqual.skip(product.instock._text, "true"); // wait for WWW-640
+        t.deepEqual(product.instock._text, "true"); // wait for WWW-640
         t.truthy(product.extra_brand._text);
 
         const retail_price = parseInt(product.price._text);
@@ -334,7 +344,7 @@ test("Check RTB House product feeds", async t => {
 
         t.true(retail_price >= sale_price);
 
-        t.deepEqual.skip(feed.instock, "true"); // wait for WWW-640
+        t.deepEqual(feed.instock, "true"); // wait for WWW-640
 
         t.truthy(feed.category);
         t.truthy(feed.extra_brand);
