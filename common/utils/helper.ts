@@ -717,4 +717,40 @@ export class Helper {
             t.deepEqual(product.queryParams, "?color=" + product.color);
         }
     }
+
+    public validateSitemap(t: ExecutionContext, sitemap: any) {
+        t.deepEqual(sitemap._declaration._attributes.encoding, "UTF-8");
+        t.deepEqual(sitemap._declaration._attributes.version, "1.0");
+        t.deepEqual(
+            sitemap.urlset._attributes.xmlns,
+            "http://www.sitemaps.org/schemas/sitemap/0.9"
+        );
+        t.deepEqual(
+            sitemap.urlset._attributes["xmlns:image"],
+            "http://www.google.com/schemas/sitemap-image/1.1"
+        );
+        t.deepEqual(
+            sitemap.urlset._attributes["xmlns:mobile"],
+            "http://www.google.com/schemas/sitemap-mobile/1.0"
+        );
+        t.deepEqual(
+            sitemap.urlset._attributes["xmlns:news"],
+            "http://www.google.com/schemas/sitemap-news/0.9"
+        );
+        t.deepEqual(
+            sitemap.urlset._attributes["xmlns:video"],
+            "http://www.google.com/schemas/sitemap-video/1.1"
+        );
+        t.deepEqual(
+            sitemap.urlset._attributes["xmlns:xhtml"],
+            "http://www.w3.org/1999/xhtml"
+        );
+
+        sitemap.urlset.url.forEach(url => {
+            t.regex(url.loc._text, /https:\/\/www.leflair.vn\//);
+            t.regex(url.lastmod._text, /^\d{4}-\d{2}-\d{2}$/);
+            t.deepEqual(url.changefreq._text, "daily");
+            t.deepEqual(url.priority._text, "0.8");
+        });
+    }
 }

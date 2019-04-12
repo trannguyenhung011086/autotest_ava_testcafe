@@ -19,7 +19,7 @@ export class BrandUtils extends Helper {
             }
         }
 
-        if (!brandList) {
+        if (brandList.length == 0) {
             throw "Cannot get brand list!";
         }
         return brandList;

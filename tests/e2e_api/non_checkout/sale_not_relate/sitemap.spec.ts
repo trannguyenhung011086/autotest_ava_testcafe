@@ -3,111 +3,116 @@ import * as Utils from "../../../../common/utils";
 import * as Model from "../../../../common/interface";
 import * as convert from "xml-js";
 
-let sitemap: Model.Sitemap;
+let sitemapIndex: Model.Sitemap;
 
 const helper = new Utils.Helper();
 const requestBrands = new Utils.BrandUtils();
-const requestProducts = new Utils.ProductUtils();
-const requestSales = new Utils.SaleUtils();
+const requestMenus = new Utils.MenusUtils();
+const requestMenuProducts = new Utils.MenusUtils();
 
 import test from "ava";
 
 // wait for WWW-672
-test.skip("Get 200 success code when accessing sitemap", async t => {
-    const res = await helper.getPlain(config.api.sitemap);
-
+test.before(async t => {
+    const res = await helper.getPlain(config.api.sitemapIndex);
     t.deepEqual(res.statusCode, 200);
 
     const result: any = convert.xml2js(res.body, { compact: true });
-    sitemap = result;
+    sitemapIndex = result;
+});
 
-    t.deepEqual(sitemap._declaration._attributes.encoding, "UTF-8");
-    t.deepEqual(sitemap._declaration._attributes.version, "1.0");
-    t.deepEqual(
-        sitemap.urlset._attributes.xmlns,
-        "http://www.sitemaps.org/schemas/sitemap/0.9"
-    );
-    t.deepEqual(
-        sitemap.urlset._attributes["xmlns:image"],
-        "http://www.google.com/schemas/sitemap-image/1.1"
-    );
-    t.deepEqual(
-        sitemap.urlset._attributes["xmlns:mobile"],
-        "http://www.google.com/schemas/sitemap-mobile/1.0"
-    );
-    t.deepEqual(
-        sitemap.urlset._attributes["xmlns:news"],
-        "http://www.google.com/schemas/sitemap-news/0.9"
-    );
-    t.deepEqual(
-        sitemap.urlset._attributes["xmlns:video"],
-        "http://www.google.com/schemas/sitemap-video/1.1"
-    );
-    t.deepEqual(
-        sitemap.urlset._attributes["xmlns:xhtml"],
-        "http://www.w3.org/1999/xhtml"
-    );
+test("Check sitemap index", async t => {
+    await helper.validateSitemap(t, sitemapIndex);
+});
 
-    let sales = await requestSales.getSales(config.api.currentSales);
-    sales = sales.concat(
-        await requestSales.getSales(config.api.todaySales),
-        await requestSales.getSales(config.api.potdSales),
-        await requestSales.getSales(config.api.internationalSales),
-        await requestSales.getSales(config.api.featuredSales)
-    );
+test("Check sitemap brands", async t => {
+    const res = await helper.getPlain(config.api.sitemapBrands);
+    const result: any = convert.xml2js(res.body, { compact: true });
+    const sitemapBrands: Model.Sitemap = result;
 
-    const brands = await requestBrands.getBrandsList();
+    await helper.validateSitemap(t, sitemapBrands);
 
-    let products = await requestProducts.getProducts(config.api.currentSales);
-    products = products.concat(
-        await requestProducts.getProducts(config.api.todaySales),
-        await requestProducts.getProducts(config.api.potdSales),
-        await requestProducts.getProducts(config.api.internationalSales),
-        await requestProducts.getProducts(config.api.featuredSales)
-    );
+    const brandList = await requestBrands.getBrandsList();
 
-    const menu: Model.TopMenu = (await helper.get(config.api.cateMenu)).body;
-    const categories = menu.items;
+    t.deepEqual(brandList.length, sitemapBrands.urlset.url.length / 2 - 1);
 
-    let sitemapCategories: string[] = [];
-    let sitemapSales: string[] = [];
-    let sitemapBrands: string[] = [];
-    let sitemapProducts: string[] = [];
-
-    for (const url of sitemap.urlset.url) {
-        t.regex(url.loc._text, /https:\/\/www.leflair.vn/);
-        t.regex(url.lastmod._text, /^\d{4}-\d{2}-\d{2}$/);
-        t.deepEqual(url.changefreq._text, "daily");
-        t.deepEqual(url.priority._text, "0.8");
-
-        if (url.loc._text.match(/\/categories\/.+/)) {
-            sitemapCategories.push(url.loc._text);
+    brandList.forEach(brand => {
+        const check = sitemapBrands.urlset.url.some(url => {
+            return (
+                brand.slug ===
+                url.loc._text.replace(
+                    /https:\/\/www.leflair.vn\/(vn|en)\/brands\//,
+                    ""
+                )
+            );
+        });
+        if (!check) {
+            console.log(check, brand.slug);
         }
-        if (url.loc._text.match(/\/brands\/.+/)) {
-            sitemapBrands.push(url.loc._text);
-        }
-        if (url.loc._text.match(/\/products\/.+/)) {
-            sitemapProducts.push(url.loc._text);
-        }
-        if (url.loc._text.match(/\/sales\/.+/)) {
-            sitemapSales.push(url.loc._text);
-        }
+        t.true(check);
+    });
+});
+
+test("Check sitemap categories", async t => {
+    const res = await helper.getPlain(config.api.sitemapCategories);
+    const result: any = convert.xml2js(res.body, { compact: true });
+    const sitemapCategories: Model.Sitemap = result;
+
+    await helper.validateSitemap(t, sitemapCategories);
+
+    const menus = await requestMenus.getAllMenus();
+
+    t.deepEqual(menus.length, sitemapCategories.urlset.url.length / 2);
+
+    menus.forEach(menu => {
+        const checkEN = sitemapCategories.urlset.url.some(url => {
+            return (
+                menu.slug.en ===
+                url.loc._text.replace(/https:\/\/www.leflair.vn\/en\//, "")
+            );
+        });
+        t.true(checkEN);
+
+        const checkVN = sitemapCategories.urlset.url.some(url => {
+            return (
+                menu.slug.vn ===
+                url.loc._text.replace(/https:\/\/www.leflair.vn\/vn\//, "")
+            );
+        });
+        t.true(checkVN);
+    });
+});
+
+test("Check sitemap category products", async t => {
+    const menus = await requestMenus.getAllMenus();
+
+    for (const menu of menus) {
+        const products = await requestMenuProducts.getProductsByMenu(
+            menu.slug.en
+        );
+
+        const res = await helper.getPlain(
+            config.api.sitemapCategory + menu.id + ".xml"
+        );
+        const result: any = convert.xml2js(res.body, { compact: true });
+        const sitemapCategory: Model.Sitemap = result;
+
+        t.deepEqual(products.total, sitemapCategory.urlset.url.length / 2);
+
+        products.data.forEach(product => {
+            const check = sitemapCategory.urlset.url.some(url => {
+                return (
+                    product.slug ===
+                    url.loc._text.replace(
+                        /https:\/\/www.leflair.vn\/(en|vn)\/products\//,
+                        ""
+                    )
+                );
+            });
+            if (!check) {
+                console.log(check, menu.slug.en, product.slug);
+            }
+            t.true(check);
+        });
     }
-
-    t.true(
-        sitemapCategories.every(url =>
-            categories.some(category => url.includes(category.id))
-        )
-    );
-    t.true(
-        sitemapBrands.every(url => brands.some(brand => url.includes(brand.id)))
-    );
-    t.true(
-        sitemapSales.every(url => sales.some(sale => url.includes(sale.id)))
-    );
-    t.true(
-        sitemapProducts.every(url =>
-            products.some(product => url.includes(product.id))
-        )
-    );
 });
