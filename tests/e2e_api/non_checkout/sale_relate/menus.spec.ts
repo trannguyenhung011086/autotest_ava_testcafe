@@ -530,3 +530,20 @@ test("Get empty product variations by menu using previewOffset", async t => {
         t.deepEqual(products.data.length, 0);
     }
 });
+
+test("Sort sold out product variations at the end of each pageSize", async t => {
+    for (const menu of menusExInt) {
+        const products = await request.getProductVariationsByMenu(
+            menu.slug.en + "?pageSize=20"
+        );
+
+        products.data.forEach(product => {
+            if (product.soldOut === true) {
+                t.notDeepEqual(products.data.indexOf(product), 0);
+
+                const lastProduct = products.data[products.data.length - 1];
+                t.true(lastProduct.soldOut);
+            }
+        });
+    }
+});
