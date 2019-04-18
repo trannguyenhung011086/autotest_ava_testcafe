@@ -110,7 +110,7 @@ test("Get 200 success code when using non-existed credentials", async t => {
     t.deepEqual(signUp.cart.length, 0);
 });
 
-// test("generate fake users", async t => {
+// test.only("generate fake users", async t => {
 //     const emailList = config.testAccount.email_ex;
 
 //     for (const email of emailList) {
@@ -120,8 +120,5 @@ test("Get 200 success code when using non-existed credentials", async t => {
 //             language: "vn",
 //             gender: "M"
 //         });
-//         signUp = res.body;
-
-//         t.deepEqual(res.statusCode, 200);
 //     }
 // });

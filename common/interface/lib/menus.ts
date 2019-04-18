@@ -13,6 +13,11 @@ export type Breadcrumb = {
     };
 };
 
+export type Meta = {
+    description: string;
+    title: string;
+};
+
 export interface Menus {
     id: string;
     displayName: {
@@ -25,6 +30,7 @@ export interface Menus {
     };
     categories: string[];
     breadcrumbs: Breadcrumb[];
+    meta: Meta;
     parentId?: string;
 }
 

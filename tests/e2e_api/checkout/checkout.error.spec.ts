@@ -908,7 +908,7 @@ test.serial(
         );
 
         t.deepEqual(res.statusCode, 400);
-        t.deepEqual(res.body.message, "VOUCHER_OR_NOT_VALID");
+        t.deepEqual(res.body.message, "VOUCHER_NOT_EXISTS");
         t.snapshot(res.body);
     }
 );
@@ -950,7 +950,7 @@ test.serial(
         );
 
         t.deepEqual(res.statusCode, 400);
-        t.deepEqual(res.body.message, "VOUCHER_OR_NOT_VALID");
+        t.deepEqual(res.body.message, "VOUCHER_NOT_EXISTS");
         t.snapshot(res.body);
     }
 );
@@ -1007,7 +1007,7 @@ test.serial(
         } else {
             const voucher = await access.getVoucher({
                 expiry: { $gte: new Date() },
-                binRange: { $exists: true },
+                binRange: { $exists: true, $not: /400000/ },
                 used: false,
                 minimumPurchase: 0
             });
@@ -1025,7 +1025,7 @@ test.serial(
 
             const stripeData = {
                 type: "card",
-                "card[number]": "4000000000003063",
+                "card[number]": "4000000000000093",
                 "card[cvc]": "222",
                 "card[exp_month]": "02",
                 "card[exp_year]": "22",
@@ -1298,7 +1298,50 @@ test.serial(
         );
 
         t.deepEqual(res.statusCode, 400);
-        t.deepEqual(res.body.message, "VOUCHER_CAMPAIGN_INVALID_OR_ENDED");
+        t.deepEqual(res.body.message, "VOUCHER_NOT_EXISTS");
+        t.snapshot(res.body);
+    }
+);
+
+test.serial(
+    "Get 400 error code when checkout with voucher for new customer",
+    async t => {
+        const voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            binRange: { $exists: false },
+            minimumPurchase: 0,
+            forNewCustomer: true
+        });
+
+        t.truthy(voucher);
+
+        const item = await requestProduct.getInStockProduct(
+            config.api.todaySales,
+            1
+        );
+        await requestCart.addToCart(item.id, t.context["cookie"]);
+        const account = await requestAccount.getAccountInfo(
+            t.context["cookie"]
+        );
+
+        const res = await request.post(
+            config.api.checkout,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: account.cart,
+                method: "COD",
+                shipping: 25000,
+                voucher: voucher._id,
+                accountCredit: account.accountCredit
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message, "VOUCHER_ONLY_FOR_NEW_CUSTOMER");
         t.snapshot(res.body);
     }
 );

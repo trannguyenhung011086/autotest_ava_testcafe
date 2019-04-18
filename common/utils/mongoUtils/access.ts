@@ -9,10 +9,10 @@ export class DbAccessUtils {
     ): Promise<any> {
         let client: MongoClient;
         try {
-            client = await MongoClient.connect(config.stgDb.uri, {
+            client = await MongoClient.connect(config.mongo.uri, {
                 useNewUrlParser: true
             });
-            const db = client.db(config.stgDb.name);
+            const db = client.db(config.mongo.name);
             const collection = db.collection(collectionName);
             return await collection.findOne(query);
         } catch (err) {
@@ -28,10 +28,10 @@ export class DbAccessUtils {
     ): Promise<any[]> {
         let client: MongoClient;
         try {
-            client = await MongoClient.connect(config.stgDb.uri, {
+            client = await MongoClient.connect(config.mongo.uri, {
                 useNewUrlParser: true
             });
-            const db = client.db(config.stgDb.name);
+            const db = client.db(config.mongo.name);
             const collection = db.collection(collectionName);
             const result = await collection.find(query).limit(20);
             return result.toArray();
@@ -48,10 +48,10 @@ export class DbAccessUtils {
     ): Promise<number> {
         let client: MongoClient;
         try {
-            client = await MongoClient.connect(config.stgDb.uri, {
+            client = await MongoClient.connect(config.mongo.uri, {
                 useNewUrlParser: true
             });
-            const db = client.db(config.stgDb.name);
+            const db = client.db(config.mongo.name);
             const collection = db.collection(collectionName);
             return await collection.countDocuments(query);
         } catch (err) {
@@ -68,10 +68,10 @@ export class DbAccessUtils {
     ) {
         let client: MongoClient;
         try {
-            client = await MongoClient.connect(config.stgDb.uri, {
+            client = await MongoClient.connect(config.mongo.uri, {
                 useNewUrlParser: true
             });
-            const db = client.db(config.stgDb.name);
+            const db = client.db(config.mongo.name);
             const collection = db.collection(collectionName);
             return collection.updateOne(query, {
                 $set: update
@@ -129,6 +129,22 @@ export class DbAccessUtils {
 
     public async countUsedVoucher(voucherId: Object): Promise<number> {
         return await this.countDbData("orders", {
+            "paymentSummary.voucher": voucherId,
+            status: {
+                $nin: [
+                    "rejected",
+                    "rejection accepted",
+                    "returned",
+                    "cancelled",
+                    "failed",
+                    "failed attempt"
+                ]
+            }
+        });
+    }
+
+    public async getOrderUsedVoucher(voucherId: Object): Promise<any> {
+        return await this.getDbData("orders", {
             "paymentSummary.voucher": voucherId,
             status: {
                 $nin: [

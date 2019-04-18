@@ -5,8 +5,8 @@ import { createHandyClient } from "handy-redis";
 export class RedisAccessUtils {
     public async getKey(key: string) {
         let client = createHandyClient({
-            host: config.stgRedis.host,
-            port: config.stgRedis.port
+            host: config.redis.host,
+            port: config.redis.port
         });
         try {
             const res = await client.get(key);
@@ -23,8 +23,8 @@ export class RedisAccessUtils {
 
     public async setValue(key: string, value: string) {
         let client = createHandyClient({
-            host: config.stgRedis.host,
-            port: config.stgRedis.port
+            host: config.redis.host,
+            port: config.redis.port
         });
         try {
             const res = await client.set(key, value);

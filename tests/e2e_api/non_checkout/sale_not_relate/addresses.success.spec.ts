@@ -274,7 +274,7 @@ test.serial("Get 200 success code when deleting billing address", async t => {
     }
 });
 
-// test.serial('generate fake addressess', async t => {
+// test.only('generate fake addressess', async t => {
 //     for (const email of config.testAccount.email_ex) {
 //         t.context['cookie'] = await request.getLogInCookie(email,
 //             config.testAccount.password_ex)

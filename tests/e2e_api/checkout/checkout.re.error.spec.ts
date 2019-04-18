@@ -931,6 +931,45 @@ test.serial(
     }
 );
 
+test.serial(
+    "Get 400 error code when recheckout with voucher for new customer",
+    async t => {
+        const voucher = await access.getVoucher({
+            expiry: { $gte: new Date() },
+            binRange: { $exists: false },
+            minimumPurchase: 0,
+            forNewCustomer: true
+        });
+
+        t.truthy(voucher);
+
+        const res = await request.post(
+            config.api.checkout + "/order/" + failedAttemptOrder.code,
+            {
+                address: {
+                    shipping: addresses.shipping[0],
+                    billing: addresses.billing[0]
+                },
+                cart: [
+                    {
+                        id: failedAttemptOrder.products[0].id,
+                        quantity: failedAttemptOrder.products[0].quantity,
+                        salePrice: failedAttemptOrder.products[0].salePrice
+                    }
+                ],
+                method: "COD",
+                shipping: 25000,
+                voucher: voucher._id
+            },
+            t.context["cookie"]
+        );
+
+        t.deepEqual(res.statusCode, 400);
+        t.deepEqual(res.body.message, "VOUCHER_ONLY_FOR_NEW_CUSTOMER");
+        t.snapshot(res.body);
+    }
+);
+
 // validate account credit
 
 test.serial(

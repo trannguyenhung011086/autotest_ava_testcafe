@@ -2,6 +2,8 @@ let baseUrl: string;
 let payDollarBase: string;
 let payDollarApi: string;
 let stripeKey: string;
+let mongoHost: string;
+let redisHost: string;
 
 switch (process.env.NODE_ENV) {
     case "stg":
@@ -9,12 +11,16 @@ switch (process.env.NODE_ENV) {
         payDollarBase = "https://test.paydollar.com";
         payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
         stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        redisHost = "35.240.219.41";
+        mongoHost = "mongodb://35.240.219.41";
         break;
     case "prod":
         baseUrl = "https://www.leflair.vn";
         payDollarBase = "https://www.paydollar.com";
         payDollarApi = "/b2c2/eng/directPay/payComp.jsp";
         stripeKey = "pk_live_2oLGoFep9LLlvVMs1TroLmM1";
+        redisHost = "35.240.219.41";
+        mongoHost = "mongodb://35.240.219.41";
         break;
     case "rc1":
         baseUrl = "https://www.rc1.leflair.io";
@@ -27,29 +33,38 @@ switch (process.env.NODE_ENV) {
         payDollarBase = "https://test.paydollar.com";
         payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
         stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        redisHost = "35.247.137.109";
+        mongoHost = "mongodb://35.247.137.109";
+        break;
+    case "dev3":
+        baseUrl = "https://www.dev3.leflair.io";
+        payDollarBase = "https://test.paydollar.com";
+        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
+        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        redisHost = "35.247.137.109";
+        mongoHost = "mongodb://35.247.137.109";
         break;
     default:
         baseUrl = "https://www.staging.leflair.io";
         payDollarBase = "https://test.paydollar.com";
         payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
         stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        redisHost = "35.240.219.41";
+        mongoHost = "mongodb://35.240.219.41";
 }
 
-let stgRedisHost = "35.240.219.41";
-let stgMongo = "mongodb://35.240.219.41";
-
 if (process.env.MODE == "ci") {
-    stgRedisHost = "10.148.0.45";
-    stgMongo = "mongodb://10.148.0.45";
+    redisHost = "10.148.0.45";
+    mongoHost = "mongodb://10.148.0.45";
 }
 
 export const config = {
-    stgDb: {
-        uri: stgMongo,
+    mongo: {
+        uri: mongoHost,
         name: "admin-leflair"
     },
-    stgRedis: {
-        host: stgRedisHost,
+    redis: {
+        host: redisHost,
         port: 6379
     },
     baseUrl: baseUrl,
@@ -70,6 +85,7 @@ export const config = {
         creditcard: "/api/v2/credit-cards",
         giftcard: "/api/v2/giftcards/",
         voucher: "/api/v2/vouchers/",
+        voucherApply: "/api/v2/vouchers/apply",
         home: "/api/v2/home",
         product: "/api/v2/product/",
         brands: "/api/v2/brands/",

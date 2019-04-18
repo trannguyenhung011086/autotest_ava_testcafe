@@ -226,6 +226,27 @@ export class Helper {
         return cookie;
     }
 
+    public async getSignUpCookie(
+        email: string,
+        password: string
+    ): Promise<string> {
+        const data: Object = {
+            email: email,
+            password: password,
+            language: "vn",
+            gender: "M"
+        };
+
+        const cookie = await this.post(config.api.signUp, data).then(
+            res => res.headers["set-cookie"][0]
+        );
+
+        if (!cookie) {
+            throw "Cannot get sign up cookie!";
+        }
+        return cookie;
+    }
+
     public async getGuestCookie(): Promise<string> {
         const cookie = await this.get(config.api.account).then(
             res => res.headers["set-cookie"][0]
@@ -676,6 +697,9 @@ export class Helper {
             t.truthy(breadcrumb.slug.vn);
             t.deepEqual(typeof breadcrumb.index, "number");
         });
+
+        t.truthy(menu.meta.description);
+        t.truthy(menu.meta.title);
 
         if (menu.parentId) {
             t.truthy(menu.parentId);

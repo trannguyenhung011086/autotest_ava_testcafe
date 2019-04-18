@@ -170,7 +170,7 @@ test("Get sales by menu using menu EN slug", async t => {
         const sales = await request.getSalesByMenu(menu.slug.en);
 
         if (sales.length == 0) {
-            t.log(menu.slug.en + " has no sale!");
+            t.log(menu.slug.en + " has no sale");
             t.pass();
         } else {
             sales.forEach(sale => {
@@ -185,7 +185,7 @@ test("Get sales by menu using menu VN slug", async t => {
         const sales = await request.getSalesByMenu(menu.slug.vn);
 
         if (sales.length == 0) {
-            t.log(menu.slug.vn + " has no sale!");
+            t.log(menu.slug.vn + " has no sale");
             t.pass();
         } else {
             sales.forEach(sale => {
