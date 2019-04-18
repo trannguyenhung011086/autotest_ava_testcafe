@@ -71,7 +71,6 @@ test.serial(
         );
 
         t.deepEqual(res.statusCode, 500);
-        t.snapshot(res.body);
     }
 );
 
@@ -83,7 +82,6 @@ test.serial("Get 500 error code when recheckout with empty data", async t => {
     );
 
     t.deepEqual(res.statusCode, 500);
-    t.snapshot(res.body);
 });
 
 test.serial("Get 400 error code when recheckout without address", async t => {
@@ -101,7 +99,6 @@ test.serial("Get 400 error code when recheckout without address", async t => {
     t.deepEqual(res.statusCode, 400);
     t.true(res.body.message.includes("SHIPPING_ADDRESS_REQUIRED"));
     t.true(res.body.message.includes("BILLING_ADDRESS_REQUIRED"));
-    t.snapshot(res.body);
 });
 
 test.serial("Get 400 error code when recheckout with empty cart", async t => {
@@ -119,7 +116,6 @@ test.serial("Get 400 error code when recheckout with empty cart", async t => {
 
     t.deepEqual(res.statusCode, 400);
     t.true(res.body.message.includes("THERE_ARE_NO_ITEMS_IN_YOUR_ORDER"));
-    t.snapshot(res.body);
 });
 
 test.serial(
@@ -152,7 +148,6 @@ test.serial(
         t.true(res.body.message.includes("SHIPPING_PHONE_NUMBER_IS_NOT_VALID"));
         t.true(res.body.message.includes("BILLING_PHONE_NUMBER_IS_NOT_VALID"));
         t.true(res.body.message.includes("INVALID_BILLING_TAX_CODE"));
-        t.snapshot(res.body);
     }
 );
 
@@ -179,7 +174,6 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.true(res.body.message.includes("PLEASE_SELECT_A_PAYMENT_METHOD"));
-        t.snapshot(res.body);
     }
 );
 
@@ -518,7 +512,6 @@ test.skip("Get 400 error code when recheckout with new address", async t => {
 
     t.deepEqual(res.statusCode, 400);
     t.deepEqual(res.body.message[0].message, "CART_MISMATCH_CANT_FIND_PRODUCT");
-    t.snapshot(res.body);
 }); // wait for WWW-401
 
 // validate voucher
@@ -558,7 +551,6 @@ test.serial(
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "NOT_MEET_MINIMUM_ITEMS");
         t.deepEqual(res.body.data.voucher.numberOfItems, voucher.numberOfItems);
-        t.snapshot(res.body);
     }
 );
 
@@ -599,7 +591,6 @@ test.serial(
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "VOUCHER_NOT_APPLY_FOR_TODAY");
         t.deepEqual(res.body.data.voucher.specificDays, voucher.specificDays);
-        t.snapshot(res.body);
     }
 );
 
@@ -648,7 +639,6 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "TOTAL_VALUE_LESS_THAN_VOUCHER_MINIMUM");
-        t.snapshot(res.body);
     }
 );
 
@@ -696,7 +686,6 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "EXCEED_TIME_OF_USAGE");
-        t.snapshot(res.body);
     }
 );
 
@@ -734,7 +723,6 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "VOUCHER_OR_NOT_VALID");
-        t.snapshot(res.body);
     }
 );
 
@@ -773,7 +761,6 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "REQUIRES_CC_PAYMENT");
-        t.snapshot(res.body);
     }
 );
 
@@ -836,7 +823,6 @@ test.serial(
 
             t.deepEqual(res.statusCode, 400);
             t.deepEqual(res.body.message, "THIS_CC_NOT_ACCEPTABLE");
-            t.snapshot(res.body);
         }
     }
 );
@@ -888,7 +874,6 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "YOU_ALREADY_USED_THIS_VOUCHER");
-        t.snapshot(res.body);
     }
 ); // wait for WWW-490
 
@@ -927,7 +912,6 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "NOT_ALLOWED_TO_USE_VOUCHER");
-        t.snapshot(res.body);
     }
 );
 
@@ -966,7 +950,6 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "VOUCHER_ONLY_FOR_NEW_CUSTOMER");
-        t.snapshot(res.body);
     }
 );
 
@@ -1001,6 +984,5 @@ test.serial(
 
         t.deepEqual(res.statusCode, 400);
         t.deepEqual(res.body.message, "USER_SPEND_MORE_CREDIT_THAN_THEY_HAVE");
-        t.snapshot(res.body);
     }
 );

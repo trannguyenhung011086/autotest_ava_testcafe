@@ -16,20 +16,11 @@ build:
         - docker build -t hung/testcafe .
         # - yarn install
 
-api_sale_relate_prod:
+api_sale_non_checkout_prod:
     stage: test_prod
     script:
-        # - NODE_ENV=prod MODE=ci yarn run test_api_sale_relate --match='!*skip-prod*'
-        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_sale_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_relate_ci --match='!*skip-prod*'
-    only:
-        - schedules
-        - master
-
-api_sale_not_relate_prod:
-    stage: test_prod
-    script:
-        # - NODE_ENV=prod MODE=ci yarn run test_api_sale_not_relate --match='!*skip-prod*'
-        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_sale_not_relate_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_sale_not_relate_ci --match='!*skip-prod*'
+        # - NODE_ENV=prod MODE=ci yarn run test_api_non_checkout --match='!*skip-prod*'
+        - docker run --shm-size=2g --network=host --name ${CI_JOB_ID}_api_non_checkout_prod -i -e NODE_ENV=prod -v $(pwd)/:/dockertests hung/testcafe yarn run test_api_non_checkout_ci --match='!*skip-prod*'
     only:
         - schedules
         - master

@@ -19,7 +19,6 @@ test("Proceed checkout with empty cart", async t => {
 
     t.deepEqual(res.statusCode, 200);
     t.deepEqual(checkout.cart.length, 0);
-    t.snapshot(res.body);
 });
 
 test("Proceed checkout with cart", async t => {

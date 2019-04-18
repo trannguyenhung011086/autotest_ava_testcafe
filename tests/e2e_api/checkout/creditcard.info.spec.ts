@@ -92,7 +92,6 @@ test.serial("Get 500 error code when deleting invalid creditcard", async t => {
 
     t.deepEqual(res.statusCode, 500);
     t.deepEqual(res.body.message, "INVALID_CREDIT_CARD_OR_CANNOT_DELETE");
-    t.snapshot(res.body);
 });
 
 test.serial(
@@ -116,7 +115,6 @@ test.serial(
 
                 t.deepEqual(res.statusCode, 200);
                 t.true(res.body);
-                t.snapshot(res.body);
             }
         }
     }
@@ -130,5 +128,4 @@ test("Get 401 error code when accessing creditcard info with invalid cookie", as
 
     t.deepEqual(res.statusCode, 401);
     t.deepEqual(res.body.message, "Access denied.");
-    t.snapshot(res.body);
 });

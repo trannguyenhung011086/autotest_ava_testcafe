@@ -63,7 +63,6 @@ test.serial(
             res.body.message,
             "International orders must be paid by credit card. Please refresh the page and try again."
         );
-        t.snapshot(res.body);
     }
 );
 
@@ -104,7 +103,6 @@ test.serial(
             res.body.message,
             "International orders must be paid by credit card. Please refresh the page and try again."
         );
-        t.snapshot(res.body);
     }
 );
 
