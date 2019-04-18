@@ -743,6 +743,8 @@ export class Helper {
     }
 
     public validateSitemap(t: ExecutionContext, sitemap: any) {
+        t.true(sitemap.hasOwnProperty("urlset"));
+
         t.deepEqual(sitemap._declaration._attributes.encoding, "UTF-8");
         t.deepEqual(sitemap._declaration._attributes.version, "1.0");
         t.deepEqual(
@@ -769,6 +771,8 @@ export class Helper {
             sitemap.urlset._attributes["xmlns:xhtml"],
             "http://www.w3.org/1999/xhtml"
         );
+
+        t.true(sitemap.urlset.url.length > 0);
 
         sitemap.urlset.url.forEach(url => {
             t.regex(url.loc._text, /https:\/\/www.leflair.vn\//);
