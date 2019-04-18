@@ -36,7 +36,7 @@ import test from "ava";
 
 test.before(async t => {
     allMenus = await request.getAllMenus();
-    t.truthy(allMenus);
+    t.true(allMenus.length > 0);
 
     menusExInt = allMenus.reduce((result, value) => {
         if (value.slug.en != "international") {
@@ -44,7 +44,7 @@ test.before(async t => {
         }
         return result;
     }, []);
-    t.truthy(menusExInt);
+    t.true(menusExInt.length > 0);
 });
 
 // get menu
@@ -52,7 +52,7 @@ test.before(async t => {
 test("Get all top menus excluding breadcrumbs", async t => {
     const res = await request.get(config.api.menus + "/top");
     const menus: Model.Menus[] = res.body;
-    t.truthy(menus);
+    t.true(menus.length > 0);
 
     menus.forEach(menu => {
         t.truthy(menu.displayName.en);
@@ -69,7 +69,7 @@ test("Get all menus", async t => {
 
 test("Get all top menus", async t => {
     const menus = await request.getMenus("top");
-    t.truthy(menus);
+    t.true(menus.length > 0);
 
     menus.forEach(menu => {
         request.validateMenus(t, menu);
@@ -80,7 +80,7 @@ test("Get all top menus", async t => {
 
 test("Get all sub menus", async t => {
     const menus = await request.getMenus("sub");
-    t.truthy(menus);
+    t.true(menus.length > 0);
 
     menus.forEach(menu => {
         request.validateMenus(t, menu);
@@ -170,7 +170,7 @@ test("Get sales by menu using menu EN slug", async t => {
         const sales = await request.getSalesByMenu(menu.slug.en);
 
         if (sales.length == 0) {
-            t.log(menu.slug.en + " has no sale");
+            t.log("There is no sale for menu " + menu.slug.en);
             t.pass();
         } else {
             sales.forEach(sale => {
@@ -185,7 +185,7 @@ test("Get sales by menu using menu VN slug", async t => {
         const sales = await request.getSalesByMenu(menu.slug.vn);
 
         if (sales.length == 0) {
-            t.log(menu.slug.vn + " has no sale");
+            t.log("There is no sale for menu " + menu.slug.vn);
             t.pass();
         } else {
             sales.forEach(sale => {
