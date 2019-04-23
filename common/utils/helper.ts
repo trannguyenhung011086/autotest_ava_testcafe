@@ -742,7 +742,7 @@ export class Helper {
         }
     }
 
-    public validateSitemap(t: ExecutionContext, sitemap: any) {
+    public validateSitemap(t: ExecutionContext, sitemap: Model.Sitemap) {
         t.true(sitemap.hasOwnProperty("urlset"));
 
         t.deepEqual(sitemap._declaration._attributes.encoding, "UTF-8");
@@ -760,16 +760,8 @@ export class Helper {
             "http://www.google.com/schemas/sitemap-mobile/1.0"
         );
         t.deepEqual(
-            sitemap.urlset._attributes["xmlns:news"],
-            "http://www.google.com/schemas/sitemap-news/0.9"
-        );
-        t.deepEqual(
             sitemap.urlset._attributes["xmlns:video"],
             "http://www.google.com/schemas/sitemap-video/1.1"
-        );
-        t.deepEqual(
-            sitemap.urlset._attributes["xmlns:xhtml"],
-            "http://www.w3.org/1999/xhtml"
         );
 
         t.true(sitemap.urlset.url.length > 0);

@@ -3,7 +3,8 @@ import * as Utils from "../../../common/utils";
 import * as Model from "../../../common/interface";
 import * as convert from "xml-js";
 
-let sitemapIndex: Model.Sitemap;
+let sitemapIndex: Model.SitemapIndex;
+let sitemap: Model.Sitemap;
 
 const helper = new Utils.Helper();
 const requestBrands = new Utils.BrandUtils();
@@ -22,7 +23,32 @@ test.before(async t => {
 });
 
 test("Check sitemap index", async t => {
-    await helper.validateSitemap(t, sitemapIndex);
+    t.true(sitemapIndex.hasOwnProperty("sitemapindex"));
+
+    t.deepEqual(sitemapIndex._declaration._attributes.encoding, "UTF-8");
+    t.deepEqual(sitemapIndex._declaration._attributes.version, "1.0");
+    t.deepEqual(
+        sitemapIndex.sitemapindex._attributes.xmlns,
+        "http://www.sitemaps.org/schemas/sitemap/0.9"
+    );
+    t.deepEqual(
+        sitemapIndex.sitemapindex._attributes["xmlns:image"],
+        "http://www.google.com/schemas/sitemap-image/1.1"
+    );
+    t.deepEqual(
+        sitemapIndex.sitemapindex._attributes["xmlns:mobile"],
+        "http://www.google.com/schemas/sitemap-mobile/1.0"
+    );
+    t.deepEqual(
+        sitemapIndex.sitemapindex._attributes["xmlns:video"],
+        "http://www.google.com/schemas/sitemap-video/1.1"
+    );
+
+    t.true(sitemapIndex.sitemapindex.sitemap.length > 0);
+
+    sitemapIndex.sitemapindex.sitemap.forEach(url => {
+        t.regex(url.loc._text, /https:\/\/www.leflair.vn\//);
+    });
 });
 
 test("Check sitemap brands", async t => {

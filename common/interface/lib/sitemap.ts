@@ -1,3 +1,25 @@
+export interface SitemapIndex {
+    _declaration: {
+        _attributes: {
+            version: string;
+            encoding: string;
+        };
+    };
+    sitemapindex: {
+        _attributes: {
+            xmlns: string;
+            "xmlns:image": string;
+            "xmlns:mobile": string;
+            "xmlns:video": string;
+        };
+        sitemap: {
+            loc: {
+                _text: string;
+            };
+        }[];
+    };
+}
+
 export interface Sitemap {
     _declaration: {
         _attributes: {
