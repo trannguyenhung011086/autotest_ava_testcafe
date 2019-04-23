@@ -465,7 +465,7 @@ test("Get 400 error code when using more than 1 voucher per campaign", async t =
         t.log("Skip checkout with voucher on prod!");
         t.pass();
     } else {
-        let voucher = await access.getNotUsedVoucher(
+        const voucher = await access.getNotUsedVoucher(
             {
                 oncePerAccountForCampaign: true,
                 used: false,
@@ -495,16 +495,17 @@ test("Get 400 error code when using more than 1 voucher per campaign", async t =
 
         t.truthy(order);
 
-        voucher = await access.getNotUsedVoucher(
+        const voucherNew = await access.getNotUsedVoucher(
             {
                 oncePerAccountForCampaign: true,
                 used: false,
-                campaign: /Grab Rewards Premium/
+                campaign: /Grab Rewards Premium/,
+                code: { $ne: voucher.code }
             },
             customer
         );
 
-        t.truthy(voucher);
+        t.truthy(voucherNew);
 
         customerData.cart = [
             {
@@ -513,7 +514,7 @@ test("Get 400 error code when using more than 1 voucher per campaign", async t =
                 salePrice: 1269000
             }
         ];
-        customerData.voucher = voucher.code;
+        customerData.voucher = voucherNew.code;
 
         const res = await helper.post(
             config.api.voucherApply,
