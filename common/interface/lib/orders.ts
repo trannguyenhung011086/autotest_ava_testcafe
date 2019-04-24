@@ -2,8 +2,7 @@ export type OrderSummary = {
     id: string;
     code: string;
     createdDate: string;
-    shippedDate?: string;
-    deliveredDate?: string;
+    eventDate?: string;
     status: string;
 };
 
@@ -77,4 +76,5 @@ export type Order = {
     isBulky?: boolean;
     isVirtual?: boolean;
     isCrossBorder?: boolean;
+    displayMessage?: string;
 };

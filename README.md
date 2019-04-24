@@ -10,18 +10,19 @@ _Precondition_
 
 ## E2E API testing
 
-Use GOT http request library and AVA framework to test APIs
+Use GOT http request library (https://github.com/sindresorhus/got) and AVA framework (https://github.com/avajs/ava) to test APIs
 
 _Structure_
 
--   common/utils: store GET/POST/PUT/DELETE class
--   tests/e2e_api: API test cases
+-   common/utils: store API and DB methods
+-   common/interface: store type or interface
+-   tests/e2e_api/checkout: API test cases for checkout flow
+-   tests/e2e_api/non_checkout: API test cases for non-checkout flow
 
-Example test command: `NODE_ENV=stg ./node_modules/.bin/ava --verbose tests/e2e_api/`
+Example test command `NODE_ENV=stg ./node_modules/.bin/ava tests/e2e_api/non_checkout/account.*.ts` will run all test cases related to account API
 
 _Note:_
 
--   after verifying failed snapshot tests, add `--update-snapshots` to test run command to update snapshots
 -   to export ava report to xml, use `./node_modules/.bin/ava tests/e2e_api/non_checkout/sale_relate/bestSellers.info.spec.ts --tap | ./node_modules/.bin/tap-xunit | tee report/test.xml`
 
 ## E2E UI testing

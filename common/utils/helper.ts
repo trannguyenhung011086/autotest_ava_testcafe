@@ -391,11 +391,8 @@ export class Helper {
 
         t.true(this.validateDate(order.createdDate));
 
-        if (order.shippedDate) {
-            t.true(this.validateDate(order.shippedDate));
-        }
-        if (order.deliveredDate) {
-            t.true(this.validateDate(order.deliveredDate));
+        if (order.eventDate) {
+            t.true(this.validateDate(order.eventDate));
         }
     }
 
@@ -478,6 +475,7 @@ export class Helper {
 
         this.validateAddress(t, orderItem.address.billing);
         this.validateAddress(t, orderItem.address.shipping);
+
         this.validatePayment(t, orderItem.paymentSummary);
 
         if (orderItem.products.length == 0) {
@@ -487,6 +485,8 @@ export class Helper {
                 this.validateProduct(t, product);
             });
         }
+
+        if (orderItem.displayMessage) t.truthy(orderItem.displayMessage);
     }
 
     public validateCategory(t: ExecutionContext, menu: Model.CategoryMenu) {

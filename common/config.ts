@@ -6,6 +6,38 @@ let mongoHost: string;
 let redisHost: string;
 
 switch (process.env.NODE_ENV) {
+    case "dev1":
+        baseUrl = "https://www.dev1.leflair.io";
+        payDollarBase = "https://test.paydollar.com";
+        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
+        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        redisHost = "35.247.137.109";
+        mongoHost = "mongodb://35.247.137.109";
+        break;
+    case "dev2":
+        baseUrl = "https://www.dev2.leflair.io";
+        payDollarBase = "https://test.paydollar.com";
+        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
+        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        redisHost = "35.247.137.109";
+        mongoHost = "mongodb://35.247.137.109";
+        break;
+    case "dev3":
+        baseUrl = "https://www.dev3.leflair.io";
+        payDollarBase = "https://test.paydollar.com";
+        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
+        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        redisHost = "35.247.137.109";
+        mongoHost = "mongodb://35.247.137.109";
+        break;
+    case "dev4":
+        baseUrl = "https://www.dev4.leflair.io";
+        payDollarBase = "https://test.paydollar.com";
+        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
+        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
+        redisHost = "35.247.137.109";
+        mongoHost = "mongodb://35.247.137.109";
+        break;
     case "stg":
         baseUrl = "https://www.staging.leflair.io";
         payDollarBase = "https://test.paydollar.com";
@@ -21,28 +53,6 @@ switch (process.env.NODE_ENV) {
         stripeKey = "pk_live_2oLGoFep9LLlvVMs1TroLmM1";
         redisHost = "35.240.219.41";
         mongoHost = "mongodb://35.240.219.41";
-        break;
-    case "rc1":
-        baseUrl = "https://www.rc1.leflair.io";
-        payDollarBase = "https://test.paydollar.com";
-        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
-        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
-        break;
-    case "dev4":
-        baseUrl = "https://www.dev4.leflair.io";
-        payDollarBase = "https://test.paydollar.com";
-        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
-        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
-        redisHost = "35.247.137.109";
-        mongoHost = "mongodb://35.247.137.109";
-        break;
-    case "dev3":
-        baseUrl = "https://www.dev3.leflair.io";
-        payDollarBase = "https://test.paydollar.com";
-        payDollarApi = "/b2cDemo/eng/directPay/payComp.jsp";
-        stripeKey = "pk_test_zrI3lNk5K5ttTT5LumHpDZWy";
-        redisHost = "35.247.137.109";
-        mongoHost = "mongodb://35.247.137.109";
         break;
     default:
         baseUrl = "https://www.staging.leflair.io";
@@ -100,12 +110,6 @@ export const config = {
         featuredSales: "/api/v2/home/featured",
         potdSales: "/api/v2/home/potd",
         bestSellers: "/api/v2/best-sellers/",
-        cateMenu: "/api/menus/code/TOP_NAV?items=true",
-        cateApparel: "/api/menus/items/5b56d3448f0dd7c0480acd1b",
-        cateBagsShoes: "/api/menus/items/5b56d3448f0dd7c0480acd1f",
-        cateAccessories: "/api/menus/items/5b56d3448f0dd7c0480acd28",
-        cateHealthBeauty: "/api/menus/items/5b56d3448f0dd7c0480acd32",
-        cateHomeLifeStyle: "/api/menus/items/5b62d1008f0dd7c0480acd5b",
         cart: "/api/v2/cart-items/",
         checkout: "/api/v2/checkout",
         mailchimp: "/api/v2/news/mailchimp-report",
@@ -130,25 +134,6 @@ export const config = {
     stripeBase: "https://api.stripe.com",
     payDollarBase: payDollarBase,
     payDollarApi: payDollarApi,
-    bulkyNameList: ["Gối", "Drap", "Ruột Gối", "5 Món"],
-    bulkyTypeList1: [
-        "56ab4ec486d35f11000b732c",
-        "57020368e501710e004c9b8f",
-        "5751598da816261100b587b8",
-        "5940fc05acc7ad11001544d4",
-        "59db3d874c42c3000f5b17b8",
-        "5a0167f7b7de5e000f1525b4",
-        "5a29204edd1b3100104b347b",
-        "5acc39c0ca5b920018a9bfe3"
-    ],
-    bulkyTypeList2: [
-        "56b02af3701a801000ddfbcf",
-        "56f20d31a139730e00884af1",
-        "56f20da3a139730e00884af5",
-        "57106b54e219660e00d1aae2",
-        "57592f93e881530c008eedaf",
-        "57a45f65ee457b1000ddd020"
-    ],
     testAccount: {
         email_in: "qa_tech@leflair.vn",
         password_in: "leflairqa",

@@ -35,14 +35,16 @@ for (const saleType of [
 }
 
 for (const cate of [
-    config.api.cateAccessories,
-    config.api.cateApparel,
-    config.api.cateBagsShoes,
-    config.api.cateHealthBeauty,
-    config.api.cateHomeLifeStyle
+    "apparel",
+    "bags-and-shoes",
+    "accessories",
+    "health-and-beauty",
+    "home-and-lifestyle"
 ]) {
-    test("Check valid product from current sale of " + cate, async t => {
-        const products = await request.getProducts(cate + "/sales/current");
+    test("Check valid product from current sale of menu " + cate, async t => {
+        const products = await request.getProducts(
+            config.api.menuSales + cate + "?featured=false&today=false"
+        );
 
         t.true(products.length > 0);
 
@@ -56,14 +58,16 @@ for (const cate of [
 }
 
 for (const cate of [
-    config.api.cateAccessories,
-    config.api.cateApparel,
-    config.api.cateBagsShoes,
-    config.api.cateHealthBeauty,
-    config.api.cateHomeLifeStyle
+    "apparel",
+    "bags-and-shoes",
+    "accessories",
+    "health-and-beauty",
+    "home-and-lifestyle"
 ]) {
-    test("Check valid product from today sale of " + cate, async t => {
-        const products = await request.getProducts(cate + "/sales/today");
+    test("Check valid product from today sale of menu " + cate, async t => {
+        const products = await request.getProducts(
+            config.api.menuSales + cate + "?today=true"
+        );
 
         t.true(products.length > 0);
 
@@ -77,14 +81,16 @@ for (const cate of [
 }
 
 for (const cate of [
-    config.api.cateAccessories,
-    config.api.cateApparel,
-    config.api.cateBagsShoes,
-    config.api.cateHealthBeauty,
-    config.api.cateHomeLifeStyle
+    "apparel",
+    "bags-and-shoes",
+    "accessories",
+    "health-and-beauty",
+    "home-and-lifestyle"
 ]) {
-    test("Check valid product from featured sale of " + cate, async t => {
-        const products = await request.getProducts(cate + "/sales/featured");
+    test("Check valid product from featured sale of menu " + cate, async t => {
+        const products = await request.getProducts(
+            config.api.menuSales + cate + "?featured=true"
+        );
 
         t.true(products.length > 0);
 
@@ -149,7 +155,7 @@ test("Check virtual product", async t => {
     }
 });
 
-test("Check non-virtual non-bulky product", async t => {
+test("Check non-virtual product", async t => {
     const product = await request.getVirtualBulkyProductInfo(
         config.api.currentSales,
         false,
@@ -161,7 +167,6 @@ test("Check non-virtual non-bulky product", async t => {
     for (const item of product.products) {
         t.false(item.isVirtual);
         t.true(item.quantityAvailable > 0);
-        t.false(item.isBulky);
     }
 
     const productQuery = await accessDb.getProduct({
@@ -169,42 +174,11 @@ test("Check non-virtual non-bulky product", async t => {
     });
 
     t.truthy(productQuery);
-
-    t.false(config.bulkyTypeList1.includes(productQuery.type));
-    t.false(config.bulkyTypeList2.includes(productQuery.type));
 });
-
-test.skip("Check bulky product", async t => {
-    const product = await request.getVirtualBulkyProductInfo(
-        config.api.currentSales,
-        true,
-        true
-    );
-
-    await request.validateProductInfo(t, product);
-
-    const productQuery = await accessDb.getProduct({
-        "variations.nsId": product.products[0].nsId
-    });
-
-    t.truthy(productQuery);
-
-    const isNameContain = config.bulkyNameList.some(name =>
-        product.title.includes(name)
-    );
-
-    if (isNameContain) {
-        t.log("bulky type list 1");
-        t.true(config.bulkyTypeList1.includes(productQuery.type.toString()));
-    } else {
-        t.log("bulky type list 2");
-        t.true(config.bulkyTypeList2.includes(productQuery.type.toString()));
-    }
-}); // will remove at WWW-716
 
 test("Check product with sizes", async t => {
     const product = await request.getProductInfoWithSizes(
-        config.api.cateApparel + "/sales/current"
+        config.api.menuSales + "apparel"
     );
 
     await request.validateProductInfo(t, product);
@@ -219,7 +193,7 @@ test("Check product with sizes", async t => {
 
 test("Check product with colors", async t => {
     const product = await request.getProductInfoWithColors(
-        config.api.cateApparel + "/sales/current"
+        config.api.menuSales + "apparel"
     );
 
     await request.validateProductInfo(t, product);

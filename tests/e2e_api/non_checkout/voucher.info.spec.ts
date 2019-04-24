@@ -135,7 +135,7 @@ test("Get 200 success code when using valid voucher", async t => {
     const voucher: Model.Voucher = res.body;
 
     t.deepEqual(res.statusCode, 200);
-    t.true(voucher.amount > 0);
+    t.true(voucher.amount >= 0);
     t.deepEqual(voucher.code, voucherInfo.code);
     t.regex(voucher.discountType, /amount|percentage/);
     t.deepEqual(typeof voucher.freeShipping, "boolean");

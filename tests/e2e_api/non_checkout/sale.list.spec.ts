@@ -43,14 +43,14 @@ for (const saleType of [
 }
 
 for (const cate of [
-    config.api.cateAccessories,
-    config.api.cateApparel,
-    config.api.cateBagsShoes,
-    config.api.cateHealthBeauty,
-    config.api.cateHomeLifeStyle
+    "apparel",
+    "bags-and-shoes",
+    "accessories",
+    "health-and-beauty",
+    "home-and-lifestyle"
 ]) {
-    test("Check ongoing sales from " + cate, async t => {
-        const sales = await request.getSales(cate + "/sales/current");
+    test("Check ongoing sales from menu " + cate, async t => {
+        const sales = await request.getSales(config.api.menuSales + cate);
 
         t.true(sales.length > 0);
 

@@ -101,14 +101,16 @@ for (const saleType of [
 }
 
 for (const cate of [
-    config.api.cateAccessories,
-    config.api.cateApparel,
-    config.api.cateBagsShoes,
-    config.api.cateHealthBeauty,
-    config.api.cateHomeLifeStyle
+    "apparel",
+    "bags-and-shoes",
+    "accessories",
+    "health-and-beauty",
+    "home-and-lifestyle"
 ]) {
-    test("Check valid current sale from " + cate, async t => {
-        const sales = await request.getSales(cate + "/sales/current");
+    test("Check valid current sale from menu " + cate, async t => {
+        const sales = await request.getSales(
+            config.api.menuSales + cate + "?featured=false&today=false"
+        );
 
         t.true(sales.length > 0);
 
@@ -123,14 +125,16 @@ for (const cate of [
 }
 
 for (const cate of [
-    config.api.cateAccessories,
-    config.api.cateApparel,
-    config.api.cateBagsShoes,
-    config.api.cateHealthBeauty,
-    config.api.cateHomeLifeStyle
+    "apparel",
+    "bags-and-shoes",
+    "accessories",
+    "health-and-beauty",
+    "home-and-lifestyle"
 ]) {
-    test("Check valid today sale from " + cate, async t => {
-        const sales = await request.getSales(cate + "/sales/today");
+    test("Check valid today sale from menu " + cate, async t => {
+        const sales = await request.getSales(
+            config.api.menuSales + cate + "?today=true"
+        );
 
         t.true(sales.length > 0);
 
@@ -145,14 +149,16 @@ for (const cate of [
 }
 
 for (const cate of [
-    config.api.cateAccessories,
-    config.api.cateApparel,
-    config.api.cateBagsShoes,
-    config.api.cateHealthBeauty,
-    config.api.cateHomeLifeStyle
+    "apparel",
+    "bags-and-shoes",
+    "accessories",
+    "health-and-beauty",
+    "home-and-lifestyle"
 ]) {
-    test("Check valid featured sale from " + cate, async t => {
-        const sales = await request.getSales(cate + "/sales/featured");
+    test("Check valid featured sale from menu " + cate, async t => {
+        const sales = await request.getSales(
+            config.api.menuSales + cate + "?featured=true"
+        );
 
         t.true(sales.length > 0);
 
