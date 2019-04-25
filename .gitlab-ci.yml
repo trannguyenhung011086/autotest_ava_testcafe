@@ -16,7 +16,7 @@ build:
         - docker build -t hung/testcafe .
         # - yarn install
 
-api_sale_non_checkout_prod:
+api_non_checkout_prod:
     stage: test_prod
     script:
         # - NODE_ENV=prod MODE=ci yarn run test_api_non_checkout --match='!*skip-prod*'

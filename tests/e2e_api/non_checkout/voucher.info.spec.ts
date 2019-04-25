@@ -87,7 +87,6 @@ test("Get 400 error code when using already used voucher", async t => {
         {
             expiry: { $gte: new Date() },
             binRange: { $exists: false },
-            used: false,
             oncePerAccount: true
         },
         customer

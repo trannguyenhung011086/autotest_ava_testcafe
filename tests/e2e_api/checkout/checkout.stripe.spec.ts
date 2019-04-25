@@ -132,284 +132,315 @@ test.serial(
 test.serial(
     "Order status is Placed when checkout with new Stripe (not save card) - VISA",
     async t => {
-        const item = await requestProduct.getInStockProduct(
-            config.api.internationalSales,
-            1
-        );
-        await requestCart.addToCart(item.id, t.context["cookie"]);
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
+            t.pass();
+        } else {
+            const item = await requestProduct.getInStockProduct(
+                config.api.internationalSales,
+                1
+            );
+            await requestCart.addToCart(item.id, t.context["cookie"]);
 
-        stripeData["card[number]"] = "4000000000000077";
+            stripeData["card[number]"] = "4000000000000077";
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkoutInput.addresses = addresses;
-        checkoutInput.saveNewCard = false;
-        checkoutInput.stripeSource = await request
-            .postFormUrl(
-                "/v1/sources",
-                stripeData,
-                t.context["cookie"],
-                config.stripeBase
-            )
-            .then(res => res.body);
+            checkoutInput.account = await requestAccount.getAccountInfo(
+                t.context["cookie"]
+            );
+            checkoutInput.addresses = addresses;
+            checkoutInput.saveNewCard = false;
+            checkoutInput.stripeSource = await request
+                .postFormUrl(
+                    "/v1/sources",
+                    stripeData,
+                    t.context["cookie"],
+                    config.stripeBase
+                )
+                .then(res => res.body);
 
-        const checkout = await request.checkoutStripe(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(checkout.orderId);
+            const checkout = await request.checkoutStripe(
+                checkoutInput,
+                t.context["cookie"]
+            );
+            t.truthy(checkout.orderId);
 
-        const order = await requestOrder.getOrderInfo(
-            checkout.orderId,
-            t.context["cookie"]
-        );
+            const order = await requestOrder.getOrderInfo(
+                checkout.orderId,
+                t.context["cookie"]
+            );
 
-        t.true(order.code.includes(checkout.code));
-        t.deepEqual(order.status, "placed");
-        t.deepEqual(order.paymentSummary.method, "STRIPE");
-        t.deepEqual(order.paymentSummary.shipping, 0);
+            t.true(order.code.includes(checkout.code));
+            t.deepEqual(order.status, "placed");
+            t.deepEqual(order.paymentSummary.method, "STRIPE");
+            t.deepEqual(order.paymentSummary.shipping, 0);
+        }
     }
 );
 
 test.serial(
     "Order status is Placed when checkout with new Stripe (not save card) - MASTER",
     async t => {
-        const item = await requestProduct.getInStockProduct(
-            config.api.internationalSales,
-            1
-        );
-        await requestCart.addToCart(item.id, t.context["cookie"]);
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
+            t.pass();
+        } else {
+            const item = await requestProduct.getInStockProduct(
+                config.api.internationalSales,
+                1
+            );
+            await requestCart.addToCart(item.id, t.context["cookie"]);
 
-        stripeData["card[number]"] = "5555555555554444";
+            stripeData["card[number]"] = "5555555555554444";
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkoutInput.addresses = addresses;
-        checkoutInput.saveNewCard = false;
-        checkoutInput.stripeSource = await request
-            .postFormUrl(
-                "/v1/sources",
-                stripeData,
-                t.context["cookie"],
-                config.stripeBase
-            )
-            .then(res => res.body);
+            checkoutInput.account = await requestAccount.getAccountInfo(
+                t.context["cookie"]
+            );
+            checkoutInput.addresses = addresses;
+            checkoutInput.saveNewCard = false;
+            checkoutInput.stripeSource = await request
+                .postFormUrl(
+                    "/v1/sources",
+                    stripeData,
+                    t.context["cookie"],
+                    config.stripeBase
+                )
+                .then(res => res.body);
 
-        const checkout = await request.checkoutStripe(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(checkout.orderId);
+            const checkout = await request.checkoutStripe(
+                checkoutInput,
+                t.context["cookie"]
+            );
+            t.truthy(checkout.orderId);
 
-        const order = await requestOrder.getOrderInfo(
-            checkout.orderId,
-            t.context["cookie"]
-        );
+            const order = await requestOrder.getOrderInfo(
+                checkout.orderId,
+                t.context["cookie"]
+            );
 
-        t.true(order.code.includes(checkout.code));
-        t.deepEqual(order.status, "placed");
-        t.deepEqual(order.paymentSummary.method, "STRIPE");
-        t.deepEqual(order.paymentSummary.shipping, 0);
+            t.true(order.code.includes(checkout.code));
+            t.deepEqual(order.status, "placed");
+            t.deepEqual(order.paymentSummary.method, "STRIPE");
+            t.deepEqual(order.paymentSummary.shipping, 0);
+        }
     }
 );
 
 test.serial(
     "Order status is Placed when checkout with new Stripe (save card) - VISA",
     async t => {
-        const item = await requestProduct.getInStockProduct(
-            config.api.internationalSales,
-            1
-        );
-        await requestCart.addToCart(item.id, t.context["cookie"]);
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
+            t.pass();
+        } else {
+            const item = await requestProduct.getInStockProduct(
+                config.api.internationalSales,
+                1
+            );
+            await requestCart.addToCart(item.id, t.context["cookie"]);
 
-        stripeData["card[number]"] = "4000000000000077";
+            stripeData["card[number]"] = "4000000000000077";
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkoutInput.addresses = addresses;
-        checkoutInput.saveNewCard = true;
-        checkoutInput.stripeSource = await request
-            .postFormUrl(
-                "/v1/sources",
-                stripeData,
-                t.context["cookie"],
-                config.stripeBase
-            )
-            .then(res => res.body);
+            checkoutInput.account = await requestAccount.getAccountInfo(
+                t.context["cookie"]
+            );
+            checkoutInput.addresses = addresses;
+            checkoutInput.saveNewCard = true;
+            checkoutInput.stripeSource = await request
+                .postFormUrl(
+                    "/v1/sources",
+                    stripeData,
+                    t.context["cookie"],
+                    config.stripeBase
+                )
+                .then(res => res.body);
 
-        const checkout = await request.checkoutStripe(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(checkout.orderId);
+            const checkout = await request.checkoutStripe(
+                checkoutInput,
+                t.context["cookie"]
+            );
+            t.truthy(checkout.orderId);
 
-        const order = await requestOrder.getOrderInfo(
-            checkout.orderId,
-            t.context["cookie"]
-        );
+            const order = await requestOrder.getOrderInfo(
+                checkout.orderId,
+                t.context["cookie"]
+            );
 
-        t.true(order.code.includes(checkout.code));
-        t.deepEqual(order.status, "placed");
-        t.deepEqual(order.paymentSummary.method, "STRIPE");
-        t.deepEqual(order.paymentSummary.shipping, 0);
+            t.true(order.code.includes(checkout.code));
+            t.deepEqual(order.status, "placed");
+            t.deepEqual(order.paymentSummary.method, "STRIPE");
+            t.deepEqual(order.paymentSummary.shipping, 0);
+        }
     }
 );
 
 test.serial(
     "Order status is Placed when checkout with saved Stripe",
     async t => {
-        const matchedCard = await requestCreditcard.getCard(
-            "Stripe",
-            t.context["cookie"]
-        );
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
+            t.pass();
+        } else {
+            const matchedCard = await requestCreditcard.getCard(
+                "Stripe",
+                t.context["cookie"]
+            );
 
-        const item = await requestProduct.getInStockProduct(
-            config.api.internationalSales,
-            1
-        );
-        await requestCart.addToCart(item.id, t.context["cookie"]);
+            const item = await requestProduct.getInStockProduct(
+                config.api.internationalSales,
+                1
+            );
+            await requestCart.addToCart(item.id, t.context["cookie"]);
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkoutInput.addresses = addresses;
-        checkoutInput.methodData = matchedCard;
+            checkoutInput.account = await requestAccount.getAccountInfo(
+                t.context["cookie"]
+            );
+            checkoutInput.addresses = addresses;
+            checkoutInput.methodData = matchedCard;
 
-        const checkout = await request.checkoutStripe(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(checkout.orderId);
+            const checkout = await request.checkoutStripe(
+                checkoutInput,
+                t.context["cookie"]
+            );
+            t.truthy(checkout.orderId);
 
-        const order = await requestOrder.getOrderInfo(
-            checkout.orderId,
-            t.context["cookie"]
-        );
+            const order = await requestOrder.getOrderInfo(
+                checkout.orderId,
+                t.context["cookie"]
+            );
 
-        t.true(order.code.includes(checkout.code));
-        t.deepEqual(order.status, "placed");
-        t.deepEqual(order.paymentSummary.method, "STRIPE");
-        t.deepEqual(order.paymentSummary.shipping, 0);
+            t.true(order.code.includes(checkout.code));
+            t.deepEqual(order.status, "placed");
+            t.deepEqual(order.paymentSummary.method, "STRIPE");
+            t.deepEqual(order.paymentSummary.shipping, 0);
+        }
     }
 );
 
 test.serial(
     "Order status is Placed when checkout with new Stripe (save card) - MASTER - voucher (amount) + credit",
     async t => {
-        const voucher = await access.getVoucher({
-            expiry: { $gte: new Date() },
-            binRange: "433590,542288,555555,400000,4111",
-            discountType: "amount",
-            multipleUser: true,
-            oncePerAccount: false
-        });
-        t.truthy(voucher);
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
+            t.pass();
+        } else {
+            const voucher = await access.getVoucher({
+                expiry: { $gte: new Date() },
+                binRange: "433590,542288,555555,400000,4111",
+                discountType: "amount",
+                multipleUser: true,
+                oncePerAccount: false
+            });
+            t.truthy(voucher);
 
-        const item = await requestProduct.getInStockProduct(
-            config.api.internationalSales,
-            2
-        );
-        await requestCart.addToCart(item.id, t.context["cookie"]);
+            const item = await requestProduct.getInStockProduct(
+                config.api.internationalSales,
+                2
+            );
+            await requestCart.addToCart(item.id, t.context["cookie"]);
 
-        const account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
+            const account = await requestAccount.getAccountInfo(
+                t.context["cookie"]
+            );
 
-        const credit = request.calculateCredit(
-            account.accountCredit,
-            item.salePrice,
-            voucher.amount
-        );
+            const credit = request.calculateCredit(
+                account.accountCredit,
+                item.salePrice,
+                voucher.amount
+            );
 
-        stripeData["card[number]"] = "5555555555554444";
+            stripeData["card[number]"] = "5555555555554444";
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkoutInput.addresses = addresses;
-        checkoutInput.voucherId = voucher._id;
-        checkoutInput.credit = credit;
-        checkoutInput.saveNewCard = true;
-        checkoutInput.stripeSource = await request
-            .postFormUrl(
-                "/v1/sources",
-                stripeData,
-                t.context["cookie"],
-                config.stripeBase
-            )
-            .then(res => res.body);
+            checkoutInput.account = await requestAccount.getAccountInfo(
+                t.context["cookie"]
+            );
+            checkoutInput.addresses = addresses;
+            checkoutInput.voucherId = voucher._id;
+            checkoutInput.credit = credit;
+            checkoutInput.saveNewCard = true;
+            checkoutInput.stripeSource = await request
+                .postFormUrl(
+                    "/v1/sources",
+                    stripeData,
+                    t.context["cookie"],
+                    config.stripeBase
+                )
+                .then(res => res.body);
 
-        const checkout = await request.checkoutStripe(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(checkout.orderId);
+            const checkout = await request.checkoutStripe(
+                checkoutInput,
+                t.context["cookie"]
+            );
+            t.truthy(checkout.orderId);
 
-        const order = await requestOrder.getOrderInfo(
-            checkout.orderId,
-            t.context["cookie"]
-        );
+            const order = await requestOrder.getOrderInfo(
+                checkout.orderId,
+                t.context["cookie"]
+            );
 
-        t.true(order.code.includes(checkout.code));
-        t.deepEqual(order.status, "placed");
-        t.deepEqual(order.paymentSummary.method, "STRIPE");
-        t.deepEqual(order.paymentSummary.shipping, 0);
-        t.deepEqual(order.paymentSummary.voucherAmount, voucher.amount);
-        t.deepEqual(Math.abs(order.paymentSummary.accountCredit), credit);
+            t.true(order.code.includes(checkout.code));
+            t.deepEqual(order.status, "placed");
+            t.deepEqual(order.paymentSummary.method, "STRIPE");
+            t.deepEqual(order.paymentSummary.shipping, 0);
+            t.deepEqual(order.paymentSummary.voucherAmount, voucher.amount);
+            t.deepEqual(Math.abs(order.paymentSummary.accountCredit), credit);
+        }
     }
 );
 
 test.serial(
     "Order status is Placed when checkout with saved Stripe - voucher (percentage + max discount)",
     async t => {
-        const voucher = await access.getVoucher({
-            expiry: { $gte: new Date() },
-            binRange: "433590,542288,555555,400000,4111",
-            discountType: "percentage",
-            maximumDiscountAmount: { $gt: 0 },
-            multipleUser: true,
-            oncePerAccount: false
-        });
-        t.truthy(voucher);
+        if (process.env.NODE_ENV == "prod") {
+            t.log("Skip checkout on prod!");
+            t.pass();
+        } else {
+            const voucher = await access.getVoucher({
+                expiry: { $gte: new Date() },
+                binRange: "433590,542288,555555,400000,4111",
+                discountType: "percentage",
+                maximumDiscountAmount: { $gt: 0 },
+                multipleUser: true,
+                oncePerAccount: false
+            });
+            t.truthy(voucher);
 
-        const matchedCard = await requestCreditcard.getCard(
-            "Stripe",
-            t.context["cookie"]
-        );
+            const matchedCard = await requestCreditcard.getCard(
+                "Stripe",
+                t.context["cookie"]
+            );
 
-        const item = await requestProduct.getInStockProduct(
-            config.api.internationalSales,
-            1
-        );
-        await requestCart.addToCart(item.id, t.context["cookie"]);
+            const item = await requestProduct.getInStockProduct(
+                config.api.internationalSales,
+                1
+            );
+            await requestCart.addToCart(item.id, t.context["cookie"]);
 
-        checkoutInput.account = await requestAccount.getAccountInfo(
-            t.context["cookie"]
-        );
-        checkoutInput.addresses = addresses;
-        checkoutInput.voucherId = voucher._id;
-        checkoutInput.methodData = matchedCard;
+            checkoutInput.account = await requestAccount.getAccountInfo(
+                t.context["cookie"]
+            );
+            checkoutInput.addresses = addresses;
+            checkoutInput.voucherId = voucher._id;
+            checkoutInput.methodData = matchedCard;
 
-        const checkout = await request.checkoutStripe(
-            checkoutInput,
-            t.context["cookie"]
-        );
-        t.truthy(checkout.orderId);
+            const checkout = await request.checkoutStripe(
+                checkoutInput,
+                t.context["cookie"]
+            );
+            t.truthy(checkout.orderId);
 
-        const order = await requestOrder.getOrderInfo(
-            checkout.orderId,
-            t.context["cookie"]
-        );
+            const order = await requestOrder.getOrderInfo(
+                checkout.orderId,
+                t.context["cookie"]
+            );
 
-        t.true(order.code.includes(checkout.code));
-        t.deepEqual(order.status, "placed");
-        t.deepEqual(order.paymentSummary.method, "STRIPE");
-        t.deepEqual(order.paymentSummary.shipping, 0);
-        t.true(
-            order.paymentSummary.voucherAmount <= voucher.maximumDiscountAmount
-        );
+            t.true(order.code.includes(checkout.code));
+            t.deepEqual(order.status, "placed");
+            t.deepEqual(order.paymentSummary.method, "STRIPE");
+            t.deepEqual(order.paymentSummary.shipping, 0);
+            t.true(
+                order.paymentSummary.voucherAmount <=
+                    voucher.maximumDiscountAmount
+            );
+        }
     }
 );

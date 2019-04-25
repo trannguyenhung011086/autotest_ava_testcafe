@@ -7,6 +7,20 @@ const request = new Utils.AccountUtils();
 
 import test from "ava";
 
+// use to generate fake accounts
+// test.only("generate fake users", async t => {
+//     const emailList = config.testAccount.email_ex;
+
+//     for (const email of emailList) {
+//         const res = await request.post(config.api.signUp, {
+//             email: email,
+//             password: "123456789",
+//             language: "vn",
+//             gender: "M"
+//         });
+//     }
+// }); 
+
 test("Get 400 error code when using empty email and password", async t => {
     const res = await request.post(config.api.signUp, {
         email: "",
@@ -103,16 +117,3 @@ test("Get 200 success code when using non-existed credentials", async t => {
     t.deepEqual(signUp.gender, "M");
     t.deepEqual(signUp.cart.length, 0);
 });
-
-// test.only("generate fake users", async t => {
-//     const emailList = config.testAccount.email_ex;
-
-//     for (const email of emailList) {
-//         const res = await request.post(config.api.signUp, {
-//             email: email,
-//             password: "123456789",
-//             language: "vn",
-//             gender: "M"
-//         });
-//     }
-// });

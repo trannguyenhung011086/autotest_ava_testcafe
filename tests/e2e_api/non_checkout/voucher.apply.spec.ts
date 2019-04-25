@@ -120,7 +120,6 @@ test("Get 400 error code when using expired voucher", async t => {
 test("Get 400 error code when using voucher not meet min items", async t => {
     const voucher = await access.getVoucher({
         expiry: { $gt: new Date() },
-        used: false,
         numberOfItems: { $gte: 2 }
     });
 
@@ -150,7 +149,6 @@ test("Get 400 error code when using voucher not apply for today", async t => {
     const today = new Date().getDay();
     const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
-        used: false,
         specificDays: { $size: 1 },
         "specificDays.0": { $exists: true, $ne: today }
     });
@@ -173,7 +171,6 @@ test("Get 400 error code when using voucher not apply for today", async t => {
 test("Get 400 error code when using voucher not meet min purchase", async t => {
     const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
-        used: false,
         binRange: { $exists: false },
         minimumPurchase: { $gt: 500000 }
     });
@@ -205,7 +202,6 @@ test("Get 400 error code when using voucher for specific customer", async t => {
     });
     const voucher = await access.getVoucher({
         expiry: { $gte: new Date() },
-        used: false,
         customer: { $exists: true, $ne: customer._id }
     });
 
@@ -283,7 +279,6 @@ test("Get 400 error code when using voucher already used", async t => {
         {
             expiry: { $gte: new Date() },
             binRange: { $exists: false },
-            used: false,
             oncePerAccount: true
         },
         customer
@@ -307,7 +302,6 @@ test("Get 400 error code when using voucher already used by phone number", async
     const voucherList = await access.getVoucherList({
         expiry: { $gte: new Date() },
         binRange: { $exists: false },
-        used: false,
         oncePerAccount: true
     });
 
@@ -468,7 +462,6 @@ test("Get 400 error code when using more than 1 voucher per campaign", async t =
         const voucher = await access.getNotUsedVoucher(
             {
                 oncePerAccountForCampaign: true,
-                used: false,
                 campaign: /Grab Rewards Premium/
             },
             customer
@@ -498,7 +491,6 @@ test("Get 400 error code when using more than 1 voucher per campaign", async t =
         const voucherNew = await access.getNotUsedVoucher(
             {
                 oncePerAccountForCampaign: true,
-                used: false,
                 campaign: /Grab Rewards Premium/,
                 code: { $ne: voucher.code }
             },

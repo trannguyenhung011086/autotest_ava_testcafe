@@ -11,7 +11,6 @@ const requestAddress = new Utils.AddressUtils();
 const requestAccount = new Utils.AccountUtils();
 const requestCart = new Utils.CartUtils();
 const requestProduct = new Utils.ProductUtils();
-const requestOrder = new Utils.OrderUtils();
 const access = new Utils.DbAccessUtils();
 const accessRedis = new Utils.RedisAccessUtils();
 
@@ -23,6 +22,8 @@ test.before(async t => {
         config.testAccount.password_ex
     );
 
+    await requestCart.emptyCart(t.context["cookie"]);
+
     addresses = await requestAddress.getAddresses(t.context["cookie"]);
     customer = await access.getCustomerInfo({
         email: config.testAccount.email_ex[2].toLowerCase()
@@ -32,16 +33,13 @@ test.before(async t => {
         config.api.currentSales,
         2
     );
+
     failedAttemptOrder = await request.createFailedAttemptOrder(
         [item, item],
         t.context["cookie"]
     );
 
     t.truthy(failedAttemptOrder.orderId);
-});
-
-test.beforeEach(async t => {
-    await requestCart.emptyCart(t.context["cookie"]);
 });
 
 // validate required data
@@ -521,7 +519,6 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
             numberOfItems: { $gt: 2 }
         });
 
@@ -560,7 +557,6 @@ test.serial(
         const today = new Date().getDay();
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
             specificDays: { $size: 1 },
             "specificDays.0": { $exists: true, $ne: today }
         });
@@ -604,7 +600,6 @@ test.serial(
         const voucher = await access.getNotUsedVoucher(
             {
                 expiry: { $gte: new Date() },
-                used: false,
                 binRange: { $exists: false },
                 minimumPurchase: {
                     $gte: failedAttemptOrder.products[0].salePrice
@@ -732,7 +727,6 @@ test.serial(
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
-            used: false,
             minimumPurchase: { $lte: failedAttemptOrder.products[0].salePrice }
         });
 
@@ -774,7 +768,6 @@ test.serial(
             const voucher = await access.getVoucher({
                 expiry: { $gte: new Date() },
                 binRange: { $exists: true },
-                used: false,
                 minimumPurchase: {
                     $lte: failedAttemptOrder.products[0].salePrice
                 }
@@ -843,7 +836,6 @@ test.serial(
             {
                 expiry: { $gte: new Date() },
                 binRange: { $exists: false },
-                used: false,
                 oncePerAccount: true
             },
             customer1
@@ -882,7 +874,6 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
             binRange: { $exists: false },
             customer: { $exists: true, $ne: customer._id }
         });
@@ -955,7 +946,7 @@ test.serial(
 
 // validate account credit
 
-test.serial(
+test.serial.only(
     "Get 400 error code when recheckout with with more than available credit",
     async t => {
         const account = await requestAccount.getAccountInfo(

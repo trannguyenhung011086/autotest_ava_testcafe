@@ -27,7 +27,7 @@ _Note:_
 
 ## E2E UI testing
 
-Use Testcafe framework to test web application
+Use Testcafe framework (https://github.com/DevExpress/testcafe) to test web application
 
 _Structure_
 

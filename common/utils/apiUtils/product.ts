@@ -162,12 +162,17 @@ export class ProductUtils extends Helper {
             for (const product of info.products) {
                 if (
                     price &&
+                    product.inStock === true &&
                     product.salePrice >= price &&
                     product.quantity >= quantity
                 ) {
                     result = product;
                     break;
-                } else if (!price && product.quantity >= quantity) {
+                } else if (
+                    !price &&
+                    product.inStock === true &&
+                    product.quantity >= quantity
+                ) {
                     result = product;
                     break;
                 }
@@ -204,11 +209,16 @@ export class ProductUtils extends Helper {
             for (const product of info.products) {
                 if (
                     price &&
+                    product.inStock === true &&
                     product.salePrice >= price &&
                     product.quantity >= quantity
                 ) {
                     result.push(product);
-                } else if (!price && product.quantity >= quantity) {
+                } else if (
+                    !price &&
+                    product.inStock === true &&
+                    product.quantity >= quantity
+                ) {
                     result.push(product);
                 }
                 if (result.length >= 15) {

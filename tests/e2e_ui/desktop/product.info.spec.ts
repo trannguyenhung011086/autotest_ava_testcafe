@@ -19,7 +19,7 @@ test("Check lead time not display for sold out product", async () => {
         config.api.currentSales
     );
 
-    await t.expect(product).ok()
+    await t.expect(product).ok();
 
     await t
         .navigateTo(config.baseUrl + "/en/products/" + product.id)
@@ -98,48 +98,6 @@ test("Check lead time display for non-virtual product from SG", async () => {
     const calculateLeadTime = requestProduct.calculateLeadTime(
         product.products[0].isVirtual,
         "SG"
-    );
-    const from = calculateLeadTime.from.day + " " + calculateLeadTime.from.date;
-    const to = calculateLeadTime.to.day + " " + calculateLeadTime.to.date;
-
-    await t
-        .navigateTo(config.baseUrl + "/en/products/" + product.id)
-        .expect(page.product.leadTime.visible)
-        .ok();
-
-    const leadTime = await page.product.getLeadTime();
-    await t.expect(leadTime).eql(from + " - " + to);
-});
-
-test("Check lead time display for virtual product from HK", async () => {
-    const product = await requestProduct.getVirtualProductInfo("HK", true);
-
-    await t.expect(product).ok();
-
-    const calculateLeadTime = requestProduct.calculateLeadTime(
-        product.products[0].isVirtual,
-        "HK"
-    );
-    const from = calculateLeadTime.from.day + " " + calculateLeadTime.from.date;
-    const to = calculateLeadTime.to.day + " " + calculateLeadTime.to.date;
-
-    await t
-        .navigateTo(config.baseUrl + "/en/products/" + product.id)
-        .expect(page.product.leadTime.visible)
-        .ok();
-
-    const leadTime = await page.product.getLeadTime();
-    await t.expect(leadTime).eql(from + " - " + to);
-});
-
-test("Check lead time display for non-virtual product from HK", async () => {
-    const product = await requestProduct.getVirtualProductInfo("HK", false);
-
-    await t.expect(product).ok();
-
-    const calculateLeadTime = requestProduct.calculateLeadTime(
-        product.products[0].isVirtual,
-        "HK"
     );
     const from = calculateLeadTime.from.day + " " + calculateLeadTime.from.date;
     const to = calculateLeadTime.to.day + " " + calculateLeadTime.to.date;

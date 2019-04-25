@@ -674,7 +674,6 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
             numberOfItems: { $gte: 2 }
         });
 
@@ -717,7 +716,6 @@ test.serial(
         const today = new Date().getDay();
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
             specificDays: { $size: 1 },
             "specificDays.0": { $exists: true, $ne: today }
         });
@@ -760,7 +758,6 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
             binRange: { $exists: false },
             minimumPurchase: { $gt: 500000 }
         });
@@ -947,7 +944,6 @@ test.serial(
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
             binRange: { $exists: true },
-            used: false,
             minimumPurchase: 0
         });
 
@@ -993,7 +989,6 @@ test.serial(
             const voucher = await access.getVoucher({
                 expiry: { $gte: new Date() },
                 binRange: { $exists: true, $not: /400000/ },
-                used: false,
                 minimumPurchase: 0
             });
 
@@ -1068,7 +1063,6 @@ test.serial(
                 {
                     expiry: { $gte: new Date() },
                     binRange: { $exists: false },
-                    used: false,
                     oncePerAccount: true
                 },
                 customer1
@@ -1110,7 +1104,6 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             expiry: { $gte: new Date() },
-            used: false,
             customer: { $exists: true, $ne: customer._id }
         });
 
@@ -1151,7 +1144,6 @@ test.serial(
     async t => {
         const voucherList = await access.getVoucherList({
             oncePerAccountForCampaign: false,
-            used: false,
             expiry: { $gt: new Date() },
             multipleUser: false,
             customer: { $exists: false },
@@ -1206,8 +1198,7 @@ test.serial(
     async t => {
         const voucher = await access.getVoucher({
             oncePerAccountForCampaign: true,
-            used: false,
-            campaign: "Grab Rewards Premium "
+            campaign: /Grab Rewards Premium/
         });
 
         t.truthy(voucher);

@@ -19,6 +19,22 @@ test.beforeEach(async t => {
     );
 });
 
+// use to generate address for fake accounts
+// test.only('generate fake addressess', async t => {
+//     for (const email of config.testAccount.email_ex) {
+//         t.context['cookie'] = await request.getLogInCookie(email,
+//             config.testAccount.password_ex)
+//         cities = await request.getCities()
+//         const shipping = await request.generateAddress('shipping', cities)
+//         shipping.duplicateBilling = true
+
+//         const res = await request.post(config.api.addresses, shipping, t.context['cookie'])
+//         const addresses: Model.Addresses = res.body
+//         t.log(email, addresses)
+//         t.deepEqual(res.statusCode, 200)
+//     }
+// })
+
 test.serial("GET / all cities", async t => {
     const res = await request.get(config.api.addresses + "/cities");
 
@@ -271,18 +287,3 @@ test.serial("Get 200 success code when deleting billing address", async t => {
         t.notDeepEqual(billing.id, toDeleteId);
     }
 });
-
-// test.only('generate fake addressess', async t => {
-//     for (const email of config.testAccount.email_ex) {
-//         t.context['cookie'] = await request.getLogInCookie(email,
-//             config.testAccount.password_ex)
-//         cities = await request.getCities()
-//         const shipping = await request.generateAddress('shipping', cities)
-//         shipping.duplicateBilling = true
-
-//         const res = await request.post(config.api.addresses, shipping, t.context['cookie'])
-//         const addresses: Model.Addresses = res.body
-//         t.log(email, addresses)
-//         t.deepEqual(res.statusCode, 200)
-//     }
-// })

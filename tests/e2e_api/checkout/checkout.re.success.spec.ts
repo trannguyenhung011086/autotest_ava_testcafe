@@ -366,7 +366,6 @@ test.serial(
         } else {
             const voucher = await access.getVoucher({
                 expiry: { $gte: new Date() },
-                used: false,
                 discountType: "percentage",
                 maximumDiscountAmount: { $gt: 0, $lte: 150000 },
                 specificDays: [],

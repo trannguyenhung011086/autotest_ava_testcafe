@@ -2,7 +2,6 @@ import { config } from "../../../common/config";
 import * as Utils from "../../../common/utils";
 import * as Model from "../../../common/interface";
 
-let customer: Model.Customer;
 let addresses: Model.Addresses;
 const checkoutInput: Model.CheckoutInput = {};
 
@@ -23,9 +22,6 @@ test.before(async t => {
     );
 
     addresses = await requestAddress.getAddresses(t.context["cookie"]);
-    customer = await access.getCustomerInfo({
-        email: config.testAccount.email_ex[3].toLowerCase()
-    });
 });
 
 test.beforeEach(async t => {
